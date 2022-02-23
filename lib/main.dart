@@ -1,5 +1,8 @@
+import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:adaptive_breakpoints/adaptive_breakpoints.dart';
+import 'package:http/http.dart' as http;
 
 void main() {
   runApp(const MyApp());
@@ -13,16 +16,68 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'chilicizz.github.io',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSwatch(
-          primarySwatch : Colors.deepPurple,
-          accentColor: Colors.pinkAccent.shade100,
-          brightness: Brightness.dark,
-          errorColor: Colors.red,
-          cardColor: Colors.deepPurple.shade700
-        )
-      ),
+          colorScheme: ColorScheme.fromSwatch(
+              primarySwatch: Colors.deepPurple,
+              accentColor: Colors.pinkAccent.shade100,
+              brightness: Brightness.dark,
+              errorColor: Colors.red,
+              cardColor: Colors.deepPurple.shade700)),
       home: const MyHomePage(title: 'homepage'),
     );
+  }
+}
+
+class AQI extends StatefulWidget {
+  const AQI({Key? key}) : super(key: key);
+
+  @override
+  State<AQI> createState() => _AQIState();
+}
+
+class _AQIState extends State<AQI> {
+  dynamic jsonResult;
+  String _output = '';
+  Duration tickTime = const Duration(minutes: 30);
+  Timer? timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _tick(timer);
+    timer = Timer.periodic(tickTime, (Timer t) => _tick(t));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(_output, style: Theme.of(context).textTheme.headline4);
+  }
+
+  Future<void> _tick(Timer? t) async {
+    var response = await _fetchData();
+    if (response.statusCode == 200) {
+      // If the server did return a 200 OK response,
+      // then parse the JSON.
+      var aqiFeed = jsonDecode(response.body);
+      if (aqiFeed["status"].contains("ok")) {
+        var aqi = aqiFeed["data"]["aqi"];
+        var location = aqiFeed["data"]["city"]["name"];
+        var locationUrl = aqiFeed["data"]["city"]["url"];
+        _setOutput("AQI $aqi\n$location");
+      }
+    }
+  }
+
+  Future<http.Response> _fetchData() {
+    return http.get(Uri.parse('http://api.waqi.info/feed/' +
+        "hongkong/sha-tin" +
+        '/?token=' +
+        const String.fromEnvironment('AQI_TOKEN')));
+  }
+
+  void _setOutput(String output) {
+    setState(() {
+      _output = output;
+    });
   }
 }
 
@@ -46,6 +101,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
+  String _output = '';
 
   void _incrementCounter() {
     setState(() {
@@ -58,9 +114,16 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  void _setOutput(String output) {
+    setState(() {
+      _output = output;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    final isDisplayDesktop = getWindowType(context) >= AdaptiveWindowType.medium;
+    final isDisplayDesktop =
+        getWindowType(context) >= AdaptiveWindowType.medium;
     // This method is rerun every time setState is called, for instance as done
     // by the _incrementCounter method above.
     //
@@ -87,20 +150,19 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
               child: Center(
                   child: Column(
-                    children: const <Widget>[
-                      Icon(Icons.account_circle, size: 64,),
-                      Divider(),
-                      Text('Cyril NG LUNG KIT'),
-                    ],
-                  )
-              ),
+                children: const <Widget>[
+                  Icon(
+                    Icons.account_circle,
+                    size: 64,
+                  ),
+                  Divider(),
+                  Text('Cyril NG LUNG KIT'),
+                ],
+              )),
             ),
             ListTile(
               title: const Text('Feature'),
               onTap: () {
-                // Update the state of the app
-                // ...
-                // Then close the drawer
                 Navigator.pop(context);
               },
             ),
@@ -117,13 +179,7 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ),
       body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
         child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
           // Invoke "debug painting" (press "p" in the console, choose the
           // "Toggle Debug Paint" action from the Flutter Inspector in Android
           // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
@@ -143,6 +199,8 @@ class _MyHomePageState extends State<MyHomePage> {
               '$_counter',
               style: Theme.of(context).textTheme.headline4,
             ),
+            AQI(),
+            Text(_output, style: Theme.of(context).textTheme.headline4),
           ],
         ),
       ),
