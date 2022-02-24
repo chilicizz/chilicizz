@@ -39,6 +39,8 @@ class _AQIState extends State<AQI> {
   String _output = '';
   Duration tickTime = const Duration(minutes: 30);
   Timer? timer;
+  String location = 'hongkong/sha-tin';
+  String token = const String.fromEnvironment('AQI_TOKEN');
 
   @override
   void initState() {
@@ -68,10 +70,7 @@ class _AQIState extends State<AQI> {
   }
 
   Future<http.Response> _fetchData() {
-    return http.get(Uri.parse('http://api.waqi.info/feed/' +
-        "hongkong/sha-tin" +
-        '/?token=' +
-        const String.fromEnvironment('AQI_TOKEN')));
+    return http.get(Uri.parse('https://api.waqi.info/feed/$location/?token=$token'));
   }
 
   void _setOutput(String output) {
