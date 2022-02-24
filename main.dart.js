@@ -32669,7 +32669,7 @@ lE(a){return this.TV(a)},
 TV(a){var s=0,r=A.a6(t.H),q=this,p,o,n,m,l
 var $async$lE=A.a7(function(b,c){if(b===1)return A.a3(c,r)
 while(true)switch(s){case 0:s=2
-return A.a2(A.aob(A.vm("https://api.waqi.info/feed/hongkong/sha-tin/?token=AQI_TOKEN")),$async$lE)
+return A.a2(A.aob(A.vm("https://api.waqi.info/feed/hongkong/sha-tin/?token=c4598ecd48886b5faef6580a8dd3a11dfb5513bd")),$async$lE)
 case 2:l=c
 if(l.b===200){p=B.aw.DF(0,A.anZ(A.amo(l.e).c.a.h(0,"charset")).cI(0,l.x),null)
 o=J.al(p)
