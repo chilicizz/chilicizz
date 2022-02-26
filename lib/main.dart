@@ -22,13 +22,19 @@ class MyApp extends StatelessWidget {
               brightness: Brightness.dark,
               errorColor: Colors.red,
               cardColor: Colors.deepPurple.shade700)),
-      home: const MyHomePage(title: 'homepage'),
+      initialRoute: '/',
+      routes: {
+        '/': (context) => const Dashboard(),
+        '/feature': (context) => const Dashboard(),
+        '/bug': (context) => const MyHomePage(title: "demo"),
+      }
     );
   }
 }
 
 class AQI extends StatefulWidget {
-  const AQI({Key? key}) : super(key: key);
+  final String location;
+  const AQI({Key? key, required this.location}) : super(key: key);
 
   @override
   State<AQI> createState() => _AQIState();
@@ -37,10 +43,11 @@ class AQI extends StatefulWidget {
 class _AQIState extends State<AQI> {
   dynamic jsonResult;
   String _output = '';
-  Duration tickTime = const Duration(minutes: 30);
+  Duration tickTime = const Duration(minutes: 10);
   Timer? timer;
-  String location = 'hongkong/sha-tin';
   String token = const String.fromEnvironment('AQI_TOKEN');
+  String returnedLocation = '';
+
 
   @override
   void initState() {
@@ -51,7 +58,19 @@ class _AQIState extends State<AQI> {
 
   @override
   Widget build(BuildContext context) {
-    return Text(_output, style: Theme.of(context).textTheme.headline4);
+    return Card(child:
+    Column(
+      children: [
+        const Icon(
+          Icons.factory,
+          size: 64,
+        ),
+        Text(widget.location),
+        Text(returnedLocation),
+        Text(_output, style: Theme.of(context).textTheme.headline4),
+      ],
+    )
+    );
   }
 
   Future<void> _tick(Timer? t) async {
@@ -62,15 +81,15 @@ class _AQIState extends State<AQI> {
       var aqiFeed = jsonDecode(response.body);
       if (aqiFeed["status"].contains("ok")) {
         var aqi = aqiFeed["data"]["aqi"];
-        var location = aqiFeed["data"]["city"]["name"];
+        returnedLocation = aqiFeed["data"]["city"]["name"];
         var locationUrl = aqiFeed["data"]["city"]["url"];
-        _setOutput("AQI $aqi\n$location");
+        _setOutput("AQI $aqi");
       }
     }
   }
 
   Future<http.Response> _fetchData() {
-    return http.get(Uri.parse('https://api.waqi.info/feed/$location/?token=$token'));
+    return http.get(Uri.parse('https://api.waqi.info/feed/${widget.location}/?token=$token'));
   }
 
   void _setOutput(String output) {
@@ -135,48 +154,7 @@ class _MyHomePageState extends State<MyHomePage> {
         // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
       ),
-      drawer: Drawer(
-        // Add a ListView to the drawer. This ensures the user can scroll
-        // through the options in the drawer if there isn't enough vertical
-        // space to fit everything.
-        child: ListView(
-          // Important: Remove any padding from the ListView.
-          padding: EdgeInsets.zero,
-          children: [
-            DrawerHeader(
-              decoration: const BoxDecoration(
-                color: Colors.deepPurple,
-              ),
-              child: Center(
-                  child: Column(
-                children: const <Widget>[
-                  Icon(
-                    Icons.account_circle,
-                    size: 64,
-                  ),
-                  Divider(),
-                  Text('Cyril NG LUNG KIT'),
-                ],
-              )),
-            ),
-            ListTile(
-              title: const Text('Feature'),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              title: const Text('Bug'),
-              onTap: () {
-                // Update the state of the app
-                // ...
-                // Then close the drawer
-                Navigator.pop(context);
-              },
-            ),
-          ],
-        ),
-      ),
+      drawer: const NavigationDrawer(),
       body: Center(
         child: Column(
           // Invoke "debug painting" (press "p" in the console, choose the
@@ -198,7 +176,6 @@ class _MyHomePageState extends State<MyHomePage> {
               '$_counter',
               style: Theme.of(context).textTheme.headline4,
             ),
-            AQI(),
             Text(_output, style: Theme.of(context).textTheme.headline4),
           ],
         ),
@@ -211,3 +188,78 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 }
+
+class NavigationDrawer extends StatelessWidget {
+  const NavigationDrawer({
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Drawer(
+      // Add a ListView to the drawer. This ensures the user can scroll
+      // through the options in the drawer if there isn't enough vertical
+      // space to fit everything.
+      child: ListView(
+        // Important: Remove any padding from the ListView.
+        padding: EdgeInsets.zero,
+        children: [
+          DrawerHeader(
+            decoration: const BoxDecoration(
+              color: Colors.deepPurple,
+            ),
+            child: Center(
+                child: Column(
+              children: const <Widget>[
+                Icon(
+                  Icons.account_circle,
+                  size: 64,
+                ),
+                Divider(),
+                Text('Cyril NG LUNG KIT'),
+              ],
+            )),
+          ),
+          ListTile(
+            title: const Text('Feature'),
+            onTap: () {
+              Navigator.pushNamed(context, '/');
+            },
+          ),
+          ListTile(
+            title: const Text('Bug'),
+            onTap: () {
+              // Update the state of the app
+              // ...
+              // Then close the drawer
+              Navigator.pushNamed(context, '/bug');
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class Dashboard extends StatelessWidget {
+  const Dashboard({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Dashboard'),
+      ),
+      drawer: const NavigationDrawer(),
+      body: Center(
+        child: Column(
+          children: const [
+            AQI(location: 'hongkong/sha-tin'),
+            AQI(location: 'hongkong/central'),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
