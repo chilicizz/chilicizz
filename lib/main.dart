@@ -14,26 +14,26 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'chilicizz.github.io',
-      theme: ThemeData(
-          colorScheme: ColorScheme.fromSwatch(
-              primarySwatch: Colors.deepPurple,
-              accentColor: Colors.pinkAccent.shade100,
-              brightness: Brightness.dark,
-              errorColor: Colors.red,
-              cardColor: Colors.deepPurple.shade700)),
-      initialRoute: '/',
-      routes: {
-        '/': (context) => const Dashboard(),
-        '/feature': (context) => const Dashboard(),
-        '/bug': (context) => const MyHomePage(title: "demo"),
-      }
-    );
+        title: 'chilicizz.github.io',
+        theme: ThemeData(
+            colorScheme: ColorScheme.fromSwatch(
+                primarySwatch: Colors.deepPurple,
+                accentColor: Colors.pinkAccent.shade100,
+                brightness: Brightness.dark,
+                errorColor: Colors.red,
+                cardColor: Colors.deepPurple.shade700)),
+        initialRoute: '/',
+        routes: {
+          '/': (context) => const Dashboard(),
+          '/feature': (context) => const Dashboard(),
+          '/bug': (context) => const MyHomePage(title: "demo"),
+        });
   }
 }
 
 class AQI extends StatefulWidget {
   final String location;
+
   const AQI({Key? key, required this.location}) : super(key: key);
 
   @override
@@ -41,13 +41,14 @@ class AQI extends StatefulWidget {
 }
 
 class _AQIState extends State<AQI> {
-  dynamic jsonResult;
-  String _output = '';
+  String token = const String.fromEnvironment('AQI_TOKEN');
   Duration tickTime = const Duration(minutes: 10);
   Timer? timer;
-  String token = const String.fromEnvironment('AQI_TOKEN');
-  String returnedLocation = '';
-
+  String aqiString = '';
+  dynamic jsonResult;
+  double aqi = 0.0;
+  DateTime lastUpdateTime = DateTime.now();
+  Duration timeSinceLastUpdate = const Duration(minutes: 0);
 
   @override
   void initState() {
@@ -58,19 +59,127 @@ class _AQIState extends State<AQI> {
 
   @override
   Widget build(BuildContext context) {
-    return Card(child:
-    Column(
-      children: [
-        const Icon(
-          Icons.factory,
-          size: 64,
-        ),
-        Text(widget.location),
-        Text(returnedLocation),
-        Text(_output, style: Theme.of(context).textTheme.headline4),
-      ],
-    )
-    );
+    Color aqiColour;
+    String tooltip;
+    String warning;
+    if (aqi > 300) {
+      aqiColour = Colors.black;
+      tooltip = "Hazardous";
+      warning = "Everyone should avoid all outdoor exertion";
+    } else if (aqi > 200) {
+      aqiColour = Colors.deepPurple;
+      tooltip = "Very Unhealthy";
+      warning =
+          "Active children and adults, and people with respiratory disease, such as asthma, should avoid all outdoor exertion; everyone else, especially children, should limit outdoor exertion.";
+    } else if (aqi > 150) {
+      aqiColour = Colors.red;
+      tooltip = "Unhealthy";
+      warning =
+          "Active children and adults, and people with respiratory disease, such as asthma, should avoid prolonged outdoor exertion; everyone else, especially children, should limit prolonged outdoor exertion";
+    } else if (aqi > 100) {
+      aqiColour = Colors.orange;
+      tooltip = "Unhealthy for Sensitive Groups";
+      warning =
+          "Active children and adults, and people with respiratory disease, such as asthma, should limit prolonged outdoor exertion.";
+    } else if (aqi > 50) {
+      aqiColour = Colors.amber;
+      tooltip = "Moderate";
+      warning =
+          "Active children and adults, and people with respiratory disease, such as asthma, should limit prolonged outdoor exertion.";
+    } else {
+      aqiColour = Colors.green;
+      tooltip = "Good";
+      warning = "";
+    }
+    return Card(
+        elevation: 3,
+        margin: const EdgeInsets.all(5.0),
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              ListTile(
+                leading: Tooltip(
+                  message: tooltip,
+                  child: CircleAvatar(
+                    child: Text("$aqi"),
+                    backgroundColor: aqiColour,
+                  ),
+                ),
+                title: Text("${jsonResult["city"]["name"]}",
+                    style: Theme.of(context).textTheme.headlineSmall),
+                subtitle: Text(
+                    "updated ${timeSinceLastUpdate.inMinutes < 60 ? "${timeSinceLastUpdate.inMinutes} minutes" : "${timeSinceLastUpdate.inHours} hour ${timeSinceLastUpdate.inMinutes % 60} mins"} ago"),
+                trailing: const Icon(Icons.edit),
+              ),
+              ListTile(
+                leading: const Icon(Icons.thermostat),
+                title: Text("${jsonResult["iaqi"]["t"]["v"]} C"),
+                dense: true,
+              ),
+              ListTile(
+                leading: const Icon(Icons.water_drop),
+                title: Text("${jsonResult["iaqi"]["h"]["v"]} %"),
+                dense: true,
+              ),
+              ListTile(
+                leading: const Icon(Icons.air),
+                title: Text("${jsonResult["iaqi"]["w"]["v"]}"),
+                dense: true,
+              ),
+              ListTile(
+                leading: const Text("bar"),
+                title: Text("${jsonResult["iaqi"]["p"]["v"]}"),
+                dense: true,
+              ),
+              ListTile(
+                leading: const Text("uvi"),
+                title: Text("${jsonResult["iaqi"]["uvi"]["v"]}"),
+                dense: true,
+              ),
+              ExpansionTile(
+                leading: const Text("aqi"),
+                title: Text("$aqi"),
+                children: [
+                  ListTile(
+                    leading: const Text("pm2.5"),
+                    title: Text("${jsonResult["iaqi"]["pm25"]["v"]}"),
+                    dense: true,
+                  ),
+                  ListTile(
+                    leading: const Text("pm10"),
+                    title: Text("${jsonResult["iaqi"]["pm10"]["v"]}"),
+                    dense: true,
+                  ),
+                  ListTile(
+                    leading: const Text("no2"),
+                    title: Text("${jsonResult["iaqi"]["no2"]["v"]}"),
+                    dense: true,
+                  ),
+                  ListTile(
+                    leading: const Text("o3"),
+                    title: Text("${jsonResult["iaqi"]["o3"]["v"]}"),
+                    dense: true,
+                  ),
+                  ListTile(
+                    leading: const Text("so2"),
+                    title: Text("${jsonResult["iaqi"]["so2"]["v"]}"),
+                    dense: true,
+                  ),
+                  ListTile(
+                    leading: Text(tooltip),
+                    title: Text(warning),
+                    dense: true,
+                  ),
+                ],
+              ),
+              ListTile(
+                leading: const Icon(Icons.location_city),
+                title: Text(widget.location),
+                dense: true,
+              ),
+            ],
+          ),
+        ));
   }
 
   Future<void> _tick(Timer? t) async {
@@ -80,22 +189,19 @@ class _AQIState extends State<AQI> {
       // then parse the JSON.
       var aqiFeed = jsonDecode(response.body);
       if (aqiFeed["status"].contains("ok")) {
-        var aqi = aqiFeed["data"]["aqi"];
-        returnedLocation = aqiFeed["data"]["city"]["name"];
-        var locationUrl = aqiFeed["data"]["city"]["url"];
-        _setOutput("AQI $aqi");
+        setState(() {
+          jsonResult = aqiFeed["data"];
+          aqi = double.parse("${aqiFeed["data"]["aqi"]}");
+          lastUpdateTime = DateTime.parse("${aqiFeed["data"]["time"]["iso"]}");
+          timeSinceLastUpdate = DateTime.now().difference(lastUpdateTime);
+        });
       }
     }
   }
 
   Future<http.Response> _fetchData() {
-    return http.get(Uri.parse('https://api.waqi.info/feed/${widget.location}/?token=$token'));
-  }
-
-  void _setOutput(String output) {
-    setState(() {
-      _output = output;
-    });
+    return http.get(Uri.parse(
+        'https://api.waqi.info/feed/${widget.location}/?token=$token'));
   }
 }
 
@@ -140,18 +246,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    final isDisplayDesktop =
-        getWindowType(context) >= AdaptiveWindowType.medium;
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
       appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
       ),
       drawer: const NavigationDrawer(),
@@ -246,13 +342,19 @@ class Dashboard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    int crossAxisCount = getWindowType(context) <= AdaptiveWindowType.small
+        ? 1
+        : getWindowType(context) <= AdaptiveWindowType.medium
+            ? 2
+            : 3;
     return Scaffold(
       appBar: AppBar(
         title: const Text('Dashboard'),
       ),
       drawer: const NavigationDrawer(),
       body: Center(
-        child: Column(
+        child: GridView.count(
+          crossAxisCount: crossAxisCount,
           children: const [
             AQI(location: 'hongkong/sha-tin'),
             AQI(location: 'hongkong/central'),
@@ -262,4 +364,3 @@ class Dashboard extends StatelessWidget {
     );
   }
 }
-
