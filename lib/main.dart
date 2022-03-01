@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:adaptive_breakpoints/adaptive_breakpoints.dart';
 import 'package:http/http.dart' as http;
+import 'package:date_format/date_format.dart';
 
 void main() {
   runApp(const MyApp());
@@ -32,12 +33,15 @@ class MyApp extends StatelessWidget {
 }
 
 class AQI extends StatefulWidget {
-  final String location;
-
-  const AQI({Key? key, required this.location}) : super(key: key);
+  String location;
+  AQI({Key? key, required this.location}) : super(key: key);
 
   @override
   State<AQI> createState() => _AQIState();
+
+  void _updateLocation(String location) {
+    this.location = location;
+  }
 }
 
 class _AQIState extends State<AQI> {
@@ -47,15 +51,9 @@ class _AQIState extends State<AQI> {
   String aqiString = '';
   dynamic jsonResult;
   double aqi = 0.0;
+  bool editingLocation = false;
+  var textController = TextEditingController();
   DateTime lastUpdateTime = DateTime.now();
-  Duration timeSinceLastUpdate = const Duration(minutes: 0);
-
-  @override
-  void initState() {
-    super.initState();
-    _tick(timer);
-    timer = Timer.periodic(tickTime, (Timer t) => _tick(t));
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -87,99 +85,112 @@ class _AQIState extends State<AQI> {
       warning =
           "Active children and adults, and people with respiratory disease, such as asthma, should limit prolonged outdoor exertion.";
     } else {
-      aqiColour = Colors.green;
+      aqiColour = Colors.lightGreen;
       tooltip = "Good";
       warning = "";
     }
     return Card(
         elevation: 3,
         margin: const EdgeInsets.all(5.0),
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              ListTile(
-                leading: Tooltip(
-                  message: tooltip,
-                  child: CircleAvatar(
-                    child: Text("$aqi"),
-                    backgroundColor: aqiColour,
+        child: Column(
+          children: [
+            editingLocation
+                ? TextField(
+                    controller: textController,
+                    onSubmitted: (value) => {
+                      setState(() {
+                        widget._updateLocation(value);
+                        editingLocation = false;
+                        _tick(null);
+                      })
+                    },
+                  )
+                : ListTile(
+                    leading: Tooltip(
+                      message: tooltip,
+                      child: CircleAvatar(
+                        child: Text("$aqi"),
+                        backgroundColor: aqiColour,
+                      ),
+                    ),
+                    title: Text("${jsonResult?["city"]?["name"]}",
+                        style: Theme.of(context).textTheme.headlineSmall),
+                    subtitle: Text(
+                        "last updated ${formatDate(lastUpdateTime, [D," ",H,":",nn])}"
+                    ),
+                    onTap: () => {
+                      setState((){
+                        editingLocation = true;
+                        textController.text = widget.location;
+                      })
+                    },
                   ),
+            const Divider(),
+            Wrap(
+              spacing: 4,
+              runSpacing: 4,
+              children: [
+                Chip(
+                  avatar: const Icon(Icons.thermostat),
+                  label: Text("${jsonResult?["iaqi"]?["t"]?["v"]} °C"),
                 ),
-                title: Text("${jsonResult["city"]["name"]}",
-                    style: Theme.of(context).textTheme.headlineSmall),
-                subtitle: Text(
-                    "updated ${timeSinceLastUpdate.inMinutes < 60 ? "${timeSinceLastUpdate.inMinutes} minutes" : "${timeSinceLastUpdate.inHours} hour ${timeSinceLastUpdate.inMinutes % 60} mins"} ago"),
-                trailing: const Icon(Icons.edit),
-              ),
-              ListTile(
-                leading: const Icon(Icons.thermostat),
-                title: Text("${jsonResult["iaqi"]["t"]["v"]} C"),
-                dense: true,
-              ),
-              ListTile(
-                leading: const Icon(Icons.water_drop),
-                title: Text("${jsonResult["iaqi"]["h"]["v"]} %"),
-                dense: true,
-              ),
-              ListTile(
-                leading: const Icon(Icons.air),
-                title: Text("${jsonResult["iaqi"]["w"]["v"]}"),
-                dense: true,
-              ),
-              ListTile(
-                leading: const Text("bar"),
-                title: Text("${jsonResult["iaqi"]["p"]["v"]}"),
-                dense: true,
-              ),
-              ListTile(
-                leading: const Text("uvi"),
-                title: Text("${jsonResult["iaqi"]["uvi"]["v"]}"),
-                dense: true,
-              ),
-              ExpansionTile(
-                leading: const Text("aqi"),
-                title: Text("$aqi"),
-                children: [
-                  ListTile(
-                    leading: const Text("pm2.5"),
-                    title: Text("${jsonResult["iaqi"]["pm25"]["v"]}"),
-                    dense: true,
-                  ),
-                  ListTile(
-                    leading: const Text("pm10"),
-                    title: Text("${jsonResult["iaqi"]["pm10"]["v"]}"),
-                    dense: true,
-                  ),
-                  ListTile(
-                    leading: const Text("no2"),
-                    title: Text("${jsonResult["iaqi"]["no2"]["v"]}"),
-                    dense: true,
-                  ),
-                  ListTile(
-                    leading: const Text("o3"),
-                    title: Text("${jsonResult["iaqi"]["o3"]["v"]}"),
-                    dense: true,
-                  ),
-                  ListTile(
-                    leading: const Text("so2"),
-                    title: Text("${jsonResult["iaqi"]["so2"]["v"]}"),
-                    dense: true,
-                  ),
-                  ListTile(
-                    leading: Text(tooltip),
-                    title: Text(warning),
-                    dense: true,
-                  ),
-                ],
-              ),
-              ListTile(
-                leading: const Icon(Icons.location_city),
-                title: Text(widget.location),
-                dense: true,
-              ),
-            ],
-          ),
+                Chip(
+                  avatar: const Icon(Icons.water_drop),
+                  label: Text("${jsonResult?["iaqi"]?["h"]?["v"]} %"),
+                ),
+                Chip(
+                  avatar: const Icon(Icons.air),
+                  label: Text("${jsonResult?["iaqi"]?["w"]?["v"]}"),
+                ),
+                Chip(
+                  avatar: const Text("bar"),
+                  label: Text("${jsonResult?["iaqi"]?["p"]?["v"]}"),
+                ),
+                Chip(
+                  avatar: const Text("uvi"),
+                  label: Text("${jsonResult?["iaqi"]?["uvi"]?["v"]}"),
+                ),
+                Chip(
+                  avatar: const Text("pm2.5", style: TextStyle(fontSize: 8)),
+                  label: Text("${jsonResult?["iaqi"]?["pm25"]?["v"]}"),
+                ),
+                Chip(
+                  avatar: const Text("pm10", style: TextStyle(fontSize: 8)),
+                  label: Text("${jsonResult?["iaqi"]?["pm10"]?["v"]}"),
+                ),
+                Chip(
+                  avatar: const Text("no2", style: TextStyle(fontSize: 8)),
+                  label: Text("${jsonResult?["iaqi"]?["no2"]?["v"]}"),
+                ),
+                Chip(
+                  avatar: const Text("o3", style: TextStyle(fontSize: 8)),
+                  label: Text("${jsonResult?["iaqi"]?["o3"]?["v"]}"),
+                ),
+                Chip(
+                  avatar: const Text("so2", style: TextStyle(fontSize: 8)),
+                  label: Text("${jsonResult?["iaqi"]?["so2"]?["v"]}"),
+                ),
+              ],
+            ),
+            ExpansionTile(
+              leading: Text("$aqi"),
+              title: Text(tooltip),
+              children: [
+                ListTile(
+                  leading: Text(tooltip),
+                  title: Text(warning),
+                ),
+              ],
+            ),
+          ],
         ));
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _tick(timer);
+    timer = Timer.periodic(tickTime, (Timer t) => _tick(t));
   }
 
   Future<void> _tick(Timer? t) async {
@@ -188,12 +199,11 @@ class _AQIState extends State<AQI> {
       // If the server did return a 200 OK response,
       // then parse the JSON.
       var aqiFeed = jsonDecode(response.body);
-      if (aqiFeed["status"].contains("ok")) {
+      if (aqiFeed?["status"]?.contains("ok")) {
         setState(() {
-          jsonResult = aqiFeed["data"];
-          aqi = double.parse("${aqiFeed["data"]["aqi"]}");
-          lastUpdateTime = DateTime.parse("${aqiFeed["data"]["time"]["iso"]}");
-          timeSinceLastUpdate = DateTime.now().difference(lastUpdateTime);
+          jsonResult = aqiFeed?["data"];
+          aqi = double.parse("${aqiFeed?["data"]?["aqi"]}");
+          lastUpdateTime = DateTime.parse("${aqiFeed?["data"]?["time"]?["iso"]}");
         });
       }
     }
@@ -207,11 +217,6 @@ class _AQIState extends State<AQI> {
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({Key? key, required this.title}) : super(key: key);
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
   // This class is the configuration for the state. It holds the values (in this
   // case the title) provided by the parent (in this case the App widget) and
   // used by the build method of the State. Fields in a Widget subclass are
@@ -225,22 +230,10 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
-  String _output = '';
 
   void _incrementCounter() {
     setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
       _counter++;
-    });
-  }
-
-  void _setOutput(String output) {
-    setState(() {
-      _output = output;
     });
   }
 
@@ -272,7 +265,6 @@ class _MyHomePageState extends State<MyHomePage> {
               '$_counter',
               style: Theme.of(context).textTheme.headline4,
             ),
-            Text(_output, style: Theme.of(context).textTheme.headline4),
           ],
         ),
       ),
@@ -355,11 +347,23 @@ class Dashboard extends StatelessWidget {
       body: Center(
         child: GridView.count(
           crossAxisCount: crossAxisCount,
-          children: const [
+          children: [
             AQI(location: 'hongkong/sha-tin'),
             AQI(location: 'hongkong/central'),
           ],
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          showDialog(context: context,
+              builder: (context) {
+                return const Dialog(
+                  child: Text("Popup"),
+                );
+              });
+        },
+        tooltip: 'Increment',
+        child: const Icon(Icons.add),
       ),
     );
   }
