@@ -34,6 +34,7 @@ class MyApp extends StatelessWidget {
 
 class AQI extends StatefulWidget {
   String location;
+
   AQI({Key? key, required this.location}) : super(key: key);
 
   @override
@@ -68,22 +69,22 @@ class _AQIState extends State<AQI> {
       aqiColour = Colors.deepPurple;
       tooltip = "Very Unhealthy";
       warning =
-          "Active children and adults, and people with respiratory disease, such as asthma, should avoid all outdoor exertion; everyone else, especially children, should limit outdoor exertion.";
+      "Active children and adults, and people with respiratory disease, such as asthma, should avoid all outdoor exertion; everyone else, especially children, should limit outdoor exertion.";
     } else if (aqi > 150) {
       aqiColour = Colors.red;
       tooltip = "Unhealthy";
       warning =
-          "Active children and adults, and people with respiratory disease, such as asthma, should avoid prolonged outdoor exertion; everyone else, especially children, should limit prolonged outdoor exertion";
+      "Active children and adults, and people with respiratory disease, such as asthma, should avoid prolonged outdoor exertion; everyone else, especially children, should limit prolonged outdoor exertion";
     } else if (aqi > 100) {
       aqiColour = Colors.orange;
       tooltip = "Unhealthy for Sensitive Groups";
       warning =
-          "Active children and adults, and people with respiratory disease, such as asthma, should limit prolonged outdoor exertion.";
+      "Active children and adults, and people with respiratory disease, such as asthma, should limit prolonged outdoor exertion.";
     } else if (aqi > 50) {
       aqiColour = Colors.amber;
       tooltip = "Moderate";
       warning =
-          "Active children and adults, and people with respiratory disease, such as asthma, should limit prolonged outdoor exertion.";
+      "Active children and adults, and people with respiratory disease, such as asthma, should limit prolonged outdoor exertion.";
     } else {
       aqiColour = Colors.lightGreen;
       tooltip = "Good";
@@ -95,36 +96,53 @@ class _AQIState extends State<AQI> {
         child: Column(
           children: [
             editingLocation
-                ? TextField(
-                    controller: textController,
-                    onSubmitted: (value) => {
-                      setState(() {
-                        widget._updateLocation(value);
-                        editingLocation = false;
-                        _tick(null);
-                      })
-                    },
-                  )
+                ? ListTile(
+              title: TextField(
+                controller: textController,
+                onEditingComplete: () {
+                  setState(() {
+                    widget._updateLocation(textController.value.text);
+                    editingLocation = false;
+                    _tick(null);
+                  });
+                },
+              ),
+              trailing: ElevatedButton(
+                onPressed: () {
+                  setState(() {
+                    widget._updateLocation(textController.value.text);
+                    editingLocation = false;
+                    _tick(null);
+                  });
+                },
+                child: const Icon(Icons.check),
+              ),
+            )
                 : ListTile(
-                    leading: Tooltip(
-                      message: tooltip,
-                      child: CircleAvatar(
-                        child: Text("$aqi"),
-                        backgroundColor: aqiColour,
-                      ),
-                    ),
-                    title: Text("${jsonResult?["city"]?["name"]}",
-                        style: Theme.of(context).textTheme.headlineSmall),
-                    subtitle: Text(
-                        "last updated ${formatDate(lastUpdateTime, [D," ",H,":",nn])}"
-                    ),
-                    onTap: () => {
-                      setState((){
-                        editingLocation = true;
-                        textController.text = widget.location;
-                      })
-                    },
-                  ),
+              leading: Tooltip(
+                message: tooltip,
+                child: CircleAvatar(
+                  child: Text("$aqi"),
+                  backgroundColor: aqiColour,
+                ),
+              ),
+              title: Text("${jsonResult?["city"]?["name"]}",
+                  style: Theme
+                      .of(context)
+                      .textTheme
+                      .headlineSmall),
+              subtitle: Text(
+                  "last updated ${formatDate(
+                      lastUpdateTime.toLocal(), [D, " ", H, ":", nn])}"
+              ),
+              onTap: () =>
+              {
+                setState(() {
+                  editingLocation = true;
+                  textController.text = widget.location;
+                })
+              },
+            ),
             const Divider(),
             Wrap(
               spacing: 4,
@@ -177,7 +195,6 @@ class _AQIState extends State<AQI> {
               title: Text(tooltip),
               children: [
                 ListTile(
-                  leading: Text(tooltip),
                   title: Text(warning),
                 ),
               ],
@@ -203,7 +220,8 @@ class _AQIState extends State<AQI> {
         setState(() {
           jsonResult = aqiFeed?["data"];
           aqi = double.parse("${aqiFeed?["data"]?["aqi"]}");
-          lastUpdateTime = DateTime.parse("${aqiFeed?["data"]?["time"]?["iso"]}");
+          lastUpdateTime =
+              DateTime.parse("${aqiFeed?["data"]?["time"]?["iso"]}");
         });
       }
     }
@@ -217,6 +235,7 @@ class _AQIState extends State<AQI> {
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({Key? key, required this.title}) : super(key: key);
+
   // This class is the configuration for the state. It holds the values (in this
   // case the title) provided by the parent (in this case the App widget) and
   // used by the build method of the State. Fields in a Widget subclass are
@@ -263,7 +282,10 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             Text(
               '$_counter',
-              style: Theme.of(context).textTheme.headline4,
+              style: Theme
+                  .of(context)
+                  .textTheme
+                  .headline4,
             ),
           ],
         ),
@@ -298,15 +320,15 @@ class NavigationDrawer extends StatelessWidget {
             ),
             child: Center(
                 child: Column(
-              children: const <Widget>[
-                Icon(
-                  Icons.account_circle,
-                  size: 64,
-                ),
-                Divider(),
-                Text('Cyril NG LUNG KIT'),
-              ],
-            )),
+                  children: const <Widget>[
+                    Icon(
+                      Icons.account_circle,
+                      size: 64,
+                    ),
+                    Divider(),
+                    Text('Cyril NG LUNG KIT'),
+                  ],
+                )),
           ),
           ListTile(
             title: const Text('Feature'),
@@ -337,8 +359,8 @@ class Dashboard extends StatelessWidget {
     int crossAxisCount = getWindowType(context) <= AdaptiveWindowType.small
         ? 1
         : getWindowType(context) <= AdaptiveWindowType.medium
-            ? 2
-            : 3;
+        ? 2
+        : 3;
     return Scaffold(
       appBar: AppBar(
         title: const Text('Dashboard'),
