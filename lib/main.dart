@@ -118,9 +118,9 @@ class _DashboardState extends State<Dashboard> {
                 return const CircularProgressIndicator();
               default:
                 if (snapshot.hasError) {
-                  locations = [];
+                  locations = ['here'];
                 } else {
-                  locations = snapshot.data ?? ['hongkong/sha-tin'];
+                  locations = snapshot.data ?? ['here'];
                 }
                 return GridView.builder(
                     scrollDirection: Axis.vertical,

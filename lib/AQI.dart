@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:date_format/date_format.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
@@ -99,187 +100,172 @@ class _AQIState extends State<AQI> {
       return Card(
         child: Column(
           children: [
-            ListTile(
-              leading: Tooltip(
-                message: "Delete this tile",
-                child: IconButton(
-                  icon: const Icon(Icons.delete),
-                  onPressed: () {
-                    widget.deleteMe();
-                  },
-                ),
-              ),
-              title: TextField(
-                autofocus: true,
-                controller: textController,
-                onEditingComplete: () {
-                  setState(() {
-                    widget.updateLocation(textController.value.text);
-                    editingLocation = false;
-                  });
-                },
-              ),
-              trailing: ElevatedButton(
-                onPressed: () {
-                  setState(() {
-                    widget.updateLocation(textController.value.text);
-                    editingLocation = false;
-                  });
-                },
-                child: const Icon(Icons.check),
-              ),
-            ),
+            buildTitleTileEditing(),
             const Divider(),
-            const CircularProgressIndicator(),
+            const FittedBox(child: CircularProgressIndicator()),
           ],
         ),
       );
     }
     level = getLevel(aqi);
+    final PageController controller = PageController();
 
     return Card(
-        semanticContainer: true,
-        elevation: 3,
-        margin: const EdgeInsets.all(7.0),
-        child: SingleChildScrollView(
-          child: Column(
+      semanticContainer: true,
+      elevation: 3,
+      margin: const EdgeInsets.all(7.0),
+      child: PageView(
+        controller: controller,
+        children: [
+          Column(
             children: [
               editingLocation
-                  ? ListTile(
-                      leading: Tooltip(
-                        message: "Delete this tile",
-                        child: IconButton(
-                          icon: const Icon(Icons.delete),
-                          onPressed: () {
-                            widget.deleteMe();
-                          },
-                        ),
-                      ),
-                      title: TextField(
-                        autofocus: true,
-                        controller: textController,
-                        onEditingComplete: () {
-                          setState(() {
-                            widget.updateLocation(textController.value.text);
-                            editingLocation = false;
-                          });
-                        },
-                      ),
-                      trailing: ElevatedButton(
-                        onPressed: () {
-                          setState(() {
-                            widget.updateLocation(textController.value.text);
-                            editingLocation = false;
-                          });
-                        },
-                        child: const Icon(Icons.check),
-                      ),
-                    )
-                  : Tooltip(
-                      message: "Click to update the location",
-                      child: ListTile(
-                        leading: CircleAvatar(
-                          child: Text("$aqi"),
-                          backgroundColor: level.color,
-                        ),
-                        title: SizedBox(
-                          height: 40,
-                          child: Align(
-                            alignment: Alignment.centerLeft,
-                            child: FittedBox(
-                              fit: BoxFit.contain,
-                              child: Text("${jsonResult?["city"]?["name"]}",
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .headlineSmall),
-                            ),
-                          ),
-                        ),
-                        subtitle: Text(
-                            "last updated ${formatDate(lastUpdateTime.toLocal(), [
-                              D,
-                              " ",
-                              H,
-                              ":",
-                              nn
-                            ])}"),
-                        onTap: () => {
-                          setState(() {
-                            editingLocation = true;
-                            textController.text = widget.location;
-                            textController.selection = TextSelection(
-                                baseOffset: 0,
-                                extentOffset: textController.text.length);
-                          })
-                        },
-                      ),
-                    ),
+                  ? buildTitleTileEditing()
+                  : buildTitleTile(context),
               const Divider(),
               ListTile(
+                title: Text(level.name),
+              ),
+              ListTile(
                 title: Wrap(
+                  runAlignment: WrapAlignment.spaceEvenly,
+                  alignment: WrapAlignment.spaceEvenly,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  runSpacing: 4,
                   spacing: 2,
-                  runSpacing: 2,
                   children: [
-                    Chip(
-                      avatar: const Icon(Icons.thermostat),
-                      label: Text("${jsonResult?["iaqi"]?["t"]?["v"]} °C"),
-                    ),
-                    Chip(
-                      avatar: const Icon(Icons.water_drop),
-                      label: Text("${jsonResult?["iaqi"]?["h"]?["v"]} %"),
-                    ),
-                    Chip(
-                      avatar: const Icon(Icons.air),
-                      label: Text("${jsonResult?["iaqi"]?["w"]?["v"]}"),
-                    ),
-                    Chip(
-                      avatar: const Text("bar"),
-                      label: Text("${jsonResult?["iaqi"]?["p"]?["v"]}"),
-                    ),
-                    Chip(
-                      avatar: const Text("uvi"),
-                      label: Text("${jsonResult?["iaqi"]?["uvi"]?["v"]}"),
-                    ),
-                    Chip(
-                      avatar:
-                          const Text("pm2.5", style: TextStyle(fontSize: 8)),
-                      label: Text("${jsonResult?["iaqi"]?["pm25"]?["v"]}"),
-                    ),
-                    Chip(
-                      avatar: const Text("pm10", style: TextStyle(fontSize: 8)),
-                      label: Text("${jsonResult?["iaqi"]?["pm10"]?["v"]}"),
-                    ),
-                    Chip(
-                      avatar: const Text("no2", style: TextStyle(fontSize: 8)),
-                      label: Text("${jsonResult?["iaqi"]?["no2"]?["v"]}"),
-                    ),
-                    Chip(
-                      avatar: const Text("o3", style: TextStyle(fontSize: 8)),
-                      label: Text("${jsonResult?["iaqi"]?["o3"]?["v"]}"),
-                    ),
-                    Chip(
-                      avatar: const Text("so2", style: TextStyle(fontSize: 8)),
-                      label: Text("${jsonResult?["iaqi"]?["so2"]?["v"]}"),
-                    ),
+                    buildAqiChip(const Icon(Icons.thermostat),
+                        jsonResult?["iaqi"]?["t"]?["v"], " °C"),
+                    buildAqiChip(const Icon(Icons.water_drop),
+                        jsonResult?["iaqi"]?["h"]?["v"], " %"),
+                    buildAqiChip(
+                        const Icon(Icons.air), jsonResult?["iaqi"]?["w"]?["v"]),
+                    buildAqiChip(
+                        const Text("bar"), jsonResult?["iaqi"]?["p"]?["v"]),
+                    buildAqiChip(
+                        const Text("uvi"), jsonResult?["iaqi"]?["uvi"]?["v"]),
+                    buildAqiChip(
+                        const Text("pm2.5", style: TextStyle(fontSize: 8)),
+                        jsonResult?["iaqi"]?["pm25"]?["v"]),
+                    buildAqiChip(
+                        const Text("pm10", style: TextStyle(fontSize: 8)),
+                        jsonResult?["iaqi"]?["pm10"]?["v"]),
+                    buildAqiChip(
+                        const Text("no2", style: TextStyle(fontSize: 8)),
+                        jsonResult?["iaqi"]?["no2"]?["v"]),
+                    buildAqiChip(
+                        const Text("o3", style: TextStyle(fontSize: 8)),
+                        jsonResult?["iaqi"]?["o3"]?["v"]),
+                    buildAqiChip(
+                        const Text("so2", style: TextStyle(fontSize: 8)),
+                        jsonResult?["iaqi"]?["so2"]?["v"]),
                   ],
                 ),
               ),
-              ListTile(
-                leading: Text("$aqi"),
-                title: Text(level.name),
-              ),
-              ListTile(title: Text(level.detail)),
-              level.advice != null
-                  ? ListTile(title: Text(level.advice ?? ""))
-                  : const SizedBox.shrink(),
-              for (dynamic attribution in jsonResult?["attributions"])
-                ListTile(
-                  title: Text("${attribution?["name"]}"),
-                  subtitle: Text("${attribution?["url"]}"),
-                ),
             ],
           ),
-        ));
+          SingleChildScrollView(
+            child: Column(
+              children: [
+                ListTile(
+                  leading: Text("$aqi"),
+                  title: Text(level.name),
+                ),
+                ListTile(title: Text(level.detail)),
+                level.advice != null
+                    ? ListTile(title: Text(level.advice ?? ""))
+                    : const SizedBox.shrink(),
+                for (dynamic attribution in jsonResult?["attributions"])
+                  ListTile(
+                    title: Text("${attribution?["name"]}"),
+                    subtitle: Text("${attribution?["url"]}"),
+                  ),
+              ],
+            ),
+          )
+        ],
+      ),
+    );
+  }
+
+  Widget buildAqiChip(final Widget icon, dynamic value, [String? suffix]) {
+    if (value != null) {
+      return Chip(avatar: icon, label: Text("$value ${suffix ?? ''}"));
+    } else {
+      return const SizedBox.shrink();
+    }
+  }
+
+  Tooltip buildTitleTile(BuildContext context) {
+    return Tooltip(
+      message: "Click to update the location",
+      child: ListTile(
+        leading: CircleAvatar(
+          child: Text("$aqi"),
+          backgroundColor: level.color,
+        ),
+        title: SizedBox(
+          height: 40,
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: FittedBox(
+              fit: BoxFit.contain,
+              child: Text("${jsonResult?["city"]?["name"]}",
+                  style: Theme.of(context).textTheme.headlineSmall),
+            ),
+          ),
+        ),
+        subtitle: Text("last updated ${formatDate(lastUpdateTime.toLocal(), [
+              D,
+              " ",
+              H,
+              ":",
+              nn
+            ])}"),
+        onTap: () => {
+          setState(() {
+            editingLocation = true;
+            textController.text = widget.location;
+            textController.selection = TextSelection(
+                baseOffset: 0, extentOffset: textController.text.length);
+          })
+        },
+      ),
+    );
+  }
+
+  ListTile buildTitleTileEditing() {
+    return ListTile(
+      leading: Tooltip(
+        message: "Delete this tile",
+        child: IconButton(
+          icon: const Icon(Icons.delete),
+          onPressed: () {
+            editingLocation = false;
+            widget.deleteMe();
+          },
+        ),
+      ),
+      title: TextField(
+        autofocus: true,
+        controller: textController,
+        onEditingComplete: () {
+          setState(() {
+            widget.updateLocation(textController.value.text);
+            editingLocation = false;
+          });
+        },
+      ),
+      trailing: ElevatedButton(
+        onPressed: () {
+          setState(() {
+            widget.updateLocation(textController.value.text);
+            editingLocation = false;
+          });
+        },
+        child: const Icon(Icons.check),
+      ),
+    );
   }
 
   AQILevel level = getLevel(0);
