@@ -59,6 +59,8 @@ class _DashboardState extends State<Dashboard> {
       ),
       drawer: const NavigationDrawer(),
       floatingActionButton: FloatingActionButton(
+        tooltip: 'Add a new tile',
+        child: const Icon(Icons.add),
         onPressed: () {
           showDialog(
               context: context,
@@ -66,16 +68,27 @@ class _DashboardState extends State<Dashboard> {
                 return AlertDialog(
                   title: const Text("Add a new tile"),
                   content: TextField(
-                      autofocus: true,
-                      controller: textController,
-                      decoration:
-                          const InputDecoration(hintText: "enter a city"),
-                      onEditingComplete: () {
-                        addLocation(textController.value.text);
-                        textController.clear();
-                        Navigator.pop(context);
-                      }),
+                    autofocus: true,
+                    controller: textController,
+                    decoration: const InputDecoration(hintText: "enter a city"),
+                    onEditingComplete: () {
+                      addLocation(textController.value.text);
+                      textController.clear();
+                      Navigator.pop(context);
+                    },
+                  ),
                   actions: [
+                    Tooltip(
+                      message: "Current Location",
+                      child: IconButton(
+                        onPressed: () {
+                          addLocation('here');
+                          textController.clear();
+                          Navigator.pop(context);
+                        },
+                        icon: const Icon(Icons.my_location),
+                      ),
+                    ),
                     TextButton(
                       child: const Text('CANCEL'),
                       onPressed: () {
@@ -85,6 +98,8 @@ class _DashboardState extends State<Dashboard> {
                     ElevatedButton(
                       child: const Text('SUBMIT'),
                       onPressed: () {
+                        addLocation(textController.value.text);
+                        textController.clear();
                         Navigator.pop(context);
                       },
                     )
@@ -92,8 +107,6 @@ class _DashboardState extends State<Dashboard> {
                 );
               });
         },
-        tooltip: 'Add a new tile',
-        child: const Icon(Icons.add),
       ),
       body: Center(
         child: FutureBuilder(
@@ -106,48 +119,22 @@ class _DashboardState extends State<Dashboard> {
               default:
                 if (snapshot.hasError) {
                   locations = [];
-                  addLocation("hongkong/sha-tin");
                 } else {
-                  locations = snapshot.data ?? [];
+                  locations = snapshot.data ?? ['hongkong/sha-tin'];
                 }
                 return GridView.builder(
+                    scrollDirection: Axis.vertical,
                     gridDelegate:
                         const SliverGridDelegateWithMaxCrossAxisExtent(
-                      maxCrossAxisExtent: 600,
-                      childAspectRatio: 1.3,
+                      maxCrossAxisExtent: 400,
+                      childAspectRatio: 1.1,
                     ),
                     itemCount: locations.length,
                     itemBuilder: (context, index) {
-                      return Dismissible(
-                        key: Key(locations[index]),
-                        onDismissed: (direction) {
-                          removeLocation(locations[index]);
-                        },
-                        direction: DismissDirection.down,
-                        confirmDismiss: (DismissDirection direction) async {
-                          return await showDialog(
-                            context: context,
-                            builder: (BuildContext context) {
-                              return AlertDialog(
-                                title: const Text("Confirm"),
-                                content: const Text(
-                                    "Are you sure you wish to delete this item?"),
-                                actions: <Widget>[
-                                  TextButton(
-                                      onPressed: () =>
-                                          Navigator.of(context).pop(true),
-                                      child: const Text("DELETE")),
-                                  ElevatedButton(
-                                    onPressed: () =>
-                                        Navigator.of(context).pop(false),
-                                    child: const Text("CANCEL"),
-                                  ),
-                                ],
-                              );
-                            },
-                          );
-                        },
-                        child: AQI(location: locations[index]),
+                      return AQI(
+                        location: locations[index],
+                        removeLocationCallback: removeLocation,
+                        updateLocationCallback: updateLocation,
                       );
                     });
             }
@@ -159,7 +146,11 @@ class _DashboardState extends State<Dashboard> {
 
   Future<void> addLocation(String location) async {
     final SharedPreferences prefs = await _prefs;
-
+    if (locations.contains(location)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Location $location already exists')));
+      return;
+    }
     setState(() {
       locations.add(location);
       prefs.setStringList(aqiLocations, locations).then((bool success) => {
@@ -179,6 +170,21 @@ class _DashboardState extends State<Dashboard> {
       prefs.setStringList(aqiLocations, locations).then((bool success) => {
             ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text('Removed tile for $location')))
+          });
+    });
+  }
+
+  Future<void> updateLocation(String original, String location) async {
+    final SharedPreferences prefs = await _prefs;
+    if (!locations.contains(original)) {
+      return;
+    }
+    setState(() {
+      int index = locations.indexOf(original);
+      locations[index] = location;
+      prefs.setStringList(aqiLocations, locations).then((bool success) => {
+            ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Updated tile $original to $location')))
           });
     });
   }
