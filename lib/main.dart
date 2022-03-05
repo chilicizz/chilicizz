@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -39,7 +41,6 @@ class Dashboard extends StatefulWidget {
 class _DashboardState extends State<Dashboard> {
   static const String aqiLocations = 'aqi_locations';
   final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
-  TextEditingController textController = TextEditingController();
   List<String> locations = [];
   late Future<List<String>> _locations;
 
@@ -65,46 +66,7 @@ class _DashboardState extends State<Dashboard> {
           showDialog(
               context: context,
               builder: (context) {
-                return AlertDialog(
-                  title: const Text("Add a new tile"),
-                  content: TextField(
-                    autofocus: true,
-                    controller: textController,
-                    decoration: const InputDecoration(hintText: "enter a city"),
-                    onEditingComplete: () {
-                      addLocation(textController.value.text);
-                      textController.clear();
-                      Navigator.pop(context);
-                    },
-                  ),
-                  actions: [
-                    Tooltip(
-                      message: "Current Location",
-                      child: IconButton(
-                        onPressed: () {
-                          addLocation('here');
-                          textController.clear();
-                          Navigator.pop(context);
-                        },
-                        icon: const Icon(Icons.my_location),
-                      ),
-                    ),
-                    TextButton(
-                      child: const Text('CANCEL'),
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                    ),
-                    ElevatedButton(
-                      child: const Text('SUBMIT'),
-                      onPressed: () {
-                        addLocation(textController.value.text);
-                        textController.clear();
-                        Navigator.pop(context);
-                      },
-                    )
-                  ],
-                );
+                return buildAQILocationDialog(context);
               });
         },
       ),
@@ -141,6 +103,64 @@ class _DashboardState extends State<Dashboard> {
           },
         ),
       ),
+    );
+  }
+
+  AlertDialog buildAQILocationDialog(BuildContext context) {
+    return AlertDialog(
+      title: const Text("Add new tile"),
+      content: Autocomplete<AQILocation>(
+        fieldViewBuilder: (BuildContext context,
+            TextEditingController textEditingController,
+            FocusNode focusNode,
+            VoidCallback onFieldSubmitted) {
+          return Flexible(
+            child: TextField(
+              autofocus: true,
+              focusNode: focusNode,
+              controller: textEditingController,
+              decoration:
+                  const InputDecoration(hintText: "enter the name of a city"),
+              onSubmitted: (value) {
+                addLocation(value);
+                Navigator.pop(context);
+              },
+            ),
+          );
+        },
+        displayStringForOption: (location) {
+          return "${location.name} (${location.url})";
+        },
+        optionsBuilder: (TextEditingValue textEditingValue) {
+          var value = textEditingValue.text;
+          if (value.isNotEmpty && value.length > 3) {
+            return locationQuery(value);
+          }
+          return const Iterable<AQILocation>.empty();
+        },
+        onSelected: (AQILocation selection) {
+          addLocation(selection.url);
+          Navigator.pop(context);
+        },
+      ),
+      actions: [
+        Tooltip(
+          message: "Current Location",
+          child: IconButton(
+            onPressed: () {
+              addLocation('here');
+              Navigator.pop(context);
+            },
+            icon: const Icon(Icons.my_location),
+          ),
+        ),
+        TextButton(
+          child: const Text('CANCEL'),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+      ],
     );
   }
 

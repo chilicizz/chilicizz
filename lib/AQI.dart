@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:date_format/date_format.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
@@ -54,15 +53,18 @@ AQILevel getLevel(int value) {
   return AQIThresholds.last;
 }
 
+const String token = String.fromEnvironment('AQI_TOKEN');
+
 class AQI extends StatefulWidget {
   final String location;
   final Function(String) removeLocationCallback;
   final Function(String, String) updateLocationCallback;
 
-  AQI({Key? key,
-    required this.location,
-    required this.removeLocationCallback,
-    required this.updateLocationCallback})
+  AQI(
+      {Key? key,
+      required this.location,
+      required this.removeLocationCallback,
+      required this.updateLocationCallback})
       : super(key: key);
 
   @override
@@ -80,7 +82,6 @@ class AQI extends StatefulWidget {
 }
 
 class _AQIState extends State<AQI> {
-  final String token = const String.fromEnvironment('AQI_TOKEN');
   final Duration tickTime = const Duration(minutes: 10);
   Timer? timer;
 
@@ -133,7 +134,11 @@ class _AQIState extends State<AQI> {
                   child: Text("$aqi"),
                   backgroundColor: level.color,
                 ),
-                title: Text(level.name),
+                title: FittedBox(
+                  alignment: Alignment.centerLeft,
+                  fit: BoxFit.scaleDown,
+                  child: Text(level.name),
+                ),
                 trailing: IconButton(
                     icon: const Icon(Icons.arrow_right),
                     onPressed: () {
@@ -145,18 +150,39 @@ class _AQIState extends State<AQI> {
               ListTile(
                 title: Wrap(
                   alignment: WrapAlignment.spaceEvenly,
-                  runSpacing: 3,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  runSpacing: 2,
                   children: [
                     buildAqiChip(const Icon(Icons.thermostat),
-                        jsonResult?["iaqi"]?["t"]?["v"], "°C"),
+                        jsonResult?["iaqi"]?["t"]?["v"],
+                        suffix: "°C", label: "Temp"),
                     buildAqiChip(const Icon(Icons.water_drop),
-                        jsonResult?["iaqi"]?["h"]?["v"], "%"),
+                        jsonResult?["iaqi"]?["h"]?["v"],
+                        suffix: "%", label: "Humidity"),
                     buildAqiChip(
-                        const Icon(Icons.air), jsonResult?["iaqi"]?["w"]?["v"]),
+                        const Icon(Icons.air), jsonResult?["iaqi"]?["w"]?["v"],
+                        label: "Wind"),
                     buildAqiChip(
-                        const Text("bar"), jsonResult?["iaqi"]?["p"]?["v"]),
+                        const Text("bar"), jsonResult?["iaqi"]?["p"]?["v"],
+                        label: "Pressure"),
                     buildAqiChip(
-                        const Text("uvi"), jsonResult?["iaqi"]?["uvi"]?["v"]),
+                        const Text("uvi"), jsonResult?["iaqi"]?["uvi"]?["v"],
+                        label: "UV Index"),
+                    buildAqiChip(
+                        const Text("pm2.5"), jsonResult?["iaqi"]?["pm25"]?["v"],
+                        label: "PM 2.5"),
+                    buildAqiChip(
+                        const Text("pm10"), jsonResult?["iaqi"]?["pm10"]?["v"],
+                        label: "PM 10"),
+                    buildAqiChip(
+                        const Text("no2"), jsonResult?["iaqi"]?["no2"]?["v"],
+                        label: "NO2"),
+                    buildAqiChip(
+                        const Text("o3"), jsonResult?["iaqi"]?["o3"]?["v"],
+                        label: "O3"),
+                    buildAqiChip(
+                        const Text("so2"), jsonResult?["iaqi"]?["so2"]?["v"],
+                        label: "SO2"),
                   ],
                 ),
               ),
@@ -165,25 +191,20 @@ class _AQIState extends State<AQI> {
           SingleChildScrollView(
             child: Column(
               children: [
+                editingLocation
+                    ? buildTitleTileEditing()
+                    : buildTitleTile(context),
+                const Divider(),
                 ListTile(
                   leading: CircleAvatar(
                     child: Text("$aqi"),
                     backgroundColor: level.color,
                   ),
-                  title: SizedBox(
-                    height: 40,
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: FittedBox(
-                        child: Text(level.name,
-                            style: Theme
-                                .of(context)
-                                .textTheme
-                                .headlineSmall),
-                      ),
-                    ),
+                  title: FittedBox(
+                    alignment: Alignment.centerLeft,
+                    fit: BoxFit.scaleDown,
+                    child: Text(level.name),
                   ),
-                  subtitle: buildLastUpdatedText(),
                   trailing: IconButton(
                     icon: const Icon(Icons.arrow_left),
                     onPressed: () {
@@ -191,31 +212,6 @@ class _AQIState extends State<AQI> {
                           duration: const Duration(milliseconds: 400),
                           curve: Curves.easeInOut);
                     },
-                  ),
-                ),
-                const Divider(),
-                ListTile(
-                  title: Wrap(
-                    alignment: WrapAlignment.spaceEvenly,
-                    crossAxisAlignment: WrapCrossAlignment.center,
-                    runSpacing: 3,
-                    children: [
-                      buildAqiChip(
-                          const Text("pm2.5", style: TextStyle(fontSize: 8)),
-                          jsonResult?["iaqi"]?["pm25"]?["v"]),
-                      buildAqiChip(
-                          const Text("pm10", style: TextStyle(fontSize: 8)),
-                          jsonResult?["iaqi"]?["pm10"]?["v"]),
-                      buildAqiChip(
-                          const Text("no2", style: TextStyle(fontSize: 8)),
-                          jsonResult?["iaqi"]?["no2"]?["v"]),
-                      buildAqiChip(
-                          const Text("o3", style: TextStyle(fontSize: 8)),
-                          jsonResult?["iaqi"]?["o3"]?["v"]),
-                      buildAqiChip(
-                          const Text("so2", style: TextStyle(fontSize: 8)),
-                          jsonResult?["iaqi"]?["so2"]?["v"]),
-                    ],
                   ),
                 ),
                 ListTile(title: Text(level.detail)),
@@ -235,9 +231,19 @@ class _AQIState extends State<AQI> {
     );
   }
 
-  Widget buildAqiChip(final Widget icon, dynamic value, [String? suffix]) {
+  Widget buildAqiChip(final Widget icon, dynamic value,
+      {String? suffix, String? label}) {
     if (value != null) {
-      return Chip(avatar: icon, label: Text("$value ${suffix ?? ''}"));
+      return Tooltip(
+        message: label ?? '',
+        child: Chip(
+            avatar: CircleAvatar(
+                child: Padding(
+              padding: const EdgeInsets.all(1.0),
+              child: FittedBox(child: icon),
+            )),
+            label: Text("$value ${suffix ?? ''}")),
+      );
     } else {
       return const SizedBox.shrink();
     }
@@ -247,23 +253,14 @@ class _AQIState extends State<AQI> {
     return Tooltip(
       message: "Click to update the location",
       child: ListTile(
-        title: SizedBox(
-          height: 40,
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: FittedBox(
-              fit: BoxFit.contain,
-              child: Text("${jsonResult?["city"]?["name"]}",
-                  style: Theme
-                      .of(context)
-                      .textTheme
-                      .headlineSmall),
-            ),
-          ),
+        title: FittedBox(
+          alignment: Alignment.centerLeft,
+          fit: BoxFit.scaleDown,
+          child: Text("${jsonResult?["city"]?["name"]}",
+              style: Theme.of(context).textTheme.headlineSmall),
         ),
         subtitle: buildLastUpdatedText(),
-        onTap: () =>
-        {
+        onTap: () => {
           setState(() {
             editingLocation = true;
             textController.text = widget.location;
@@ -278,12 +275,12 @@ class _AQIState extends State<AQI> {
 
   Text buildLastUpdatedText() {
     return Text("last updated ${formatDate(lastUpdateTime.toLocal(), [
-      D,
-      " ",
-      H,
-      ":",
-      nn
-    ])}");
+          D,
+          " ",
+          H,
+          ":",
+          nn
+        ])}");
   }
 
   ListTile buildTitleTileEditing() {
@@ -374,10 +371,50 @@ class AQILevel {
   final String? advice;
   final int upperThreshold;
 
-  const AQILevel(this.color, this.name, this.detail, this.advice,
-      this.upperThreshold);
+  const AQILevel(
+      this.color, this.name, this.detail, this.advice, this.upperThreshold);
 
   bool within(int value) {
     return value <= upperThreshold;
+  }
+}
+
+class AQILocation {
+  final String name;
+  final String url;
+
+  AQILocation(this.name, this.url);
+
+  @override
+  String toString() {
+    return name;
+  }
+}
+
+Future<http.Response> locationQueryHttp(location) {
+  return http.get(Uri.parse(
+      'https://api.waqi.info/search/?keyword=$location&token=$token'));
+}
+
+Future<List<AQILocation>> locationQuery(String location) async {
+  var response = await locationQueryHttp(location);
+  if (response.statusCode == 200) {
+    var aqiFeed = jsonDecode(response.body);
+    if (aqiFeed?["status"]?.contains("ok")) {
+      List<AQILocation> list = [];
+      dynamic jsonResult = aqiFeed?["data"];
+      for (dynamic entry in jsonResult) {
+        // entry["aqi"];
+        list.add(
+            AQILocation(entry["station"]?["name"], entry["station"]?["url"]));
+      }
+      list.sort((a, b) => a.toString().compareTo(b.toString()));
+      return list;
+    } else {
+      debugPrint("Failed to fetch data");
+      return [];
+    }
+  } else {
+    return [];
   }
 }
