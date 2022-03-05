@@ -118,9 +118,9 @@ class _DashboardState extends State<Dashboard> {
                 return const CircularProgressIndicator();
               default:
                 if (snapshot.hasError) {
-                  locations = ['here'];
+                  locations = [];
                 } else {
-                  locations = snapshot.data ?? ['here'];
+                  locations = snapshot.data ?? [];
                 }
                 return GridView.builder(
                     scrollDirection: Axis.vertical,
@@ -174,18 +174,21 @@ class _DashboardState extends State<Dashboard> {
     });
   }
 
-  Future<void> updateLocation(String original, String location) async {
+  Future<void> updateLocation(String original, String newLocation) async {
     final SharedPreferences prefs = await _prefs;
     if (!locations.contains(original)) {
       return;
     }
     setState(() {
       int index = locations.indexOf(original);
-      locations[index] = location;
+      locations[index] = newLocation;
       prefs.setStringList(aqiLocations, locations).then((bool success) => {
-            ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Updated tile $original to $location')))
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                content: Text('Updated tile $original to $newLocation')))
           });
+      _locations = _prefs.then((SharedPreferences prefs) {
+        return prefs.getStringList(aqiLocations) ?? <String>[];
+      });
     });
   }
 }

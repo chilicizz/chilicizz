@@ -59,11 +59,10 @@ class AQI extends StatefulWidget {
   final Function(String) removeLocationCallback;
   final Function(String, String) updateLocationCallback;
 
-  AQI(
-      {Key? key,
-      required this.location,
-      required this.removeLocationCallback,
-      required this.updateLocationCallback})
+  AQI({Key? key,
+    required this.location,
+    required this.removeLocationCallback,
+    required this.updateLocationCallback})
       : super(key: key);
 
   @override
@@ -85,12 +84,15 @@ class _AQIState extends State<AQI> {
   final Duration tickTime = const Duration(minutes: 10);
   Timer? timer;
 
-  var textController = TextEditingController();
+  late PageController pageController;
+  late TextEditingController textController;
+  late FocusNode titleFocus;
   bool editingLocation = false;
 
   dynamic jsonResult;
   DateTime lastUpdateTime = DateTime.now();
   int aqi = 0;
+  AQILevel level = getLevel(0);
 
   @override
   Widget build(BuildContext context) {
@@ -108,14 +110,12 @@ class _AQIState extends State<AQI> {
       );
     }
     level = getLevel(aqi);
-    final PageController controller = PageController();
-
     return Card(
       semanticContainer: true,
       elevation: 3,
       margin: const EdgeInsets.all(7.0),
       child: PageView(
-        controller: controller,
+        controller: pageController,
         children: [
           Column(
             children: [
@@ -124,41 +124,39 @@ class _AQIState extends State<AQI> {
                   : buildTitleTile(context),
               const Divider(),
               ListTile(
+                onTap: () {
+                  pageController.nextPage(
+                      duration: const Duration(milliseconds: 400),
+                      curve: Curves.easeInOut);
+                },
+                leading: CircleAvatar(
+                  child: Text("$aqi"),
+                  backgroundColor: level.color,
+                ),
                 title: Text(level.name),
+                trailing: IconButton(
+                    icon: const Icon(Icons.arrow_right),
+                    onPressed: () {
+                      pageController.nextPage(
+                          duration: const Duration(milliseconds: 400),
+                          curve: Curves.easeInOut);
+                    }),
               ),
               ListTile(
                 title: Wrap(
-                  runAlignment: WrapAlignment.spaceEvenly,
                   alignment: WrapAlignment.spaceEvenly,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  runSpacing: 4,
-                  spacing: 2,
+                  runSpacing: 3,
                   children: [
                     buildAqiChip(const Icon(Icons.thermostat),
-                        jsonResult?["iaqi"]?["t"]?["v"], " °C"),
+                        jsonResult?["iaqi"]?["t"]?["v"], "°C"),
                     buildAqiChip(const Icon(Icons.water_drop),
-                        jsonResult?["iaqi"]?["h"]?["v"], " %"),
+                        jsonResult?["iaqi"]?["h"]?["v"], "%"),
                     buildAqiChip(
                         const Icon(Icons.air), jsonResult?["iaqi"]?["w"]?["v"]),
                     buildAqiChip(
                         const Text("bar"), jsonResult?["iaqi"]?["p"]?["v"]),
                     buildAqiChip(
                         const Text("uvi"), jsonResult?["iaqi"]?["uvi"]?["v"]),
-                    buildAqiChip(
-                        const Text("pm2.5", style: TextStyle(fontSize: 8)),
-                        jsonResult?["iaqi"]?["pm25"]?["v"]),
-                    buildAqiChip(
-                        const Text("pm10", style: TextStyle(fontSize: 8)),
-                        jsonResult?["iaqi"]?["pm10"]?["v"]),
-                    buildAqiChip(
-                        const Text("no2", style: TextStyle(fontSize: 8)),
-                        jsonResult?["iaqi"]?["no2"]?["v"]),
-                    buildAqiChip(
-                        const Text("o3", style: TextStyle(fontSize: 8)),
-                        jsonResult?["iaqi"]?["o3"]?["v"]),
-                    buildAqiChip(
-                        const Text("so2", style: TextStyle(fontSize: 8)),
-                        jsonResult?["iaqi"]?["so2"]?["v"]),
                   ],
                 ),
               ),
@@ -168,8 +166,57 @@ class _AQIState extends State<AQI> {
             child: Column(
               children: [
                 ListTile(
-                  leading: Text("$aqi"),
-                  title: Text(level.name),
+                  leading: CircleAvatar(
+                    child: Text("$aqi"),
+                    backgroundColor: level.color,
+                  ),
+                  title: SizedBox(
+                    height: 40,
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: FittedBox(
+                        child: Text(level.name,
+                            style: Theme
+                                .of(context)
+                                .textTheme
+                                .headlineSmall),
+                      ),
+                    ),
+                  ),
+                  subtitle: buildLastUpdatedText(),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.arrow_left),
+                    onPressed: () {
+                      pageController.previousPage(
+                          duration: const Duration(milliseconds: 400),
+                          curve: Curves.easeInOut);
+                    },
+                  ),
+                ),
+                const Divider(),
+                ListTile(
+                  title: Wrap(
+                    alignment: WrapAlignment.spaceEvenly,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    runSpacing: 3,
+                    children: [
+                      buildAqiChip(
+                          const Text("pm2.5", style: TextStyle(fontSize: 8)),
+                          jsonResult?["iaqi"]?["pm25"]?["v"]),
+                      buildAqiChip(
+                          const Text("pm10", style: TextStyle(fontSize: 8)),
+                          jsonResult?["iaqi"]?["pm10"]?["v"]),
+                      buildAqiChip(
+                          const Text("no2", style: TextStyle(fontSize: 8)),
+                          jsonResult?["iaqi"]?["no2"]?["v"]),
+                      buildAqiChip(
+                          const Text("o3", style: TextStyle(fontSize: 8)),
+                          jsonResult?["iaqi"]?["o3"]?["v"]),
+                      buildAqiChip(
+                          const Text("so2", style: TextStyle(fontSize: 8)),
+                          jsonResult?["iaqi"]?["so2"]?["v"]),
+                    ],
+                  ),
                 ),
                 ListTile(title: Text(level.detail)),
                 level.advice != null
@@ -200,10 +247,6 @@ class _AQIState extends State<AQI> {
     return Tooltip(
       message: "Click to update the location",
       child: ListTile(
-        leading: CircleAvatar(
-          child: Text("$aqi"),
-          backgroundColor: level.color,
-        ),
         title: SizedBox(
           height: 40,
           child: Align(
@@ -211,27 +254,36 @@ class _AQIState extends State<AQI> {
             child: FittedBox(
               fit: BoxFit.contain,
               child: Text("${jsonResult?["city"]?["name"]}",
-                  style: Theme.of(context).textTheme.headlineSmall),
+                  style: Theme
+                      .of(context)
+                      .textTheme
+                      .headlineSmall),
             ),
           ),
         ),
-        subtitle: Text("last updated ${formatDate(lastUpdateTime.toLocal(), [
-              D,
-              " ",
-              H,
-              ":",
-              nn
-            ])}"),
-        onTap: () => {
+        subtitle: buildLastUpdatedText(),
+        onTap: () =>
+        {
           setState(() {
             editingLocation = true;
             textController.text = widget.location;
+            titleFocus.requestFocus();
             textController.selection = TextSelection(
                 baseOffset: 0, extentOffset: textController.text.length);
           })
         },
       ),
     );
+  }
+
+  Text buildLastUpdatedText() {
+    return Text("last updated ${formatDate(lastUpdateTime.toLocal(), [
+      D,
+      " ",
+      H,
+      ":",
+      nn
+    ])}");
   }
 
   ListTile buildTitleTileEditing() {
@@ -247,8 +299,8 @@ class _AQIState extends State<AQI> {
         ),
       ),
       title: TextField(
-        autofocus: true,
         controller: textController,
+        focusNode: titleFocus,
         onEditingComplete: () {
           setState(() {
             widget.updateLocation(textController.value.text);
@@ -268,13 +320,22 @@ class _AQIState extends State<AQI> {
     );
   }
 
-  AQILevel level = getLevel(0);
-
   @override
   void initState() {
     super.initState();
+    titleFocus = FocusNode();
+    textController = TextEditingController();
+    pageController = PageController();
     timer = Timer.periodic(tickTime, (Timer t) => _tick(t));
     _tick(null);
+  }
+
+  @override
+  void dispose() {
+    titleFocus.dispose();
+    textController.dispose();
+    pageController.dispose();
+    super.dispose();
   }
 
   Future<void> _tick(Timer? t) async {
@@ -306,21 +367,6 @@ class _AQIState extends State<AQI> {
   }
 }
 
-class AQIChip extends StatefulWidget {
-  AQIChip(Widget avatar, String value, {Key? key}) : super(key: key) {}
-
-  @override
-  State<AQIChip> createState() => _AQIChipState();
-}
-
-class _AQIChipState extends State<AQIChip> {
-  @override
-  Widget build(BuildContext context) {
-    // TODO: implement build
-    throw UnimplementedError();
-  }
-}
-
 class AQILevel {
   final Color color;
   final String name;
@@ -328,8 +374,8 @@ class AQILevel {
   final String? advice;
   final int upperThreshold;
 
-  const AQILevel(
-      this.color, this.name, this.detail, this.advice, this.upperThreshold);
+  const AQILevel(this.color, this.name, this.detail, this.advice,
+      this.upperThreshold);
 
   bool within(int value) {
     return value <= upperThreshold;
