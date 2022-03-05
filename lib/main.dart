@@ -114,18 +114,16 @@ class _DashboardState extends State<Dashboard> {
             TextEditingController textEditingController,
             FocusNode focusNode,
             VoidCallback onFieldSubmitted) {
-          return Flexible(
-            child: TextField(
-              autofocus: true,
-              focusNode: focusNode,
-              controller: textEditingController,
-              decoration:
-                  const InputDecoration(hintText: "enter the name of a city"),
-              onSubmitted: (value) {
-                addLocation(value);
-                Navigator.pop(context);
-              },
-            ),
+          return TextField(
+            autofocus: true,
+            focusNode: focusNode,
+            controller: textEditingController,
+            decoration:
+                const InputDecoration(hintText: "enter the name of a city"),
+            onSubmitted: (value) {
+              addLocation(value);
+              Navigator.pop(context);
+            },
           );
         },
         displayStringForOption: (location) {
