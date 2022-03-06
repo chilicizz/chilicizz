@@ -109,38 +109,10 @@ class _DashboardState extends State<Dashboard> {
   AlertDialog buildAQILocationDialog(BuildContext context) {
     return AlertDialog(
       title: const Text("Add new tile"),
-      content: Autocomplete<AQILocation>(
-        fieldViewBuilder: (BuildContext context,
-            TextEditingController textEditingController,
-            FocusNode focusNode,
-            VoidCallback onFieldSubmitted) {
-          return TextField(
-            autofocus: true,
-            focusNode: focusNode,
-            controller: textEditingController,
-            decoration:
-                const InputDecoration(hintText: "enter the name of a city"),
-            onSubmitted: (value) {
-              addLocation(value);
-              Navigator.pop(context);
-            },
-          );
-        },
-        displayStringForOption: (location) {
-          return "${location.name} (${location.url})";
-        },
-        optionsBuilder: (TextEditingValue textEditingValue) {
-          var value = textEditingValue.text;
-          if (value.isNotEmpty && value.length > 3) {
-            return locationQuery(value);
-          }
-          return const Iterable<AQILocation>.empty();
-        },
-        onSelected: (AQILocation selection) {
-          addLocation(selection.url);
-          Navigator.pop(context);
-        },
-      ),
+      content: buildAQILocationAutocomplete(context, (value) {
+        addLocation(value);
+        Navigator.pop(context);
+      }),
       actions: [
         Tooltip(
           message: "Current Location",

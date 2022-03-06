@@ -82,8 +82,8 @@ class AQI extends StatefulWidget {
 }
 
 class _AQIState extends State<AQI> {
-  final Duration tickTime = const Duration(minutes: 10);
-  Timer? timer;
+  static const Duration tickTime = Duration(minutes: 10);
+  late Timer timer;
 
   late PageController pageController;
   late TextEditingController textController;
@@ -98,12 +98,11 @@ class _AQIState extends State<AQI> {
   @override
   Widget build(BuildContext context) {
     if (jsonResult == null) {
-      textController.text = widget.location;
       _tick(null);
       return Card(
         child: Column(
           children: [
-            buildTitleTileEditing(),
+            buildTitleTile(context, jsonResult?["city"]?["name"]),
             const Divider(),
             const FittedBox(child: CircularProgressIndicator()),
           ],
@@ -120,9 +119,7 @@ class _AQIState extends State<AQI> {
         children: [
           Column(
             children: [
-              editingLocation
-                  ? buildTitleTileEditing()
-                  : buildTitleTile(context),
+              buildTitleTile(context, jsonResult?["city"]?["name"]),
               const Divider(),
               ListTile(
                 onTap: () {
@@ -191,9 +188,7 @@ class _AQIState extends State<AQI> {
           SingleChildScrollView(
             child: Column(
               children: [
-                editingLocation
-                    ? buildTitleTileEditing()
-                    : buildTitleTile(context),
+                buildTitleTile(context, jsonResult?["city"]?["name"]),
                 const Divider(),
                 ListTile(
                   leading: CircleAvatar(
@@ -223,6 +218,21 @@ class _AQIState extends State<AQI> {
                     title: Text("${attribution?["name"]}"),
                     subtitle: Text("${attribution?["url"]}"),
                   ),
+                ListTile(
+                    title: Text("Delete this tile", style: Theme.of(context).textTheme.bodySmall),
+                    trailing: Tooltip(
+                      message: "Delete this tile",
+                      child: IconButton(
+                        icon: const Icon(Icons.delete),
+                        onPressed: () {
+                          setState(() {
+                            widget.deleteMe();
+                            editingLocation = false;
+                          });
+                        },
+                      ),
+                    ),
+                ),
               ],
             ),
           )
@@ -249,28 +259,58 @@ class _AQIState extends State<AQI> {
     }
   }
 
-  Tooltip buildTitleTile(BuildContext context) {
-    return Tooltip(
-      message: "Click to update the location",
-      child: ListTile(
-        title: FittedBox(
-          alignment: Alignment.centerLeft,
-          fit: BoxFit.scaleDown,
-          child: Text("${jsonResult?["city"]?["name"]}",
-              style: Theme.of(context).textTheme.headlineSmall),
+  Widget buildTitleTile(BuildContext context, String? title) {
+    if (editingLocation || title == null) {
+      titleFocus.requestFocus();
+      textController.selection = TextSelection(
+          baseOffset: 0, extentOffset: textController.text.length);
+      return ListTile(
+        leading: IconButton(
+          icon: const Icon(Icons.cancel),
+          onPressed: () {
+            setState(() {
+              editingLocation = false;
+            });
+          },
         ),
-        subtitle: buildLastUpdatedText(),
-        onTap: () => {
-          setState(() {
-            editingLocation = true;
-            textController.text = widget.location;
-            titleFocus.requestFocus();
-            textController.selection = TextSelection(
-                baseOffset: 0, extentOffset: textController.text.length);
-          })
-        },
-      ),
-    );
+        title: buildAQILocationAutocomplete(
+            context,
+            (value) => {
+                  setState(() {
+                    widget.updateLocation(value);
+                    editingLocation = false;
+                  })
+                },
+            initial: textController.value.text),
+        trailing: ElevatedButton(
+          onPressed: () {
+            setState(() {
+              widget.updateLocation(textController.value.text);
+              editingLocation = false;
+            });
+          },
+          child: const Icon(Icons.check),
+        ),
+      );
+    } else {
+      return Tooltip(
+        message: "Click to update the location",
+        child: ListTile(
+          title: FittedBox(
+            alignment: Alignment.centerLeft,
+            fit: BoxFit.scaleDown,
+            child:
+                Text(title, style: Theme.of(context).textTheme.headlineSmall),
+          ),
+          subtitle: buildLastUpdatedText(),
+          onTap: () => {
+            setState(() {
+              editingLocation = true;
+            })
+          },
+        ),
+      );
+    }
   }
 
   Text buildLastUpdatedText() {
@@ -283,40 +323,6 @@ class _AQIState extends State<AQI> {
         ])}");
   }
 
-  ListTile buildTitleTileEditing() {
-    return ListTile(
-      leading: Tooltip(
-        message: "Delete this tile",
-        child: IconButton(
-          icon: const Icon(Icons.delete),
-          onPressed: () {
-            editingLocation = false;
-            widget.deleteMe();
-          },
-        ),
-      ),
-      title: TextField(
-        controller: textController,
-        focusNode: titleFocus,
-        onEditingComplete: () {
-          setState(() {
-            widget.updateLocation(textController.value.text);
-            editingLocation = false;
-          });
-        },
-      ),
-      trailing: ElevatedButton(
-        onPressed: () {
-          setState(() {
-            widget.updateLocation(textController.value.text);
-            editingLocation = false;
-          });
-        },
-        child: const Icon(Icons.check),
-      ),
-    );
-  }
-
   @override
   void initState() {
     super.initState();
@@ -324,6 +330,7 @@ class _AQIState extends State<AQI> {
     textController = TextEditingController();
     pageController = PageController();
     timer = Timer.periodic(tickTime, (Timer t) => _tick(t));
+    textController.text = widget.location;
     _tick(null);
   }
 
@@ -397,7 +404,7 @@ Future<http.Response> locationQueryHttp(location) {
 }
 
 Future<List<AQILocation>> locationQuery(String location) async {
-  var response = await locationQueryHttp(location);
+  var response = await locationQueryHttp(location.replaceAll('/', ''));
   if (response.statusCode == 200) {
     var aqiFeed = jsonDecode(response.body);
     if (aqiFeed?["status"]?.contains("ok")) {
@@ -408,7 +415,7 @@ Future<List<AQILocation>> locationQuery(String location) async {
         list.add(
             AQILocation(entry["station"]?["name"], entry["station"]?["url"]));
       }
-      list.sort((a, b) => a.toString().compareTo(b.toString()));
+      list.sort((a, b) => a.url.compareTo(b.url));
       return list;
     } else {
       debugPrint("Failed to fetch data");
@@ -417,4 +424,43 @@ Future<List<AQILocation>> locationQuery(String location) async {
   } else {
     return [];
   }
+}
+
+Autocomplete<AQILocation> buildAQILocationAutocomplete(
+    BuildContext context, Function(String value) selectionCallback, {String? initial}) {
+
+  return Autocomplete<AQILocation>(
+    fieldViewBuilder: (BuildContext context,
+        TextEditingController textEditingController,
+        FocusNode focusNode,
+        VoidCallback onFieldSubmitted) {
+      if (initial != null) {
+        textEditingController.text = initial;
+      }
+      textEditingController.selection = TextSelection(
+          baseOffset: 0, extentOffset: textEditingController.text.length);
+      return TextField(
+        autofocus: true,
+        focusNode: focusNode,
+        controller: textEditingController,
+        decoration: const InputDecoration(hintText: "enter the name of a city"),
+        onSubmitted: (value) {
+          selectionCallback(value);
+          onFieldSubmitted();
+        },
+      );
+    },
+    displayStringForOption: (location) {
+      return "${location.name}\n(${location.url})";
+    },
+    optionsBuilder: (TextEditingValue textEditingValue) {
+      if (textEditingValue.text.isNotEmpty && textEditingValue.text.length > 3) {
+        return locationQuery(textEditingValue.text);
+      }
+      return const Iterable<AQILocation>.empty();
+    },
+    onSelected: (AQILocation selection) {
+      selectionCallback(selection.url);
+    },
+  );
 }
