@@ -161,6 +161,9 @@ class _DashboardState extends State<Dashboard> {
             ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text('Removed tile for $location')))
           });
+      _locations = _prefs.then((SharedPreferences prefs) {
+        return prefs.getStringList(aqiLocations) ?? <String>[];
+      });
     });
   }
 

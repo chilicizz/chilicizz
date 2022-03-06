@@ -219,19 +219,20 @@ class _AQIState extends State<AQI> {
                     subtitle: Text("${attribution?["url"]}"),
                   ),
                 ListTile(
-                    title: Text("Delete this tile", style: Theme.of(context).textTheme.bodySmall),
-                    trailing: Tooltip(
-                      message: "Delete this tile",
-                      child: IconButton(
-                        icon: const Icon(Icons.delete),
-                        onPressed: () {
-                          setState(() {
-                            widget.deleteMe();
-                            editingLocation = false;
-                          });
-                        },
-                      ),
+                  title: Text("Delete this tile",
+                      style: Theme.of(context).textTheme.bodySmall),
+                  trailing: Tooltip(
+                    message: "Delete this tile",
+                    child: IconButton(
+                      icon: const Icon(Icons.delete),
+                      onPressed: () {
+                        setState(() {
+                          widget.deleteMe();
+                          editingLocation = false;
+                        });
+                      },
                     ),
+                  ),
                 ),
               ],
             ),
@@ -276,18 +277,14 @@ class _AQIState extends State<AQI> {
         title: buildAQILocationAutocomplete(
             context,
             (value) => {
-                  setState(() {
-                    widget.updateLocation(value);
-                    editingLocation = false;
-                  })
+                  widget.updateLocation(value),
+                  editingLocation = false,
                 },
             initial: textController.value.text),
         trailing: ElevatedButton(
           onPressed: () {
-            setState(() {
-              widget.updateLocation(textController.value.text);
-              editingLocation = false;
-            });
+            editingLocation = false;
+            widget.updateLocation(textController.value.text);
           },
           child: const Icon(Icons.check),
         ),
@@ -427,8 +424,8 @@ Future<List<AQILocation>> locationQuery(String location) async {
 }
 
 Autocomplete<AQILocation> buildAQILocationAutocomplete(
-    BuildContext context, Function(String value) selectionCallback, {String? initial}) {
-
+    BuildContext context, Function(String value) selectionCallback,
+    {String? initial}) {
   return Autocomplete<AQILocation>(
     fieldViewBuilder: (BuildContext context,
         TextEditingController textEditingController,
@@ -446,7 +443,6 @@ Autocomplete<AQILocation> buildAQILocationAutocomplete(
         decoration: const InputDecoration(hintText: "enter the name of a city"),
         onSubmitted: (value) {
           selectionCallback(value);
-          onFieldSubmitted();
         },
       );
     },
@@ -454,7 +450,8 @@ Autocomplete<AQILocation> buildAQILocationAutocomplete(
       return "${location.name}\n(${location.url})";
     },
     optionsBuilder: (TextEditingValue textEditingValue) {
-      if (textEditingValue.text.isNotEmpty && textEditingValue.text.length > 3) {
+      if (textEditingValue.text.isNotEmpty &&
+          textEditingValue.text.length > 3) {
         return locationQuery(textEditingValue.text);
       }
       return const Iterable<AQILocation>.empty();
