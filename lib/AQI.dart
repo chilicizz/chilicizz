@@ -221,7 +221,7 @@ class _AQIState extends State<AQI> {
                 ListTile(
                   title: Text("Delete this tile",
                       style: Theme.of(context).textTheme.bodySmall),
-                  trailing: Tooltip(
+                  leading: Tooltip(
                     message: "Delete this tile",
                     child: IconButton(
                       icon: const Icon(Icons.delete),
@@ -283,8 +283,10 @@ class _AQIState extends State<AQI> {
             initial: textController.value.text),
         trailing: ElevatedButton(
           onPressed: () {
-            editingLocation = false;
-            widget.updateLocation(textController.value.text);
+            setState(() {
+              editingLocation = false;
+              widget.updateLocation(textController.value.text);
+            });
           },
           child: const Icon(Icons.check),
         ),
