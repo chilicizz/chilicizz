@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'AQI.dart';
+import 'HKO.dart';
 import 'common.dart';
 import 'counter.dart';
 
@@ -25,7 +26,8 @@ class MyApp extends StatelessWidget {
         initialRoute: '/',
         routes: {
           '/': (context) => const Dashboard(),
-          '/feature': (context) => const Dashboard(),
+          '/aqi': (context) => const Dashboard(),
+          '/hko': (context) => const HKO(),
           '/bug': (context) => const MyHomePage(title: "demo"),
         });
   }

@@ -1,3 +1,4 @@
+import 'package:date_format/date_format.dart';
 import 'package:flutter/material.dart';
 
 class NavigationDrawer extends StatelessWidget {
@@ -32,9 +33,15 @@ class NavigationDrawer extends StatelessWidget {
             )),
           ),
           ListTile(
-            title: const Text('Feature'),
+            title: const Text('AQI Dashboard'),
             onTap: () {
-              Navigator.pushNamed(context, '/');
+              Navigator.pushNamed(context, '/aqi');
+            },
+          ),
+          ListTile(
+            title: const Text('HKO Warnings'),
+            onTap: () {
+              Navigator.pushNamed(context, '/hko');
             },
           ),
           ListTile(
@@ -50,4 +57,14 @@ class NavigationDrawer extends StatelessWidget {
       ),
     );
   }
+}
+
+Text buildLastUpdatedText(DateTime lastUpdateTime) {
+  return Text("last updated ${formatDate(lastUpdateTime.toLocal(), [
+    D,
+    " ",
+    H,
+    ":",
+    nn
+  ])}");
 }

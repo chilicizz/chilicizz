@@ -1,9 +1,10 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:date_format/date_format.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+
+import 'common.dart';
 
 const AQIThresholds = [
   AQILevel(
@@ -99,6 +100,8 @@ class _AQIState extends State<AQI> {
     if (jsonResult == null) {
       _tick(null);
       return Card(
+        elevation: 3,
+        margin: const EdgeInsets.all(7.0),
         child: Column(
           children: [
             buildTitleTile(context, jsonResult?["city"]?["name"]),
@@ -300,7 +303,7 @@ class _AQIState extends State<AQI> {
             child:
                 Text(title, style: Theme.of(context).textTheme.headlineSmall),
           ),
-          subtitle: buildLastUpdatedText(),
+          subtitle: buildLastUpdatedText(lastUpdateTime),
           onTap: () => {
             setState(() {
               editingLocation = true;
@@ -309,16 +312,6 @@ class _AQIState extends State<AQI> {
         ),
       );
     }
-  }
-
-  Text buildLastUpdatedText() {
-    return Text("last updated ${formatDate(lastUpdateTime.toLocal(), [
-          D,
-          " ",
-          H,
-          ":",
-          nn
-        ])}");
   }
 
   @override
