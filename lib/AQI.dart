@@ -87,7 +87,6 @@ class _AQIState extends State<AQI> {
 
   late PageController pageController;
   late TextEditingController textController;
-  late FocusNode titleFocus;
   bool editingLocation = false;
 
   dynamic jsonResult;
@@ -262,7 +261,6 @@ class _AQIState extends State<AQI> {
 
   Widget buildTitleTile(BuildContext context, String? title) {
     if (editingLocation || title == null) {
-      titleFocus.requestFocus();
       textController.selection = TextSelection(
           baseOffset: 0, extentOffset: textController.text.length);
       return ListTile(
@@ -280,7 +278,8 @@ class _AQIState extends State<AQI> {
                   widget.updateLocation(value),
                   editingLocation = false,
                 },
-            initial: textController.value.text),
+            initial: textController.value.text,
+            editing: editingLocation),
         trailing: ElevatedButton(
           onPressed: () {
             setState(() {
@@ -325,7 +324,6 @@ class _AQIState extends State<AQI> {
   @override
   void initState() {
     super.initState();
-    titleFocus = FocusNode();
     textController = TextEditingController();
     pageController = PageController();
     timer = Timer.periodic(tickTime, (Timer t) => _tick(t));
@@ -335,7 +333,6 @@ class _AQIState extends State<AQI> {
 
   @override
   void dispose() {
-    titleFocus.dispose();
     textController.dispose();
     pageController.dispose();
     super.dispose();
@@ -427,7 +424,7 @@ Future<List<AQILocation>> locationQuery(String location) async {
 
 Autocomplete<AQILocation> buildAQILocationAutocomplete(
     BuildContext context, Function(String value) selectionCallback,
-    {String? initial}) {
+    {String? initial, bool editing = false}) {
   return Autocomplete<AQILocation>(
     fieldViewBuilder: (BuildContext context,
         TextEditingController textEditingController,
@@ -436,10 +433,10 @@ Autocomplete<AQILocation> buildAQILocationAutocomplete(
       if (initial != null) {
         textEditingController.text = initial;
       }
-      focusNode.requestFocus();
       textEditingController.selection = TextSelection(
           baseOffset: 0, extentOffset: textEditingController.text.length);
       return TextField(
+        autofocus: editing,
         focusNode: focusNode,
         controller: textEditingController,
         decoration: const InputDecoration(hintText: "enter the name of a city"),

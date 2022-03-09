@@ -112,7 +112,7 @@ class _DashboardState extends State<Dashboard> {
       content: buildAQILocationAutocomplete(context, (value) {
         addLocation(value);
         Navigator.pop(context);
-      }),
+      }, editing: true),
       actions: [
         Tooltip(
           message: "Current Location",
