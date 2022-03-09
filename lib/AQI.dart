@@ -436,10 +436,10 @@ Autocomplete<AQILocation> buildAQILocationAutocomplete(
       if (initial != null) {
         textEditingController.text = initial;
       }
+      focusNode.requestFocus();
       textEditingController.selection = TextSelection(
           baseOffset: 0, extentOffset: textEditingController.text.length);
       return TextField(
-        autofocus: true,
         focusNode: focusNode,
         controller: textEditingController,
         decoration: const InputDecoration(hintText: "enter the name of a city"),
