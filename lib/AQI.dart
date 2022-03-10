@@ -45,15 +45,6 @@ const AQIThresholds = [
       0x7fffffff), // 32 bit max
 ];
 
-AQILevel getLevel(int value) {
-  for (final level in AQIThresholds) {
-    if (level.within(value)) {
-      return level;
-    }
-  }
-  return AQIThresholds.last;
-}
-
 const String token = String.fromEnvironment('AQI_TOKEN');
 
 class AQI extends StatefulWidget {
@@ -90,179 +81,146 @@ class _AQIState extends State<AQI> {
   late TextEditingController textController;
   bool editingLocation = false;
 
-  dynamic jsonResult;
-  DateTime lastUpdateTime = DateTime.now();
-  int aqi = 0;
-  AQILevel level = getLevel(0);
+  AQIData? data;
 
   @override
   Widget build(BuildContext context) {
-    if (jsonResult == null) {
+    if (data == null) {
       _tick(null);
       return Card(
         elevation: 3,
         margin: const EdgeInsets.all(7.0),
         child: Column(
           children: [
-            buildTitleTile(context, jsonResult?["city"]?["name"]),
+            buildTitleTile(context, data?.cityName, data?.lastUpdatedTime),
             const Divider(),
             const FittedBox(child: CircularProgressIndicator()),
           ],
         ),
       );
-    }
-    level = getLevel(aqi);
-    return Card(
-      semanticContainer: true,
-      elevation: 3,
-      margin: const EdgeInsets.all(7.0),
-      child: PageView(
-        controller: pageController,
-        children: [
-          Column(
-            children: [
-              buildTitleTile(context, jsonResult?["city"]?["name"]),
-              const Divider(),
-              ListTile(
-                onTap: () {
-                  pageController.nextPage(
-                      duration: const Duration(milliseconds: 400),
-                      curve: Curves.easeInOut);
-                },
-                leading: CircleAvatar(
-                  child: Text("$aqi"),
-                  backgroundColor: level.color,
-                ),
-                title: FittedBox(
-                  alignment: Alignment.centerLeft,
-                  fit: BoxFit.scaleDown,
-                  child: Text(level.name),
-                ),
-                trailing: IconButton(
-                    icon: const Icon(Icons.arrow_right),
-                    onPressed: () {
-                      pageController.nextPage(
-                          duration: const Duration(milliseconds: 400),
-                          curve: Curves.easeInOut);
-                    }),
-              ),
-              ListTile(
-                title: Wrap(
-                  alignment: WrapAlignment.spaceEvenly,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  runSpacing: 2,
-                  children: [
-                    buildAqiChip(const Icon(Icons.thermostat),
-                        jsonResult?["iaqi"]?["t"]?["v"],
-                        suffix: "°C", label: "Temp"),
-                    buildAqiChip(const Icon(Icons.water_drop),
-                        jsonResult?["iaqi"]?["h"]?["v"],
-                        suffix: "%", label: "Humidity"),
-                    buildAqiChip(
-                        const Icon(Icons.air), jsonResult?["iaqi"]?["w"]?["v"],
-                        label: "Wind"),
-                    buildAqiChip(
-                        const Text("bar"), jsonResult?["iaqi"]?["p"]?["v"],
-                        label: "Pressure"),
-                    buildAqiChip(
-                        const Text("uvi"), jsonResult?["iaqi"]?["uvi"]?["v"],
-                        label: "UV Index"),
-                    buildAqiChip(
-                        const Text("pm2.5"), jsonResult?["iaqi"]?["pm25"]?["v"],
-                        label: "PM 2.5"),
-                    buildAqiChip(
-                        const Text("pm10"), jsonResult?["iaqi"]?["pm10"]?["v"],
-                        label: "PM 10"),
-                    buildAqiChip(
-                        const Text("no2"), jsonResult?["iaqi"]?["no2"]?["v"],
-                        label: "NO2"),
-                    buildAqiChip(
-                        const Text("o3"), jsonResult?["iaqi"]?["o3"]?["v"],
-                        label: "O3"),
-                    buildAqiChip(
-                        const Text("so2"), jsonResult?["iaqi"]?["so2"]?["v"],
-                        label: "SO2"),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          SingleChildScrollView(
-            child: Column(
+    } else {
+      return Card(
+        semanticContainer: true,
+        elevation: 3,
+        margin: const EdgeInsets.all(7.0),
+        child: PageView(
+          controller: pageController,
+          children: [
+            Column(
               children: [
-                buildTitleTile(context, jsonResult?["city"]?["name"]),
+                buildTitleTile(context, data?.cityName, data?.lastUpdatedTime),
                 const Divider(),
                 ListTile(
+                  onTap: () {
+                    pageController.nextPage(
+                        duration: const Duration(milliseconds: 400),
+                        curve: Curves.easeInOut);
+                  },
                   leading: CircleAvatar(
-                    child: Text("$aqi"),
-                    backgroundColor: level.color,
+                    child: Text("${data?.aqi}"),
+                    backgroundColor: data?.getLevel().color,
                   ),
                   title: FittedBox(
                     alignment: Alignment.centerLeft,
                     fit: BoxFit.scaleDown,
-                    child: Text(level.name),
+                    child: Text(data!.getLevel().name),
                   ),
                   trailing: IconButton(
-                    icon: const Icon(Icons.arrow_left),
-                    onPressed: () {
-                      pageController.previousPage(
-                          duration: const Duration(milliseconds: 400),
-                          curve: Curves.easeInOut);
-                    },
-                  ),
-                ),
-                ListTile(title: Text(level.detail)),
-                level.advice != null
-                    ? ListTile(title: Text(level.advice ?? ""))
-                    : const SizedBox.shrink(),
-                for (dynamic attribution in jsonResult?["attributions"])
-                  ListTile(
-                    title: Text("${attribution?["name"]}"),
-                    subtitle: Text("${attribution?["url"]}"),
-                  ),
-                ListTile(
-                  title: Text("Delete this tile",
-                      style: Theme.of(context).textTheme.bodySmall),
-                  leading: Tooltip(
-                    message: "Delete this tile",
-                    child: IconButton(
-                      icon: const Icon(Icons.delete),
+                      icon: const Icon(Icons.arrow_right),
                       onPressed: () {
-                        setState(() {
-                          widget.deleteMe();
-                          editingLocation = false;
-                        });
-                      },
-                    ),
+                        pageController.nextPage(
+                            duration: const Duration(milliseconds: 400),
+                            curve: Curves.easeInOut);
+                      }),
+                ),
+                ListTile(
+                  title: Wrap(
+                    alignment: WrapAlignment.spaceEvenly,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    runSpacing: 2,
+                    children: data!.iaqiData.entries.map((entry) {
+                          return _buildAQIChip(entry.key, entry.value);
+                        }).toList() ??
+                        [],
                   ),
                 ),
               ],
             ),
-          )
-        ],
-      ),
-    );
-  }
-
-  Widget buildAqiChip(final Widget icon, dynamic value,
-      {String? suffix, String? label}) {
-    if (value != null) {
-      return Tooltip(
-        message: label ?? '',
-        child: Chip(
-            avatar: CircleAvatar(
-                child: Padding(
-              padding: const EdgeInsets.all(1.0),
-              child: FittedBox(child: icon),
-            )),
-            label: Text("$value ${suffix ?? ''}")),
+            SingleChildScrollView(
+              child: Column(
+                children: [
+                  buildTitleTile(
+                      context, data?.cityName, data?.lastUpdatedTime),
+                  const Divider(),
+                  ListTile(
+                    leading: CircleAvatar(
+                      child: Text("${data?.aqi}"),
+                      backgroundColor: data!.getLevel().color,
+                    ),
+                    title: FittedBox(
+                      alignment: Alignment.centerLeft,
+                      fit: BoxFit.scaleDown,
+                      child: Text(data!.getLevel().name),
+                    ),
+                    trailing: IconButton(
+                      icon: const Icon(Icons.arrow_left),
+                      onPressed: () {
+                        pageController.previousPage(
+                            duration: const Duration(milliseconds: 400),
+                            curve: Curves.easeInOut);
+                      },
+                    ),
+                  ),
+                  ListTile(title: Text(data!.getLevel().detail)),
+                  data!.getLevel().advice != null
+                      ? ListTile(title: Text(data!.getLevel().advice ?? ""))
+                      : const SizedBox.shrink(),
+                  for (Attribution attribution in data!.attributions)
+                    ListTile(
+                      title: Text(attribution.name),
+                      subtitle: Text(attribution.url),
+                    ),
+                  ListTile(
+                    title: Text("Delete this tile",
+                        style: Theme.of(context).textTheme.bodySmall),
+                    leading: Tooltip(
+                      message: "Delete this tile",
+                      child: IconButton(
+                        icon: const Icon(Icons.delete),
+                        onPressed: () {
+                          setState(() {
+                            widget.deleteMe();
+                            editingLocation = false;
+                          });
+                        },
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            )
+          ],
+        ),
       );
-    } else {
-      return const SizedBox.shrink();
     }
   }
 
-  Widget buildTitleTile(BuildContext context, String? title) {
+  Widget _buildAQIChip(final IAQIRecord record, double value) {
+    return Tooltip(
+      message: record.label,
+      child: Chip(
+          avatar: CircleAvatar(
+            child: Padding(
+              padding: const EdgeInsets.all(1.0),
+              child: FittedBox(child: record.getIcon()),
+            ),
+          ),
+          label: Text("$value ${record.unit ?? ''}")),
+    );
+  }
+
+  Widget buildTitleTile(
+      BuildContext context, String? title, DateTime? lastUpdate) {
     if (editingLocation || title == null) {
       textController.selection = TextSelection(
           baseOffset: 0, extentOffset: textController.text.length);
@@ -303,7 +261,7 @@ class _AQIState extends State<AQI> {
             child:
                 Text(title, style: Theme.of(context).textTheme.headlineSmall),
           ),
-          subtitle: buildLastUpdatedText(lastUpdateTime),
+          subtitle: buildLastUpdatedText(lastUpdate),
           onTap: () => {
             setState(() {
               editingLocation = true;
@@ -340,10 +298,7 @@ class _AQIState extends State<AQI> {
         var aqiFeed = jsonDecode(response.body);
         if (aqiFeed?["status"]?.contains("ok")) {
           setState(() {
-            jsonResult = aqiFeed?["data"];
-            aqi = double.parse("${aqiFeed?["data"]?["aqi"]}").floor();
-            lastUpdateTime =
-                DateTime.parse("${aqiFeed?["data"]?["time"]?["iso"]}");
+            data = marshalJSON(aqiFeed?["data"]);
           });
         } else {
           debugPrint("Failed to fetch data");
@@ -452,4 +407,73 @@ Autocomplete<AQILocation> buildAQILocationAutocomplete(
       selectionCallback(selection.url);
     },
   );
+}
+
+AQIData marshalJSON(dynamic jsonResult) {
+  AQIData data = AQIData(
+      jsonResult?["city"]?["name"],
+      double.parse("${jsonResult["aqi"]}").floor(),
+      DateTime.parse("${jsonResult?["time"]?["iso"]}"));
+  for (dynamic attribution in jsonResult?["attributions"]) {
+    data.attributions
+        .add(Attribution("${attribution?["name"]}", "${attribution?["url"]}"));
+  }
+  for (IAQIRecord entry in AQIData.iqiEntries) {
+    if (jsonResult?["iaqi"]?[entry.code]?["v"] != null) {
+      data.iaqiData[entry] = jsonResult?["iaqi"]?[entry.code]?["v"];
+    }
+  }
+  return data;
+}
+
+class AQIData {
+  static List<IAQIRecord> iqiEntries = [
+    IAQIRecord("t", "Temperature", unit: "°C", iconData: Icons.thermostat),
+    IAQIRecord("h", "Humidity", unit: "%", iconData: Icons.water_drop),
+    IAQIRecord("w", "Wind Speed", unit: "°C", iconData: Icons.thermostat),
+    IAQIRecord("p", "Pressure", unit: "bar"),
+    IAQIRecord("uvi", "UV index"),
+    IAQIRecord("pm25", "PM 2.5"),
+    IAQIRecord("pm10", "PM 10"),
+    IAQIRecord("no2", "NO2"),
+    IAQIRecord("o3", "Ozone"),
+    IAQIRecord("so2", "SO2"),
+  ];
+
+  String cityName;
+  DateTime lastUpdatedTime;
+  int aqi;
+  Map<IAQIRecord, double> iaqiData = {};
+  List<Attribution> attributions = [];
+
+  AQIData(this.cityName, this.aqi, this.lastUpdatedTime);
+
+  AQILevel getLevel() {
+    for (final level in AQIThresholds) {
+      if (level.within(aqi)) {
+        return level;
+      }
+    }
+    return AQIThresholds.last;
+  }
+}
+
+class Attribution {
+  String name;
+  String url;
+
+  Attribution(this.name, this.url);
+}
+
+class IAQIRecord {
+  String code;
+  String label;
+  String? unit;
+  IconData? iconData;
+
+  IAQIRecord(this.code, this.label, {this.unit, this.iconData});
+
+  Widget getIcon() {
+    return iconData != null ? Icon(iconData) : Text(code);
+  }
 }

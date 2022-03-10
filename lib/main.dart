@@ -58,7 +58,7 @@ class _DashboardState extends State<Dashboard> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Dashboard'),
+        title: const Text('AQI Dashboard'),
       ),
       drawer: const NavigationDrawer(),
       floatingActionButton: FloatingActionButton(
@@ -86,7 +86,7 @@ class _DashboardState extends State<Dashboard> {
                 } else {
                   locations = snapshot.data ?? [];
                 }
-                return GridView.builder(
+                return locations.isNotEmpty ? GridView.builder(
                     scrollDirection: Axis.vertical,
                     gridDelegate:
                         const SliverGridDelegateWithMaxCrossAxisExtent(
@@ -100,7 +100,8 @@ class _DashboardState extends State<Dashboard> {
                         removeLocationCallback: removeLocation,
                         updateLocationCallback: updateLocation,
                       );
-                    });
+                    }) :
+                    const Text("No locations added");
             }
           },
         ),

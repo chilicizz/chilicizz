@@ -16,7 +16,7 @@ class HKO extends StatefulWidget {
 class _HKOState extends State<HKO> {
   static const String infoUrl =
       "https://data.weather.gov.hk/weatherAPI/opendata/weather.php?dataType=warningInfo&lang=en";
-  static const Duration tickTime = Duration(minutes: 10);
+  static const Duration tickInterval = Duration(minutes: 10);
 
   static const Map<String, String> warningStringMap = {
     "WFIREY": "Yellow Fire Danger Warning",
@@ -90,8 +90,8 @@ class _HKOState extends State<HKO> {
   void initState() {
     super.initState();
     warnings = [];
-    timer = Timer.periodic(tickTime, (Timer t) => _tick(t));
-    _tick(null);
+    timer = Timer.periodic(tickInterval, (Timer t) => _tick(t: t));
+    _tick();
   }
 
   @override
@@ -99,7 +99,7 @@ class _HKOState extends State<HKO> {
     super.dispose();
   }
 
-  Future<void> _tick(Timer? t) async {
+  Future<void> _tick({Timer? t}) async {
     try {
       var response = await _fetchData();
       if (response.statusCode == 200) {
@@ -129,7 +129,7 @@ class _HKOState extends State<HKO> {
       floatingActionButton: ElevatedButton(
         child: buildLastTick(lastTick),
         onPressed: () {
-          _tick(null);
+          _tick();
         },
       ),
       body: Center(
