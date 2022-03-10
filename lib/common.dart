@@ -35,22 +35,20 @@ class NavigationDrawer extends StatelessWidget {
           ListTile(
             title: const Text('AQI Dashboard'),
             onTap: () {
-              Navigator.pushNamed(context, '/aqi');
+              Navigator.pushNamedAndRemoveUntil(context, '/aqi', ModalRoute.withName('/login'));
+
             },
           ),
           ListTile(
             title: const Text('HKO Warnings'),
             onTap: () {
-              Navigator.pushNamed(context, '/hko');
+              Navigator.pushNamedAndRemoveUntil(context, '/hko', ModalRoute.withName('/login'));
             },
           ),
           ListTile(
             title: const Text('Bug'),
             onTap: () {
-              // Update the state of the app
-              // ...
-              // Then close the drawer
-              Navigator.pushNamed(context, '/bug');
+              Navigator.pushNamedAndRemoveUntil(context, '/bug', ModalRoute.withName('/login'));
             },
           ),
         ],
@@ -62,6 +60,20 @@ class NavigationDrawer extends StatelessWidget {
 Text buildLastUpdatedText(DateTime lastUpdateTime) {
   return Text("last updated ${formatDate(lastUpdateTime.toLocal(), [
     D,
+    " ",
+    H,
+    ":",
+    nn
+  ])}");
+}
+
+Text buildLastTick(DateTime lastTickTime) {
+  return Text("last refresh ${formatDate(lastTickTime.toLocal(), [
+    D,
+    " ",
+    dd,
+    " ",
+    M,
     " ",
     H,
     ":",

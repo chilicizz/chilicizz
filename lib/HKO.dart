@@ -126,34 +126,44 @@ class _HKOState extends State<HKO> {
         title: const Text('HKO Warnings'),
       ),
       drawer: const NavigationDrawer(),
-      body: Center(
-        child: ListView.builder(
-          itemCount: warnings.length,
-          itemBuilder: (BuildContext context, int index) {
-            var warning = warnings[index];
-            CircleAvatar icon = warningIconMap[
-                    warning.subType ?? warning.warningStatementCode] ??
-                CircleAvatar(
-                    child: FittedBox(
-                        child: Text(
-                            warning.subType ?? warning.warningStatementCode)));
-            return ExpansionTile(
-              leading: icon,
-              title: Text(warningStringMap[
-                      warning.subType ?? warning.warningStatementCode] ??
-                  warning.subType ??
-                  warning.warningStatementCode),
-              subtitle: buildLastUpdatedText(warning.updateTime),
-              children: [
-                for (var s in warning.contents)
-                  ListTile(
-                    title: Text(s),
-                  )
-              ],
-            );
-          },
-        ),
+      floatingActionButton: ElevatedButton(
+        child: buildLastTick(lastTick),
+        onPressed: () {
+          _tick(null);
+        },
       ),
+      body: Center(
+          child: warnings.isNotEmpty
+              ? ListView.builder(
+                  itemCount: warnings.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    var warning = warnings[index];
+                    CircleAvatar icon = warningIconMap[
+                            warning.subType ?? warning.warningStatementCode] ??
+                        CircleAvatar(
+                            child: FittedBox(
+                                child: Text(warning.subType ??
+                                    warning.warningStatementCode)));
+                    return ExpansionTile(
+                      leading: icon,
+                      title: Text(warningStringMap[warning.subType ??
+                              warning.warningStatementCode] ??
+                          warning.subType ??
+                          warning.warningStatementCode),
+                      subtitle: buildLastUpdatedText(warning.updateTime),
+                      initiallyExpanded: true,
+                      children: [
+                        for (var s in warning.contents)
+                          ListTile(
+                            title: Text(s),
+                          )
+                      ],
+                    );
+                  },
+                )
+              : ListTile(
+                  title: const Text("No active warnings"),
+                  subtitle: buildLastTick(lastTick))),
     );
   }
 }
