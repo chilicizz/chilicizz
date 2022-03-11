@@ -68,16 +68,16 @@ class _HKOState extends State<HKO> {
     "TC9": CircleAvatar(child: Text("T8"), backgroundColor: Colors.amber),
     "TC10": CircleAvatar(child: Text("T10"), backgroundColor: Colors.amber),
 
-    "WFROST": CircleAvatar(child: Text("Frost"), backgroundColor: Colors.amber),
-    "WHOT": CircleAvatar(child: Text("Hot"), backgroundColor: Colors.amber),
-    "WCOLD": CircleAvatar(child: Text("Cold"), backgroundColor: Colors.amber),
+    "WFROST": CircleAvatar(child: Icon(Icons.ac_unit, color: Colors.white), backgroundColor: Colors.blue),
+    "WHOT": CircleAvatar(child: Icon(Icons.wb_sunny, color: Colors.red), backgroundColor: Colors.amber),
+    "WCOLD": CircleAvatar(child: Icon(Icons.ac_unit, color: Colors.blue), backgroundColor: Colors.amber),
     "WMSGNL":
-        CircleAvatar(child: Text("Monsoon"), backgroundColor: Colors.amber),
+        CircleAvatar(child: Icon(Icons.air, color: Colors.black), backgroundColor: Colors.amber),
     "WFNTSA":
-        CircleAvatar(child: Text("Flooding"), backgroundColor: Colors.amber),
-    "WL": CircleAvatar(child: Text("Landslip"), backgroundColor: Colors.amber),
-    "WTMW": CircleAvatar(child: Text("Tsunami"), backgroundColor: Colors.amber),
-    "WTS": CircleAvatar(child: Text("T10"), backgroundColor: Colors.amber),
+        CircleAvatar(child: Icon(Icons.water, color: Colors.black), backgroundColor: Colors.amber),
+    "WL": CircleAvatar(child: Icon(Icons.report_problem, color: Colors.black), backgroundColor: Colors.amber),
+    "WTMW": CircleAvatar(child: Text("🌊"), backgroundColor: Colors.amber),
+    "WTS": CircleAvatar(child: Icon(Icons.bolt, color: Colors.black), backgroundColor: Colors.amber),
   };
 
   late Timer timer;
@@ -150,7 +150,7 @@ class _HKOState extends State<HKO> {
                               warning.warningStatementCode] ??
                           warning.subType ??
                           warning.warningStatementCode),
-                      subtitle: buildLastUpdatedText(warning.updateTime),
+                      subtitle: buildIssued(warning.updateTime),
                       initiallyExpanded: true,
                       children: [
                         for (var s in warning.contents)

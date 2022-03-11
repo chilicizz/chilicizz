@@ -430,14 +430,14 @@ class AQIData {
   static List<IAQIRecord> iqiEntries = [
     IAQIRecord("t", "Temperature", unit: "°C", iconData: Icons.thermostat),
     IAQIRecord("h", "Humidity", unit: "%", iconData: Icons.water_drop),
-    IAQIRecord("w", "Wind Speed", unit: "°C", iconData: Icons.thermostat),
-    IAQIRecord("p", "Pressure", unit: "bar"),
+    IAQIRecord("w", "Wind Speed", unit: "°C", iconData: Icons.air),
+    IAQIRecord("p", "Pressure", unit: "bar", iconData: Icons.storm),
     IAQIRecord("uvi", "UV index"),
     IAQIRecord("pm25", "PM 2.5"),
     IAQIRecord("pm10", "PM 10"),
-    IAQIRecord("no2", "NO2"),
+    IAQIRecord("no2", "Nitrogen dioxide"),
     IAQIRecord("o3", "Ozone"),
-    IAQIRecord("so2", "SO2"),
+    IAQIRecord("so2", "Sulphur dioxide"),
   ];
 
   String cityName;

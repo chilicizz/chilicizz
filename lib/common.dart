@@ -85,6 +85,20 @@ Text buildLastTick(DateTime lastTickTime) {
       ])}");
 }
 
+Text buildIssued(DateTime lastTickTime) {
+  return Text("Issued at ${formatDate(lastTickTime.toLocal(), [
+    D,
+    " ",
+    dd,
+    " ",
+    M,
+    " ",
+    H,
+    ":",
+    nn
+  ])}");
+}
+
 bool isSmallScreen(BuildContext context) {
   // The equivalent of the "smallestWidth" qualifier on Android.
   var shortestSide = MediaQuery.of(context).size.shortestSide;
