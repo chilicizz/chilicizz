@@ -60,12 +60,12 @@ class NavigationDrawer extends StatelessWidget {
 Text buildLastUpdatedText(DateTime? lastUpdateTime) {
   if (lastUpdateTime != null) {
     return Text("last updated ${formatDate(lastUpdateTime.toLocal(), [
-      D,
-      " ",
-      H,
-      ":",
-      nn
-    ])}");
+          D,
+          " ",
+          H,
+          ":",
+          nn
+        ])}");
   } else {
     return const Text("");
   }
@@ -86,17 +86,17 @@ Text buildLastTick(DateTime lastTickTime) {
 }
 
 Text buildIssued(DateTime lastTickTime) {
-  return Text("Issued at ${formatDate(lastTickTime.toLocal(), [
-    D,
-    " ",
-    dd,
-    " ",
-    M,
-    " ",
-    H,
-    ":",
-    nn
-  ])}");
+  return Text("Issued ${formatDate(lastTickTime.toLocal(), [
+        D,
+        " ",
+        dd,
+        " ",
+        M,
+        " ",
+        H,
+        ":",
+        nn
+      ])}");
 }
 
 bool isSmallScreen(BuildContext context) {
