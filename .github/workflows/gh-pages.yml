@@ -24,8 +24,14 @@ jobs:
 
       - name: Build
         env:
-          AQI_TOKEN : ${{ secrets.AQI_TOKEN }}
+          AQI_TOKEN: ${{ secrets.AQI_TOKEN }}
         run: flutter build web --dart-define=AQI_TOKEN="$AQI_TOKEN"
+        working-directory: .
+
+      - name: Test
+        env:
+          AQI_TOKEN: ${{ secrets.AQI_TOKEN }}
+        run: flutter test --dart-define=AQI_TOKEN="$AQI_TOKEN"
         working-directory: .
 
       - name: Deploy

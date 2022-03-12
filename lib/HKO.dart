@@ -7,11 +7,6 @@ import 'package:http/http.dart' as http;
 import 'common.dart';
 import 'hko_types.dart';
 
-const String infoUrl =
-    "https://data.weather.gov.hk/weatherAPI/opendata/weather.php?dataType=warningInfo&lang=en";
-const String typhoonUrl =
-    "https://www.weather.gov.hk/wxinfo/currwx/tc_list.xml";
-
 class HKO extends StatefulWidget {
   const HKO({Key? key}) : super(key: key);
 

@@ -1,4 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:xml/xml.dart';
+
+const String infoUrl =
+    "https://data.weather.gov.hk/weatherAPI/opendata/weather.php?dataType=warningInfo&lang=en";
+const String typhoonUrl =
+    "https://www.weather.gov.hk/wxinfo/currwx/tc_list.xml";
 
 class WarningInformation {
   String warningStatementCode;
@@ -39,7 +46,6 @@ List<WarningInformation> extractWarnings(dynamic json) {
   return result;
 }
 
-
 const Map<String, String> warningStringMap = {
   "WFIREY": "Yellow Fire Danger Warning",
   "WFIRER": "Red Fire Danger Warning",
@@ -72,15 +78,9 @@ const Map<String, CircleAvatar> warningIconMap = {
   "WFIRER": CircleAvatar(
       child: Icon(Icons.local_fire_department, color: Colors.black),
       backgroundColor: Colors.red),
-  "WRAINA": CircleAvatar(
-      child: Text('🌧'),
-      backgroundColor: Colors.amber),
-  "WRAINR": CircleAvatar(
-      child: Text('🌧'),
-      backgroundColor: Colors.red),
-  "WRAINB": CircleAvatar(
-      child: Text('🌧'),
-      backgroundColor: Colors.black),
+  "WRAINA": CircleAvatar(child: Text('🌧'), backgroundColor: Colors.amber),
+  "WRAINR": CircleAvatar(child: Text('🌧'), backgroundColor: Colors.red),
+  "WRAINB": CircleAvatar(child: Text('🌧'), backgroundColor: Colors.black),
   "TC1": CircleAvatar(child: Text("T1"), backgroundColor: Colors.amber),
   "TC3": CircleAvatar(child: Text("T3"), backgroundColor: Colors.amber),
   "T8NE": CircleAvatar(child: Text("T8"), backgroundColor: Colors.amber),
@@ -113,3 +113,146 @@ const Map<String, CircleAvatar> warningIconMap = {
       child: Icon(Icons.bolt, color: Colors.yellow),
       backgroundColor: Colors.black),
 };
+
+Future<List<HKOTyphoon>> fetchTyphoonFeed() async {
+  try {
+    var response = await http.get(Uri.parse(typhoonUrl));
+    if (response.statusCode == 200) {
+      var typhoonFeed = parseTyphoonFeed(response.body);
+      return typhoonFeed;
+    }
+  } catch (e) {
+    debugPrint("Failed to fetch typhoon data $e");
+  }
+  return [];
+}
+
+class HKOTyphoon {
+  int id;
+  String englishName;
+  String chineseName;
+  String url;
+
+  HKOTyphoon(
+      {required this.id,
+      required this.chineseName,
+      required this.englishName,
+      required this.url});
+
+  Future<TyphoonTrack?> getTyphoonTrack() async {
+    try {
+      var response = await http.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        var typhoonTrack = parseTyphoonTrack(response.body);
+        return typhoonTrack;
+      }
+    } catch (e) {
+      debugPrint("Failed to fetch typhoon data $e");
+    }
+    return null;
+  }
+}
+
+class TyphoonTrack {
+  TyphoonBulletin bulletin;
+  List<TyphoonPosition> past;
+  TyphoonPosition current;
+
+  TyphoonTrack(this.bulletin, this.current, this.past);
+}
+
+class TyphoonPosition {
+  late String intensity;
+  late double? maximumWind; // km/h
+  late DateTime? time; // if no time then interpolated position
+  late double latitude; // N
+  late double longitude; // E
+
+  TyphoonPosition();
+}
+
+class TyphoonBulletin {
+  late String name;
+  late String provider;
+  late DateTime time;
+
+  TyphoonBulletin();
+}
+
+List<HKOTyphoon> parseTyphoonFeed(String xmlString) {
+  try {
+    final document = XmlDocument.parse(xmlString);
+    final titles = document.findAllElements('TropicalCyclone');
+    return titles.map((element) {
+      return HKOTyphoon(
+        id: int.parse(element.findElements("TropicalCycloneID").single.text),
+        chineseName:
+            element.findElements("TropicalCycloneChineseName").single.text,
+        englishName:
+            element.findElements("TropicalCycloneEnglishName").single.text,
+        url: element.findElements("TropicalCycloneURL").single.text,
+      );
+    }).toList();
+  } catch (e) {
+    return [];
+  }
+}
+
+TyphoonTrack? parseTyphoonTrack(String xmlString) {
+  try {
+    final document = XmlDocument.parse(xmlString);
+    final bulletinElement = document.findAllElements('BulletinHeader').single;
+
+    TyphoonBulletin bulletin = TyphoonBulletin();
+    for (var element in bulletinElement.childElements) {
+      if (element.name.local == 'BulletinName') {
+        bulletin.name = element.text;
+      } else if (element.name.local == 'BulletinProvider') {
+        bulletin.provider = element.text;
+      } else if (element.name.local == 'BulletinTime') {
+        bulletin.time = DateTime.parse(element.text);
+      }
+    }
+    final analysisElement =
+        document.findAllElements('AnalysisInformation').single;
+    TyphoonPosition currentAnalysis = parseEntry(analysisElement)!;
+
+    final pastInformationElements = document.findAllElements('PastInformation');
+    List<TyphoonPosition> past = pastInformationElements
+        .map(parseEntry)
+        .whereType<TyphoonPosition>()
+        .toList();
+    return TyphoonTrack(bulletin, currentAnalysis, past);
+  } catch (e) {
+    return null;
+  }
+}
+
+String removeNonNumeric(String entry) {
+  return entry.replaceAll(RegExp(r"[^\d.]"), "");
+}
+
+TyphoonPosition? parseEntry(XmlElement element) {
+  try {
+    TyphoonPosition entry = TyphoonPosition();
+    for (var child in element.childElements) {
+      if (child.name.local == 'Intensity') {
+        entry.intensity = child.text;
+      } else if (child.name.local == 'Latitude') {
+        entry.latitude =
+            double.tryParse(removeNonNumeric(child.text)) ?? double.nan;
+      } else if (child.name.local == 'Longitude') {
+        entry.longitude =
+            double.tryParse(removeNonNumeric(child.text)) ?? double.nan;
+      } else if (child.name.local == 'Time') {
+        entry.time = DateTime.parse(child.text);
+      } else if (child.name.local == 'MaximumWind') {
+        entry.maximumWind =
+            double.tryParse(removeNonNumeric(child.text)) ?? double.nan;
+      }
+    }
+    return entry;
+  } catch (e) {
+    return null;
+  }
+}
