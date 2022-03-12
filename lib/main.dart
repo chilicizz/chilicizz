@@ -86,22 +86,23 @@ class _DashboardState extends State<Dashboard> {
                 } else {
                   locations = snapshot.data ?? [];
                 }
-                return locations.isNotEmpty ? GridView.builder(
-                    scrollDirection: Axis.vertical,
-                    gridDelegate:
-                        const SliverGridDelegateWithMaxCrossAxisExtent(
-                      maxCrossAxisExtent: 400,
-                      childAspectRatio: 1.1,
-                    ),
-                    itemCount: locations.length,
-                    itemBuilder: (context, index) {
-                      return AQI(
-                        location: locations[index],
-                        removeLocationCallback: removeLocation,
-                        updateLocationCallback: updateLocation,
-                      );
-                    }) :
-                    const Text("No locations added");
+                return locations.isNotEmpty
+                    ? GridView.builder(
+                        scrollDirection: Axis.vertical,
+                        gridDelegate:
+                            const SliverGridDelegateWithMaxCrossAxisExtent(
+                          maxCrossAxisExtent: 400,
+                          childAspectRatio: 1.1,
+                        ),
+                        itemCount: locations.length,
+                        itemBuilder: (context, index) {
+                          return AQI(
+                            location: locations[index],
+                            removeLocationCallback: removeLocation,
+                            updateLocationCallback: updateLocation,
+                          );
+                        })
+                    : const Text("No locations added");
             }
           },
         ),
@@ -112,10 +113,12 @@ class _DashboardState extends State<Dashboard> {
   AlertDialog buildAQILocationDialog(BuildContext context) {
     return AlertDialog(
       title: const Text("Add new tile"),
-      content: buildAQILocationAutocomplete(context, (value) {
-        addLocation(value);
-        Navigator.pop(context);
-      }, editing: true),
+      content: AQILocationAutocomplete(
+          selectionCallback: (value) {
+            addLocation(value);
+            Navigator.pop(context);
+          },
+          autofocus: true),
       actions: [
         Tooltip(
           message: "Current Location",

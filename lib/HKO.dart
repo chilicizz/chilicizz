@@ -41,22 +41,24 @@ class _HKOState extends State<HKO> {
   }
 
   Future<void> _tick({Timer? t}) async {
+    var fetchedWarnings = await getWarnings();
+    lastTick = DateTime.now();
+    setState(() {
+      warnings = fetchedWarnings;
+    });
+  }
+
+  Future<List<WarningInformation>> getWarnings() async {
     try {
-      var response = await _fetchData();
+      var response = await http.get(Uri.parse(infoUrl));
       if (response.statusCode == 200) {
         var hkoFeed = jsonDecode(response.body);
-        setState(() {
-          warnings = extractWarnings(hkoFeed);
-          lastTick = DateTime.now();
-        });
+        return extractWarnings(hkoFeed);
       }
     } catch (e) {
       debugPrint("Failed to fetch data $e");
     }
-  }
-
-  Future<http.Response> _fetchData() {
-    return http.get(Uri.parse(infoUrl));
+    return [];
   }
 
   @override
@@ -65,30 +67,37 @@ class _HKOState extends State<HKO> {
       appBar: AppBar(
         title: const Text('HKO Warnings'),
         actions: [
-          Center(
-            child: Padding(
-              padding: const EdgeInsets.all(8),
-              child: ElevatedButton(
-                  onPressed: () {
-                    setState(() {
-                      warnings.addAll(warningStringMap.keys
-                          .map((key) => WarningInformation(
-                              key, null, ["Dummy description"], DateTime.now()))
-                          .toList());
-                    });
-                  },
-                  child: buildLastTick(lastTick)),
+          IconButton(
+            onPressed: () {
+              _tick();
+            },
+            icon: const Icon(Icons.refresh),
+          ),
+          Tooltip(
+            message: "Preview example warnings",
+            child: IconButton(
+              onPressed: () async {
+                setState(() {
+                  warnings = [];
+                  warnings.addAll(warningStringMap.keys
+                      .map((key) => WarningInformation(key, null,
+                          ["This is an example warning"], DateTime.now()))
+                      .toList());
+                });
+                await Future.delayed(const Duration(seconds: 10));
+                _tick();
+              },
+              icon: const Icon(Icons.info),
             ),
-          )
+          ),
         ],
       ),
       drawer: const NavigationDrawer(),
-      floatingActionButton: FloatingActionButton(
-        child: const Icon(Icons.refresh),
-        onPressed: () {
-          _tick();
-        },
-      ),
+      floatingActionButton: TextButton(
+          onPressed: () {
+            _tick();
+          },
+          child: buildLastTick(lastTick)),
       body: Center(
         child: warnings.isNotEmpty
             ? ListView.builder(

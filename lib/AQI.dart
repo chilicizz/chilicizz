@@ -196,14 +196,13 @@ class _AQIState extends State<AQI> {
             });
           },
         ),
-        title: buildAQILocationAutocomplete(
-            context,
-            (value) => {
+        title: AQILocationAutocomplete(
+            selectionCallback: (value) => {
                   widget.updateLocation(value),
                   editingLocation = false,
                 },
-            initial: textController.value.text,
-            editing: editingLocation),
+            initialValue: textController.value.text,
+            autofocus: editingLocation),
         trailing: ElevatedButton(
           onPressed: () {
             setState(() {
@@ -253,29 +252,29 @@ class _AQIState extends State<AQI> {
   }
 
   Future<void> _tick(Timer? t) async {
-    try {
-      var response = await _fetchData();
-      if (response.statusCode == 200) {
-        // If the server did return a 200 OK response,
-        // then parse the JSON.
-        var aqiFeed = jsonDecode(response.body);
-        if (aqiFeed?["status"]?.contains("ok")) {
-          setState(() {
-            data = marshalJSON(aqiFeed?["data"]);
-          });
-        } else {
-          debugPrint("Failed to fetch data");
-        }
-      }
-    } catch (e) {
-      debugPrint("Failed to fetch data $e");
-    }
+    var fetchedData = await fetchAQIData(widget.location);
+    setState(() {
+      data = fetchedData;
+    });
   }
+}
 
-  Future<http.Response> _fetchData() {
-    return http.get(Uri.parse(
-        'https://api.waqi.info/feed/${widget.location}/?token=$token'));
+Future<AQIData?> fetchAQIData(String location) async {
+  try {
+    var response = await http
+        .get(Uri.parse('https://api.waqi.info/feed/$location/?token=$token'));
+    if (response.statusCode == 200) {
+      var aqiFeed = jsonDecode(response.body);
+      if (aqiFeed?["status"]?.contains("ok")) {
+        return marshalJSON(aqiFeed?["data"]);
+      } else {
+        debugPrint("Failed to fetch data");
+      }
+    }
+  } catch (e) {
+    debugPrint("Failed to fetch data $e");
   }
+  return null;
 }
 
 Future<http.Response> locationQueryHttp(location) {
@@ -306,9 +305,28 @@ Future<List<AQILocation>> locationQuery(String location) async {
   }
 }
 
+class AQILocationAutocomplete extends StatelessWidget {
+  Function(String value) selectionCallback;
+  String? initialValue;
+  bool autofocus;
+
+  AQILocationAutocomplete(
+      {Key? key,
+      required this.selectionCallback,
+      this.autofocus = false,
+      this.initialValue})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return buildAQILocationAutocomplete(context, selectionCallback,
+        initial: initialValue, autofocus: autofocus);
+  }
+}
+
 Autocomplete<AQILocation> buildAQILocationAutocomplete(
     BuildContext context, Function(String value) selectionCallback,
-    {String? initial, bool editing = false}) {
+    {String? initial, bool autofocus = false}) {
   return Autocomplete<AQILocation>(
     fieldViewBuilder: (BuildContext context,
         TextEditingController textEditingController,
@@ -320,7 +338,7 @@ Autocomplete<AQILocation> buildAQILocationAutocomplete(
       textEditingController.selection = TextSelection(
           baseOffset: 0, extentOffset: textEditingController.text.length);
       return TextField(
-        autofocus: editing,
+        autofocus: autofocus,
         focusNode: focusNode,
         controller: textEditingController,
         decoration: const InputDecoration(hintText: "enter the name of a city"),
