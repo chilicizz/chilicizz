@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 
 
 AQIData marshalJSON(dynamic jsonResult) {
-  AQIData data = AQIData(
-      jsonResult?["city"]?["name"],
-      double.parse("${jsonResult["aqi"]}").floor(),
-      DateTime.parse("${jsonResult?["time"]?["iso"]}"));
+  num aqi = double.tryParse("${jsonResult["aqi"]}") ?? -1;
+  DateTime feedUpdate =
+      DateTime.tryParse("${jsonResult?["time"]?["iso"]}") ?? DateTime.now();
+  AQIData data =
+      AQIData(jsonResult?["city"]?["name"], (aqi).floor(), feedUpdate);
   for (dynamic attribution in jsonResult?["attributions"]) {
     data.attributions
         .add(Attribution("${attribution?["name"]}", "${attribution?["url"]}"));
@@ -95,6 +96,12 @@ class IAQIRecord {
 
 const AQIThresholds = [
   AQILevel(
+      Colors.grey,
+      "Unavailable",
+      "Air Quality data is unavailable for this location at this time.",
+      null,
+      -1),
+  AQILevel(
       Colors.lightGreen,
       "Good",
       "Air quality is considered satisfactory and air pollution poses little or no risk.",
@@ -135,11 +142,11 @@ const AQIThresholds = [
 List<IAQIRecord> iqiEntries = [
   IAQIRecord("t", "Temperature", unit: "°C", iconData: Icons.thermostat,
       colourFunction: (value) {
-    Color? bgColour;
-    if (value < 20) {
-      bgColour = Color.lerp(Colors.lightBlue, Colors.yellow, value / 20);
-    } else if (value < 35) {
-      bgColour = Color.lerp(Colors.yellow, Colors.red, (value - 20) / 15);
+        Color? bgColour;
+    if (value < 27) {
+      bgColour = Color.lerp(Colors.lightBlue, Colors.yellow, value / 27);
+    } else if (value < 40) {
+      bgColour = Color.lerp(Colors.yellow, Colors.red, (value - 27) / 15);
     } else {
       bgColour = Colors.red;
     }
