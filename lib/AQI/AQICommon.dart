@@ -114,10 +114,15 @@ class AQILevel {
   final String? advice;
   final int upperThreshold;
 
-  const AQILevel(this.color, this.name, this.detail, this.advice, this.upperThreshold);
+  const AQILevel(
+      this.color, this.name, this.detail, this.advice, this.upperThreshold);
 
   bool within(int value) {
     return value <= upperThreshold;
+  }
+
+  String longDescription() {
+    return detail + (advice != null ? "\n$advice" : '');
   }
 }
 
@@ -205,16 +210,16 @@ List<IAQIRecord> iqiEntries = [
   IAQIRecord("p", "Pressure", unit: "bar", iconData: Icons.storm),
   IAQIRecord("uvi", "UV index", iconData: Icons.wb_sunny,
       colourFunction: (value) {
-        Color? bgColour;
-        if (value < 5) {
-          bgColour = Color.lerp(Colors.green, Colors.amber, value / 5);
-        } else if (value < 11) {
-          bgColour = Color.lerp(Colors.amber, Colors.red, (value - 5) / 6);
-        } else {
-          bgColour = Colors.deepPurple;
-        }
-        return bgColour ?? Colors.blueAccent;
-      }),
+    Color? bgColour;
+    if (value < 5) {
+      bgColour = Color.lerp(Colors.green, Colors.amber, value / 5);
+    } else if (value < 11) {
+      bgColour = Color.lerp(Colors.amber, Colors.red, (value - 5) / 6);
+    } else {
+      bgColour = Colors.deepPurple;
+    }
+    return bgColour ?? Colors.blueAccent;
+  }),
   IAQIRecord("pm25", "PM 2.5"),
   IAQIRecord("pm10", "PM 10"),
   IAQIRecord("no2", "Nitrogen dioxide"),

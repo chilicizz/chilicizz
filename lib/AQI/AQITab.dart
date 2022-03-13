@@ -1,10 +1,10 @@
 import 'dart:async';
 
+import 'package:chilicizz/AQI/AQIListTile.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'AQIAutoComplete.dart';
-import 'AQICard.dart';
 
 class AQITab extends StatefulWidget {
   const AQITab({Key? key}) : super(key: key);
@@ -29,51 +29,51 @@ class _AQITabState extends State<AQITab> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      floatingActionButton: FloatingActionButton(
-        tooltip: 'Add a new tile',
-        child: const Icon(Icons.add),
-        onPressed: () {
-          showDialog(
-              context: context,
-              builder: (context) {
-                return buildAQILocationDialog(context);
-              });
-        },
-      ),
-      body: Center(
-        child: FutureBuilder(
-          future: _locations,
-          builder:
-              (BuildContext context, AsyncSnapshot<List<String>> snapshot) {
-            switch (snapshot.connectionState) {
-              case ConnectionState.waiting:
-                return const CircularProgressIndicator();
-              default:
-                if (snapshot.hasError) {
-                  locations = [];
-                } else {
-                  locations = snapshot.data ?? [];
-                }
-                return locations.isNotEmpty
-                    ? GridView.builder(
-                        scrollDirection: Axis.vertical,
-                        gridDelegate:
-                            const SliverGridDelegateWithMaxCrossAxisExtent(
-                          maxCrossAxisExtent: 400,
-                          childAspectRatio: 1.1,
-                        ),
-                        itemCount: locations.length,
-                        itemBuilder: (context, index) {
-                          return AQICard(
-                            location: locations[index],
-                            removeLocationCallback: removeLocation,
-                            updateLocationCallback: updateLocation,
-                          );
-                        })
-                    : const Text("No locations added");
-            }
+    return RefreshIndicator(
+      onRefresh: () {
+        return refresh();
+      },
+      child: Scaffold(
+        floatingActionButton: FloatingActionButton(
+          tooltip: 'Add a new tile',
+          child: const Icon(Icons.add),
+          onPressed: () {
+            showDialog(
+                context: context,
+                builder: (context) {
+                  return buildAQILocationDialog(context);
+                });
           },
+        ),
+        body: Center(
+          child: FutureBuilder(
+            future: _locations,
+            builder:
+                (BuildContext context, AsyncSnapshot<List<String>> snapshot) {
+              switch (snapshot.connectionState) {
+                case ConnectionState.waiting:
+                  return const CircularProgressIndicator();
+                default:
+                  if (snapshot.hasError) {
+                    locations = [];
+                  } else {
+                    locations = snapshot.data ?? [];
+                  }
+                  return locations.isNotEmpty
+                      ? ListView.builder(
+                          scrollDirection: Axis.vertical,
+                          itemCount: locations.length,
+                          itemBuilder: (context, index) {
+                            return AQIListTile(
+                              location: locations[index],
+                              removeLocationCallback: removeLocation,
+                              updateLocationCallback: updateLocation,
+                            );
+                          })
+                      : const Text("No locations added");
+              }
+            },
+          ),
         ),
       ),
     );
@@ -154,6 +154,14 @@ class _AQITabState extends State<AQITab> {
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                 content: Text('Updated tile $original to $newLocation')))
           });
+      _locations = _prefs.then((SharedPreferences prefs) {
+        return prefs.getStringList(aqiLocations) ?? <String>[];
+      });
+    });
+  }
+
+  Future<void> refresh() async {
+    setState(() {
       _locations = _prefs.then((SharedPreferences prefs) {
         return prefs.getStringList(aqiLocations) ?? <String>[];
       });

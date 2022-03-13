@@ -62,26 +62,22 @@ class _HKOWarningsState extends State<HKOWarnings> {
       floatingActionButton: Column(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          ElevatedButton(
-            onPressed: _tick,
-            child: buildLastTick(lastTick),
-          ),
-          Tooltip(
-            message: "Preview example warnings",
-            child: IconButton(
-              onPressed: () async {
-                setState(() {
-                  warnings = [];
-                  warnings.addAll(warningStringMap.keys
-                      .map((key) => WarningInformation(key, null,
-                          ["This is an example warning"], DateTime.now()))
-                      .toList());
-                });
-                await Future.delayed(const Duration(seconds: 10));
-                _tick();
-              },
-              icon: const Icon(Icons.info),
+          GestureDetector(
+            child: ElevatedButton(
+              onPressed: _tick,
+              child: buildLastTick(lastTick),
             ),
+            onLongPress: () async {
+              setState(() {
+                warnings = [];
+                warnings.addAll(warningStringMap.keys
+                    .map((key) => WarningInformation(key, null,
+                        ["This is an example warning"], DateTime.now()))
+                    .toList());
+              });
+              await Future.delayed(const Duration(seconds: 10));
+              _tick();
+            },
           ),
         ],
       ),
