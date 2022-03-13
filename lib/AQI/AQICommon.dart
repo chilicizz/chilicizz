@@ -98,6 +98,11 @@ class AQIData {
     }
     return AQIThresholds.last;
   }
+
+  // Remove the parenthesis
+  String getShortCityName() {
+    return cityName.replaceAll(RegExp('\\(.*?\\)'), '');
+  }
 }
 
 class Attribution {

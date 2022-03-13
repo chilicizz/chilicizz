@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../common.dart';
@@ -92,15 +91,13 @@ class _AQIListTileState extends State<AQIListTile> {
               confirmDismiss: (DismissDirection direction) async {
                 return await confirmDismiss(context);
               },
-              background: Expanded(
-                child: Container(
-                  alignment: Alignment.centerLeft,
-                  child: const Padding(
-                    padding: EdgeInsets.all(5),
-                    child: Icon(Icons.delete),
-                  ),
-                  color: Colors.red,
+              background: Container(
+                alignment: Alignment.centerLeft,
+                child: const Padding(
+                  padding: EdgeInsets.all(5),
+                  child: Icon(Icons.delete),
                 ),
+                color: Colors.red,
               ),
               child: GestureDetector(
                 onLongPress: () {
@@ -120,9 +117,9 @@ class _AQIListTileState extends State<AQIListTile> {
                     alignment: Alignment.centerLeft,
                     fit: BoxFit.scaleDown,
                     child: Text(
-                        data?.cityName != null
-                            ? data!.cityName.replaceAll(", ", "\n")
-                            : widget.location,
+                        isSmallDevice()
+                            ? data!.getShortCityName()
+                            : data!.cityName,
                         style: Theme.of(context).textTheme.headlineSmall),
                   ),
                   subtitle: buildLastUpdatedText(data?.lastUpdatedTime),

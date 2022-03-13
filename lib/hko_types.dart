@@ -32,6 +32,9 @@ class WarningInformation {
 
 List<WarningInformation> extractWarnings(dynamic json) {
   List<WarningInformation> result = [];
+  if (json == null || json?["details"] == null) {
+    return [];
+  }
   for (dynamic entry in json?["details"]) {
     try {
       String warningStatementCode = entry?["warningStatementCode"];
