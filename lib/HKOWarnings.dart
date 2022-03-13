@@ -7,14 +7,14 @@ import 'package:http/http.dart' as http;
 import 'common.dart';
 import 'hko_types.dart';
 
-class HKO extends StatefulWidget {
-  const HKO({Key? key}) : super(key: key);
+class HKOWarnings extends StatefulWidget {
+  const HKOWarnings({Key? key}) : super(key: key);
 
   @override
-  State<HKO> createState() => _HKOState();
+  State<HKOWarnings> createState() => _HKOWarningsState();
 }
 
-class _HKOState extends State<HKO> {
+class _HKOWarningsState extends State<HKOWarnings> {
   static const Duration tickInterval = Duration(minutes: 10);
 
   late Timer timer;
@@ -59,14 +59,12 @@ class _HKOState extends State<HKO> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('HKO Warnings'),
-        actions: [
-          IconButton(
-            onPressed: () {
-              _tick();
-            },
-            icon: const Icon(Icons.refresh),
+      floatingActionButton: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          ElevatedButton(
+            onPressed: _tick,
+            child: buildLastTick(lastTick),
           ),
           Tooltip(
             message: "Preview example warnings",
@@ -87,40 +85,40 @@ class _HKOState extends State<HKO> {
           ),
         ],
       ),
-      drawer: const NavigationDrawer(),
-      floatingActionButton: TextButton(
-          onPressed: () {
-            _tick();
-          },
-          child: buildLastTick(lastTick)),
       body: Center(
-        child: warnings.isNotEmpty
-            ? ListView.builder(
-                itemCount: warnings.length,
-                itemBuilder: (BuildContext context, int index) {
-                  var warning = warnings[index];
-                  CircleAvatar icon = warning.getCircleAvatar();
-                  return ExpansionTile(
-                    leading: icon,
-                    title: Text(warning.getDescription()),
-                    subtitle: buildIssued(warning.updateTime),
-                    initiallyExpanded: !isSmallDevice(),
-                    children: [
-                      for (var s in warning.contents)
-                        ListTile(
-                          title: Text(s),
-                        )
-                    ],
-                  );
-                },
-              )
-            : ListView(
-                children: [
-                  ListTile(
+        child: RefreshIndicator(
+          onRefresh: _tick,
+          child: warnings.isNotEmpty
+              ? ListView.builder(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  itemCount: warnings.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    var warning = warnings[index];
+                    CircleAvatar icon = warning.getCircleAvatar();
+                    return ExpansionTile(
+                      leading: icon,
+                      title: Text(warning.getDescription()),
+                      subtitle: buildIssued(warning.updateTime),
+                      initiallyExpanded: !isSmallDevice(),
+                      children: [
+                        for (var s in warning.contents)
+                          ListTile(
+                            title: Text(s),
+                          )
+                      ],
+                    );
+                  },
+                )
+              : ListView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  children: [
+                    ListTile(
                       title: const Text("No active warnings"),
-                      subtitle: buildLastTick(lastTick))
-                ],
-              ),
+                      subtitle: buildLastTick(lastTick),
+                    )
+                  ],
+                ),
+        ),
       ),
     );
   }

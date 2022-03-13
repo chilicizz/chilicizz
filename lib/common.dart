@@ -1,9 +1,21 @@
 import 'package:date_format/date_format.dart';
 import 'package:flutter/material.dart';
 
+class NavRoute {
+  String path;
+  String label;
+  Widget Function(BuildContext) buildFunction;
+
+  NavRoute(
+      {required this.path, required this.label, required this.buildFunction});
+}
+
 class NavigationDrawer extends StatelessWidget {
+  final List<NavRoute> routes;
+
   const NavigationDrawer({
     Key? key,
+    required this.routes,
   }) : super(key: key);
 
   @override
@@ -30,27 +42,14 @@ class NavigationDrawer extends StatelessWidget {
               ),
             ),
           ),
-          ListTile(
-            title: const Text('AQI Dashboard'),
-            onTap: () {
-              Navigator.pushNamedAndRemoveUntil(
-                  context, '/aqi', ModalRoute.withName('/'));
-            },
-          ),
-          ListTile(
-            title: const Text('HKO Warnings'),
-            onTap: () {
-              Navigator.pushNamedAndRemoveUntil(
-                  context, '/hko', ModalRoute.withName('/'));
-            },
-          ),
-          ListTile(
-            title: const Text('Bug'),
-            onTap: () {
-              Navigator.pushNamedAndRemoveUntil(
-                  context, '/bug', ModalRoute.withName('/'));
-            },
-          ),
+          for (var route in routes)
+            ListTile(
+              title: Text(route.label),
+              onTap: () {
+                Navigator.pushNamedAndRemoveUntil(
+                    context, route.path, ModalRoute.withName('/'));
+              },
+            ),
         ],
       ),
     );
@@ -72,7 +71,10 @@ Text buildLastUpdatedText(DateTime? lastUpdateTime) {
 }
 
 Text buildLastTick(DateTime lastTickTime) {
-  return Text("last refresh ${formatDate(lastTickTime.toLocal(), [
+  return Text(
+    "last refresh ${formatDate(
+      lastTickTime.toLocal(),
+      [
         D,
         " ",
         dd,
@@ -81,22 +83,26 @@ Text buildLastTick(DateTime lastTickTime) {
         " ",
         H,
         ":",
-        nn
-      ])}");
+        nn,
+      ],
+    )}",
+  );
 }
 
 Text buildIssued(DateTime lastTickTime) {
-  return Text("Issued ${formatDate(lastTickTime.toLocal(), [
-        D,
-        " ",
-        dd,
-        " ",
-        M,
-        " ",
-        H,
-        ":",
-        nn
-      ])}");
+  return Text(
+    "Issued ${formatDate(lastTickTime.toLocal(), [
+          D,
+          " ",
+          dd,
+          " ",
+          M,
+          " ",
+          H,
+          ":",
+          nn
+        ])}",
+  );
 }
 
 bool isSmallScreen(BuildContext context) {

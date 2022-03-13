@@ -1,20 +1,17 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 
-import 'aqi_types.dart';
-import 'common.dart';
+import '../common.dart';
+import 'AQIAutoComplete.dart';
+import 'AQICommon.dart';
 
-const String token = String.fromEnvironment('AQI_TOKEN');
-
-class AQI extends StatefulWidget {
+class AQICard extends StatefulWidget {
   final String location;
   final Function(String) removeLocationCallback;
   final Function(String, String) updateLocationCallback;
 
-  AQI(
+  AQICard(
       {Key? key,
       required this.location,
       required this.removeLocationCallback,
@@ -22,7 +19,7 @@ class AQI extends StatefulWidget {
       : super(key: key);
 
   @override
-  State<AQI> createState() => _AQIState();
+  State<AQICard> createState() => _AQICardState();
 
   void deleteMe() {
     removeLocationCallback(location);
@@ -35,7 +32,7 @@ class AQI extends StatefulWidget {
   }
 }
 
-class _AQIState extends State<AQI> {
+class _AQICardState extends State<AQICard> {
   static const Duration tickTime = Duration(minutes: 10);
   late Timer timer;
 
@@ -257,108 +254,4 @@ class _AQIState extends State<AQI> {
       data = fetchedData;
     });
   }
-}
-
-Future<AQIData?> fetchAQIData(String location) async {
-  try {
-    var response = await http
-        .get(Uri.parse('https://api.waqi.info/feed/$location/?token=$token'));
-    if (response.statusCode == 200) {
-      var aqiFeed = jsonDecode(response.body);
-      if (aqiFeed?["status"]?.contains("ok")) {
-        return marshalJSON(aqiFeed?["data"]);
-      } else {
-        debugPrint("Failed to fetch data");
-      }
-    }
-  } catch (e) {
-    debugPrint("Failed to fetch data $e");
-  }
-  return null;
-}
-
-Future<http.Response> locationQueryHttp(location) {
-  return http.get(Uri.parse(
-      'https://api.waqi.info/search/?keyword=$location&token=$token'));
-}
-
-Future<List<AQILocation>> locationQuery(String location) async {
-  var response = await locationQueryHttp(location.replaceAll('/', ''));
-  if (response.statusCode == 200) {
-    var aqiFeed = jsonDecode(response.body);
-    if (aqiFeed?["status"]?.contains("ok")) {
-      List<AQILocation> list = [];
-      dynamic jsonResult = aqiFeed?["data"];
-      for (dynamic entry in jsonResult) {
-        // entry["aqi"];
-        list.add(
-            AQILocation(entry["station"]?["name"], entry["station"]?["url"]));
-      }
-      list.sort((a, b) => a.url.compareTo(b.url));
-      return list;
-    } else {
-      debugPrint("Failed to fetch data");
-      return [];
-    }
-  } else {
-    return [];
-  }
-}
-
-class AQILocationAutocomplete extends StatelessWidget {
-  Function(String value) selectionCallback;
-  String? initialValue;
-  bool autofocus;
-
-  AQILocationAutocomplete(
-      {Key? key,
-      required this.selectionCallback,
-      this.autofocus = false,
-      this.initialValue})
-      : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return buildAQILocationAutocomplete(context, selectionCallback,
-        initial: initialValue, autofocus: autofocus);
-  }
-}
-
-Autocomplete<AQILocation> buildAQILocationAutocomplete(
-    BuildContext context, Function(String value) selectionCallback,
-    {String? initial, bool autofocus = false}) {
-  return Autocomplete<AQILocation>(
-    fieldViewBuilder: (BuildContext context,
-        TextEditingController textEditingController,
-        FocusNode focusNode,
-        VoidCallback onFieldSubmitted) {
-      if (initial != null) {
-        textEditingController.text = initial;
-      }
-      textEditingController.selection = TextSelection(
-          baseOffset: 0, extentOffset: textEditingController.text.length);
-      return TextField(
-        autofocus: autofocus,
-        focusNode: focusNode,
-        controller: textEditingController,
-        decoration: const InputDecoration(hintText: "enter the name of a city"),
-        onSubmitted: (value) {
-          selectionCallback(value);
-        },
-      );
-    },
-    displayStringForOption: (location) {
-      return "${location.name}\n(${location.url})";
-    },
-    optionsBuilder: (TextEditingValue textEditingValue) {
-      if (textEditingValue.text.isNotEmpty &&
-          textEditingValue.text.length > 3) {
-        return locationQuery(textEditingValue.text);
-      }
-      return const Iterable<AQILocation>.empty();
-    },
-    onSelected: (AQILocation selection) {
-      selectionCallback(selection.url);
-    },
-  );
 }

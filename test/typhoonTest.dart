@@ -17,7 +17,7 @@ void main() {
           await File('test/resources/typhoonExample.xml').readAsString();
       expect(fileContents.isNotEmpty, true,
           reason: "Test file should not be empty");
-      List<HKOTyphoon> typhoons = parseTyphoonFeed(fileContents);
+      List<Typhoon> typhoons = parseTyphoonFeed(fileContents);
       expect(typhoons.isNotEmpty, true, reason: "Should load one typhoon");
       expect(typhoons[0].id, 2102, reason: "ID was not parsed correctly");
       expect(typhoons[0].englishName, 'SURIGAE',

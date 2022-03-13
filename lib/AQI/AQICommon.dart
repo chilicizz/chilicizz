@@ -1,5 +1,9 @@
-import 'package:flutter/material.dart';
+import 'dart:convert';
 
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+
+const String token = String.fromEnvironment('AQI_TOKEN');
 
 AQIData marshalJSON(dynamic jsonResult) {
   num aqi = double.tryParse("${jsonResult["aqi"]}") ?? -1;
@@ -19,6 +23,63 @@ AQIData marshalJSON(dynamic jsonResult) {
   return data;
 }
 
+class AQILocation {
+  final String name;
+  final String url;
+
+  AQILocation(this.name, this.url);
+
+  @override
+  String toString() {
+    return name;
+  }
+}
+
+Future<http.Response> locationQueryHttp(location) {
+  return http.get(Uri.parse(
+      'https://api.waqi.info/search/?keyword=$location&token=$token'));
+}
+
+Future<List<AQILocation>> locationQuery(String location) async {
+  var response = await locationQueryHttp(location.replaceAll('/', ''));
+  if (response.statusCode == 200) {
+    var aqiFeed = jsonDecode(response.body);
+    if (aqiFeed?["status"]?.contains("ok")) {
+      List<AQILocation> list = [];
+      dynamic jsonResult = aqiFeed?["data"];
+      for (dynamic entry in jsonResult) {
+        // entry["aqi"];
+        list.add(
+            AQILocation(entry["station"]?["name"], entry["station"]?["url"]));
+      }
+      list.sort((a, b) => a.url.compareTo(b.url));
+      return list;
+    } else {
+      debugPrint("Failed to fetch data");
+      return [];
+    }
+  } else {
+    return [];
+  }
+}
+
+Future<AQIData?> fetchAQIData(String location) async {
+  try {
+    var response = await http
+        .get(Uri.parse('https://api.waqi.info/feed/$location/?token=$token'));
+    if (response.statusCode == 200) {
+      var aqiFeed = jsonDecode(response.body);
+      if (aqiFeed?["status"]?.contains("ok")) {
+        return marshalJSON(aqiFeed?["data"]);
+      } else {
+        debugPrint("Failed to fetch data");
+      }
+    }
+  } catch (e) {
+    debugPrint("Failed to fetch data $e");
+  }
+  return null;
+}
 
 class AQIData {
   String cityName;
@@ -53,23 +114,10 @@ class AQILevel {
   final String? advice;
   final int upperThreshold;
 
-  const AQILevel(
-      this.color, this.name, this.detail, this.advice, this.upperThreshold);
+  const AQILevel(this.color, this.name, this.detail, this.advice, this.upperThreshold);
 
   bool within(int value) {
     return value <= upperThreshold;
-  }
-}
-
-class AQILocation {
-  final String name;
-  final String url;
-
-  AQILocation(this.name, this.url);
-
-  @override
-  String toString() {
-    return name;
   }
 }
 
@@ -157,16 +205,16 @@ List<IAQIRecord> iqiEntries = [
   IAQIRecord("p", "Pressure", unit: "bar", iconData: Icons.storm),
   IAQIRecord("uvi", "UV index", iconData: Icons.wb_sunny,
       colourFunction: (value) {
-    Color? bgColour;
-    if (value < 5) {
-      bgColour = Color.lerp(Colors.green, Colors.amber, value / 5);
-    } else if (value < 11) {
-      bgColour = Color.lerp(Colors.amber, Colors.red, (value - 5) / 6);
-    } else {
-      bgColour = Colors.deepPurple;
-    }
-    return bgColour ?? Colors.blueAccent;
-  }),
+        Color? bgColour;
+        if (value < 5) {
+          bgColour = Color.lerp(Colors.green, Colors.amber, value / 5);
+        } else if (value < 11) {
+          bgColour = Color.lerp(Colors.amber, Colors.red, (value - 5) / 6);
+        } else {
+          bgColour = Colors.deepPurple;
+        }
+        return bgColour ?? Colors.blueAccent;
+      }),
   IAQIRecord("pm25", "PM 2.5"),
   IAQIRecord("pm10", "PM 10"),
   IAQIRecord("no2", "Nitrogen dioxide"),

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:xml/xml.dart';
@@ -13,8 +15,7 @@ class WarningInformation {
   List<String> contents;
   DateTime updateTime;
 
-  WarningInformation(
-      this.warningStatementCode, this.subType, this.contents, this.updateTime);
+  WarningInformation(this.warningStatementCode, this.subType, this.contents, this.updateTime);
 
   String getDescription() {
     return warningStringMap[subType ?? warningStatementCode] ??
@@ -114,26 +115,33 @@ const Map<String, CircleAvatar> warningIconMap = {
       backgroundColor: Colors.black),
 };
 
-Future<List<HKOTyphoon>> fetchTyphoonFeed() async {
+Future<List<Typhoon>> fetchTyphoonFeed() async {
   try {
-    var response = await http.get(Uri.parse(typhoonUrl));
+    var path = Uri.parse(typhoonUrl);
+    var response = await http.get(path, headers: {
+      HttpHeaders.contentTypeHeader: 'application/xml',
+      HttpHeaders.accessControlAllowOriginHeader: '*',
+      HttpHeaders.accessControlAllowHeadersHeader: '*',
+      HttpHeaders.accessControlAllowMethodsHeader: "POST,GET,DELETE,PUT,OPTIONS"
+    });
     if (response.statusCode == 200) {
       var typhoonFeed = parseTyphoonFeed(response.body);
       return typhoonFeed;
     }
   } catch (e) {
     debugPrint("Failed to fetch typhoon data $e");
+    rethrow;
   }
   return [];
 }
 
-class HKOTyphoon {
+class Typhoon {
   int id;
   String englishName;
   String chineseName;
   String url;
 
-  HKOTyphoon(
+  Typhoon(
       {required this.id,
       required this.chineseName,
       required this.englishName,
@@ -179,12 +187,12 @@ class TyphoonBulletin {
   TyphoonBulletin();
 }
 
-List<HKOTyphoon> parseTyphoonFeed(String xmlString) {
+List<Typhoon> parseTyphoonFeed(String xmlString) {
   try {
     final document = XmlDocument.parse(xmlString);
     final titles = document.findAllElements('TropicalCyclone');
     return titles.map((element) {
-      return HKOTyphoon(
+      return Typhoon(
         id: int.parse(element.findElements("TropicalCycloneID").single.text),
         chineseName:
             element.findElements("TropicalCycloneChineseName").single.text,
