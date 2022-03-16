@@ -46,9 +46,9 @@ class _HKOTyphoonTabState extends State<HKOTyphoonTab> {
         typhoons = [
           Typhoon(
               id: -1,
-              chineseName: '$e',
+              chineseName: '',
               englishName: "Failed to fetch typhoon data",
-              url: "")
+              url: "$e")
         ];
       });
     }

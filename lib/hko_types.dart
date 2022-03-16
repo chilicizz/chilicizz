@@ -130,12 +130,13 @@ Future<List<Typhoon>> fetchTyphoonFeed() async {
     if (response.statusCode == 200) {
       var typhoonFeed = parseTyphoonFeed(response.body);
       return typhoonFeed;
+    } else {
+      throw Exception('Feed returned ${response.body}');
     }
   } catch (e) {
     debugPrint("Failed to fetch typhoon data $e");
     rethrow;
   }
-  return [];
 }
 
 class Typhoon {
@@ -205,6 +206,7 @@ List<Typhoon> parseTyphoonFeed(String xmlString) {
       );
     }).toList();
   } catch (e) {
+    debugPrint("Failed to parse typhoon feed $e");
     return [];
   }
 }
@@ -235,6 +237,7 @@ TyphoonTrack? parseTyphoonTrack(String xmlString) {
         .toList();
     return TyphoonTrack(bulletin, currentAnalysis, past);
   } catch (e) {
+    debugPrint("Failed to parse typhoon track data $e");
     return null;
   }
 }
@@ -264,6 +267,7 @@ TyphoonPosition? parseEntry(XmlElement element) {
     }
     return entry;
   } catch (e) {
+    debugPrint("Failed to parse typhoon position data $e");
     return null;
   }
 }

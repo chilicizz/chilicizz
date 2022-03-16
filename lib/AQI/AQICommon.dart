@@ -55,10 +55,11 @@ Future<List<AQILocation>> locationQuery(String location) async {
       list.sort((a, b) => a.url.compareTo(b.url));
       return list;
     } else {
-      debugPrint("Failed to fetch data");
+      debugPrint("Failed to fetch data $location");
       return [];
     }
   } else {
+    debugPrint("Failed to fetch data $location");
     return [];
   }
 }
@@ -72,11 +73,11 @@ Future<AQIData?> fetchAQIData(String location) async {
       if (aqiFeed?["status"]?.contains("ok")) {
         return marshalJSON(aqiFeed?["data"]);
       } else {
-        debugPrint("Failed to fetch data");
+        debugPrint("AQI Feed returned error $location ${response.body}");
       }
     }
   } catch (e) {
-    debugPrint("Failed to fetch data $e");
+    debugPrint("Failed to fetch data $location $e");
   }
   return null;
 }

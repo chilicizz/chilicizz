@@ -3,11 +3,24 @@ import 'package:flutter/material.dart';
 
 class NavRoute {
   String path;
+  List<NavRoute> subRoutes;
   String label;
   Widget Function(BuildContext) buildFunction;
 
   NavRoute(
-      {required this.path, required this.label, required this.buildFunction});
+      {required this.path,
+      required this.label,
+      required this.buildFunction,
+      this.subRoutes = const []});
+
+  Map<String, Widget Function(BuildContext)> getRoutes() {
+    var routes = {path: buildFunction};
+    if (subRoutes.isNotEmpty) {
+      routes
+          .addAll({for (var e in subRoutes) "$path${e.path}": e.buildFunction});
+    }
+    return routes;
+  }
 }
 
 class NavigationDrawer extends StatelessWidget {
@@ -32,24 +45,55 @@ class NavigationDrawer extends StatelessWidget {
             child: Center(
               child: Column(
                 children: const <Widget>[
-                  Icon(
-                    Icons.account_circle,
-                    size: 64,
+                  Padding(
+                    padding: EdgeInsets.all(10.0),
+                    child: SizedBox(
+                        height: 64,
+                        child: Image(
+                            fit: BoxFit.fill,
+                            image: AssetImage('assets/cn.png'))),
                   ),
-                  Divider(),
-                  Text('Cyril NG LUNG KIT'),
+                  Text(
+                    'ChiliCizz',
+                    style:
+                        TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
+                  ),
+                  Text('a demo app made by\nCyril Ng Lung Kit 2022'),
                 ],
               ),
             ),
           ),
           for (var route in routes)
-            ListTile(
-              title: Text(route.label),
-              onTap: () {
-                Navigator.pushNamedAndRemoveUntil(
-                    context, route.path, ModalRoute.withName('/'));
-              },
-            ),
+            route.subRoutes.isEmpty
+                ? ListTile(
+                    title: Text(route.label),
+                    onTap: () {
+                      Navigator.pushNamedAndRemoveUntil(
+                          context, route.path, ModalRoute.withName('/'));
+                    },
+                  )
+                : ExpansionTile(
+                    initiallyExpanded: !isSmallDevice(),
+                    title: GestureDetector(
+                      onTap: () {
+                        Navigator.pushNamedAndRemoveUntil(
+                            context, route.path, ModalRoute.withName('/'));
+                      },
+                      child: Text(route.label),
+                    ),
+                    children: [
+                      for (var subRoute in route.subRoutes)
+                        ListTile(
+                          title: Text(subRoute.label),
+                          onTap: () {
+                            Navigator.pushNamedAndRemoveUntil(
+                                context,
+                                "${route.path}${subRoute.path}",
+                                ModalRoute.withName('/'));
+                          },
+                        )
+                    ],
+                  )
         ],
       ),
     );

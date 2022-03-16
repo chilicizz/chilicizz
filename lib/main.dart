@@ -8,21 +8,23 @@ import 'counter.dart';
 
 final List<NavRoute> routes = [
   NavRoute(
-      path: '/',
+      path: '/dashboard',
       label: "Dashboard",
-      buildFunction: (context) => const Dashboard()),
-  NavRoute(
-      path: '/dashboard/aqi',
-      label: "AQI",
-      buildFunction: (context) => const Dashboard(initial: 0)),
-  NavRoute(
-      path: '/dashboard/hko',
-      label: "HKO Warnings",
-      buildFunction: (context) => const Dashboard(initial: 1)),
-  NavRoute(
-      path: '/dashboard/typhoon',
-      label: "HKO Typhoon",
-      buildFunction: (context) => const Dashboard(initial: 2)),
+      buildFunction: (context) => const Dashboard(),
+      subRoutes: [
+        NavRoute(
+            path: '/aqi',
+            label: "AQI",
+            buildFunction: (context) => const Dashboard(initial: 0)),
+        NavRoute(
+            path: '/hko',
+            label: "HKO Warnings",
+            buildFunction: (context) => const Dashboard(initial: 1)),
+        NavRoute(
+            path: '/typhoon',
+            label: "HKO Typhoon",
+            buildFunction: (context) => const Dashboard(initial: 2)),
+      ]),
   NavRoute(
       path: '/counter',
       label: "Counter",
@@ -35,17 +37,20 @@ void main() {
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
-
   @override
   Widget build(BuildContext context) {
+    Map<String, Widget Function(BuildContext)> appRoutes = {};
+    for (var e in routes) {
+      appRoutes.addAll(e.getRoutes());
+    }
     return MaterialApp(
       title: 'chilicizz.github.io',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSwatch(
             primarySwatch: Colors.deepPurple, brightness: Brightness.light),
       ),
-      initialRoute: '/',
-      routes: {for (var e in routes) e.path: e.buildFunction},
+      initialRoute: '/dashboard',
+      routes: appRoutes,
     );
   }
 }
@@ -76,7 +81,7 @@ class _DashboardState extends State<Dashboard> {
               Tab(icon: Text("TYPHOON")),
             ],
           ),
-          actions: [],
+          actions: const [],
         ),
         body: const TabBarView(
           children: [
