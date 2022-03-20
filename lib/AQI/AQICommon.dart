@@ -20,6 +20,28 @@ AQIData marshalJSON(dynamic jsonResult) {
       data.iaqiData[entry] = jsonResult?["iaqi"]?[entry.code]?["v"];
     }
   }
+  for (IAQIRecord entry in iqiEntries) {
+    if (jsonResult?["forecast"]?["daily"]?[entry.code] != null) {
+      var cutoff = DateTime.now().subtract(const Duration(days: 2));
+      List<ForecastEntry> forecast = [];
+      for (dynamic forecastData in jsonResult?["forecast"]?["daily"]
+          ?[entry.code]) {
+        try {
+          DateTime day = DateTime.parse("${forecastData["day"]}");
+          if (day.isAfter(cutoff)) {
+            forecast.add(ForecastEntry(
+                average: forecastData["avg"],
+                min: forecastData["min"],
+                max: forecastData["max"],
+                date: day));
+          }
+        } catch (e) {
+          // ignored
+        }
+      }
+      data.iaqiForecast[entry] = forecast;
+    }
+  }
   return data;
 }
 
@@ -88,6 +110,7 @@ class AQIData {
   int aqi;
   Map<IAQIRecord, double> iaqiData = {};
   List<Attribution> attributions = [];
+  Map<IAQIRecord, List<ForecastEntry>> iaqiForecast = {};
 
   AQIData(this.cityName, this.aqi, this.lastUpdatedTime);
 
@@ -151,6 +174,19 @@ class IAQIRecord {
         ? colourFunction!(value)
         : Colors.blueAccent);
   }
+}
+
+class ForecastEntry {
+  int average;
+  int min;
+  int max;
+  DateTime date;
+
+  ForecastEntry(
+      {required this.average,
+      required this.min,
+      required this.max,
+      required this.date});
 }
 
 const AQIThresholds = [

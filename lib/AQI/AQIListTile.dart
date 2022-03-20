@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../common.dart';
 import 'AQIAutoComplete.dart';
 import 'AQICommon.dart';
+import 'ForecastChart.dart';
 
 class AQIListTile extends StatefulWidget {
   final String location;
@@ -133,6 +134,12 @@ class _AQIListTileState extends State<AQIListTile> {
                         children: data!.iaqiData.entries.map((entry) {
                           return _buildAQIChip(entry.key, entry.value);
                         }).toList(),
+                      ),
+                    ),
+                    ListTile(
+                      title: SizedBox(
+                        height: 200,
+                        child: ForecastChart.fromMap(data?.iaqiForecast),
                       ),
                     ),
                     ListTile(
