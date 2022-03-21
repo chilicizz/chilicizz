@@ -7,7 +7,7 @@ import 'package:xml/xml.dart';
 const String infoUrl =
     "https://data.weather.gov.hk/weatherAPI/opendata/weather.php?dataType=warningInfo&lang=en";
 const String typhoonUrl =
-    "https://www.weather.gov.hk/wxinfo/currwx/tc_list.xml";
+    "https://thingproxy.freeboard.io/fetch/https://www.weather.gov.hk/wxinfo/currwx/tc_list.xml";
 
 class WarningInformation {
   String warningStatementCode;
@@ -15,7 +15,8 @@ class WarningInformation {
   List<String> contents;
   DateTime updateTime;
 
-  WarningInformation(this.warningStatementCode, this.subType, this.contents, this.updateTime);
+  WarningInformation(
+      this.warningStatementCode, this.subType, this.contents, this.updateTime);
 
   String getDescription() {
     return warningStringMap[subType ?? warningStatementCode] ??
