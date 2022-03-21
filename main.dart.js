@@ -9593,7 +9593,7 @@ A.ks().$1(J.e5(l))}}return g},
 aoZ(){var s=0,r=A.a1(t.Do),q,p=2,o,n=[],m,l,k,j,i,h,g
 var $async$aoZ=A.a2(function(a,b){if(a===1){o=b
 s=p}while(true)switch(s){case 0:p=4
-m=A.lT("https://www.weather.gov.hk/wxinfo/currwx/tc_list.xml")
+m=A.lT("https://thingproxy.freeboard.io/fetch/https://www.weather.gov.hk/wxinfo/currwx/tc_list.xml")
 i=t.N
 s=7
 return A.a6(A.ap5(m,A.aN(["content-type","application/xml","access-control-allow-origin","*","access-control-allow-headers","*","access-control-allow-methods","POST,GET,DELETE,PUT,OPTIONS"],i,i)),$async$aoZ)
