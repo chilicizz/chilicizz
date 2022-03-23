@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:latlong2/latlong.dart';
 import 'package:xml/xml.dart';
 
 const String infoUrl =
@@ -123,11 +124,7 @@ Future<List<Typhoon>> fetchTyphoonFeed() async {
   try {
     var path = Uri.parse(typhoonUrl);
     var response = await http.get(path, headers: {
-      HttpHeaders.contentTypeHeader: 'application/xml',
-      HttpHeaders.accessControlAllowOriginHeader: '*',
-      HttpHeaders.accessControlAllowHeadersHeader: '*',
-      HttpHeaders.accessControlAllowMethodsHeader: "POST,GET,DELETE,PUT,OPTIONS"
-    });
+      HttpHeaders.contentTypeHeader: 'application/xml'});
     if (response.statusCode == 200) {
       var typhoonFeed = parseTyphoonFeed(response.body);
       return typhoonFeed;
@@ -180,9 +177,52 @@ class TyphoonPosition {
   late DateTime? time; // if no time then interpolated position
   late double latitude; // N
   late double longitude; // E
+  TyphoonClass _class = unknownClass;
 
   TyphoonPosition();
+
+  LatLng getLatLng() {
+    return LatLng(latitude, longitude);
+  }
+
+  TyphoonClass getTyphoonClass() {
+    if (_class == unknownClass) {
+      double speed = maximumWind ?? 0;
+      for (var typhoonClass in typhoonClasses) {
+        if (typhoonClass.within(speed)) {
+          _class = typhoonClass;
+          return typhoonClass;
+        }
+      }
+    }
+    return _class;
+  }
 }
+
+class TyphoonClass {
+  String name;
+  double minWind;
+  double maxWind;
+  Color color;
+
+  TyphoonClass(this.name, this.minWind, this.maxWind, this.color);
+
+  bool within(double speed) {
+    return speed >= minWind && speed < maxWind;
+  }
+}
+
+TyphoonClass unknownClass = TyphoonClass("unknown", -1, -1, Colors.lightBlue);
+
+List<TyphoonClass> typhoonClasses = [
+  TyphoonClass("Extratropical Low", double.minPositive, 41, Colors.blue),
+  TyphoonClass("Tropical Depression", 41, 62, Colors.lightGreen),
+  TyphoonClass("Tropical Storm", 62, 87, Colors.yellow),
+  TyphoonClass("Severe Tropical Storm", 87, 117, Colors.orange),
+  TyphoonClass("Typhoon", 117, 149, Colors.red),
+  TyphoonClass("Severe Typhoon", 149, 184, Colors.red.shade900),
+  TyphoonClass("Super Typhoon", 184, double.maxFinite, Colors.black),
+];
 
 class TyphoonBulletin {
   late String name;
@@ -236,6 +276,11 @@ TyphoonTrack? parseTyphoonTrack(String xmlString) {
         .map(parseEntry)
         .whereType<TyphoonPosition>()
         .toList();
+    // oldest first
+    past.sort((a, b) {
+      return a.time!.compareTo(b.time!);
+    });
+    past.add(currentAnalysis); // add latest for easy reference
     return TyphoonTrack(bulletin, currentAnalysis, past);
   } catch (e) {
     debugPrint("Failed to parse typhoon track data $e");

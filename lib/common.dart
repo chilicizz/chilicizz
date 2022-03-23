@@ -100,53 +100,49 @@ class NavigationDrawer extends StatelessWidget {
   }
 }
 
-Text buildLastUpdatedText(DateTime? lastUpdateTime) {
-  if (lastUpdateTime != null) {
-    return Text("last updated ${formatDate(lastUpdateTime.toLocal(), [
-          D,
-          " ",
-          H,
-          ":",
-          nn
-        ])}");
+String simpleDateFormat(DateTime? datetime) {
+  if (datetime != null) {
+    return formatDate(datetime.toLocal(), [D, " ", dd, ", ", H, ":", nn]);
   } else {
-    return const Text("");
+    return "";
   }
 }
 
-Text buildLastTick(DateTime lastTickTime) {
-  return Text(
-    "last refresh ${formatDate(
-      lastTickTime.toLocal(),
+String shortDateFormat(DateTime? dateTime) {
+  if (dateTime != null) {
+    return formatDate(
+      dateTime.toLocal(),
       [
         D,
         " ",
         dd,
         " ",
         M,
-        " ",
+        ", ",
         H,
         ":",
         nn,
       ],
-    )}",
-  );
+    );
+  } else {
+    return "";
+  }
+}
+
+Text buildLastUpdatedText(DateTime? lastUpdateTime) {
+  if (lastUpdateTime != null) {
+    return Text("last updated ${simpleDateFormat(lastUpdateTime.toLocal())}");
+  } else {
+    return const Text("");
+  }
+}
+
+Text buildLastTick(DateTime lastTickTime) {
+  return Text("last refresh ${shortDateFormat(lastTickTime.toLocal())}");
 }
 
 Text buildIssued(DateTime lastTickTime) {
-  return Text(
-    "Issued ${formatDate(lastTickTime.toLocal(), [
-          D,
-          " ",
-          dd,
-          " ",
-          M,
-          " ",
-          H,
-          ":",
-          nn
-        ])}",
-  );
+  return Text("Issued ${shortDateFormat(lastTickTime.toLocal())}");
 }
 
 bool isSmallScreen(BuildContext context) {
