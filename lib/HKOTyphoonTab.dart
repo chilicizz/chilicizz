@@ -49,9 +49,9 @@ class _HKOTyphoonTabState extends State<HKOTyphoonTab> {
         typhoons = [
           Typhoon(
               id: -1,
-              chineseName: '',
+              chineseName: '$e',
               englishName: "Failed to fetch typhoon data",
-              url: "$e")
+              url: "")
         ];
       });
     }
@@ -90,7 +90,19 @@ class _HKOTyphoonTabState extends State<HKOTyphoonTab> {
                           AsyncSnapshot<TyphoonTrack?> snapshot) {
                         switch (snapshot.connectionState) {
                           case ConnectionState.waiting:
-                            return const CircularProgressIndicator();
+                            return ListTile(
+                              trailing: const CircularProgressIndicator(),
+                              title: FittedBox(
+                                alignment: Alignment.centerLeft,
+                                fit: BoxFit.scaleDown,
+                                child: Text(
+                                    "${typhoon.englishName} (${typhoon.chineseName})",
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .headlineMedium),
+                              ),
+                              subtitle: buildLastTick(lastTick),
+                            );
                           default:
                             if (snapshot.hasError) {
                               return Text(
@@ -125,7 +137,23 @@ class _HKOTyphoonTabState extends State<HKOTyphoonTab> {
                                   ],
                                 );
                               } else {
-                                return const Text("No data");
+                                return ListTile(
+                                  trailing: const Tooltip(
+                                    child: Icon(Icons.error),
+                                    message:
+                                        "Failed to load typhoon track data",
+                                  ),
+                                  title: FittedBox(
+                                    alignment: Alignment.centerLeft,
+                                    fit: BoxFit.scaleDown,
+                                    child: Text(
+                                        "${typhoon.englishName} (${typhoon.chineseName})",
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .headlineMedium),
+                                  ),
+                                  subtitle: buildLastTick(lastTick),
+                                );
                               }
                             }
                         }
@@ -199,17 +227,14 @@ class HKOTyphoonTrackWidget extends StatelessWidget {
         options: MapOptions(
           center: mid,
           zoom: 5.0,
-          allowPanningOnScrollingParent: false,
         ),
         layers: [
           TileLayerOptions(
-            urlTemplate:
-                //"https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-                "http://a.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png",
+            urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+            //"http://a.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png",
             subdomains: ['a', 'b', 'c'],
             attributionBuilder: (_) {
-              return Text(
-                  "© OpenStreetMap (track data from ${track.bulletin.provider})");
+              return Text("© OpenStreetMap / ${track.bulletin.provider}");
             },
           ),
           PolylineLayerOptions(

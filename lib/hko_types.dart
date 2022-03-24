@@ -212,7 +212,7 @@ class TyphoonClass {
   }
 }
 
-TyphoonClass unknownClass = TyphoonClass("unknown", -1, -1, Colors.lightBlue);
+TyphoonClass unknownClass = TyphoonClass("unknown", -1, -1, Colors.grey);
 
 List<TyphoonClass> typhoonClasses = [
   TyphoonClass("Extratropical Low", double.minPositive, 41, Colors.blue),
@@ -220,7 +220,7 @@ List<TyphoonClass> typhoonClasses = [
   TyphoonClass("Tropical Storm", 62, 87, Colors.yellow),
   TyphoonClass("Severe Tropical Storm", 87, 117, Colors.orange),
   TyphoonClass("Typhoon", 117, 149, Colors.red),
-  TyphoonClass("Severe Typhoon", 149, 184, Colors.red.shade900),
+  TyphoonClass("Severe Typhoon", 149, 184, Colors.deepPurple),
   TyphoonClass("Super Typhoon", 184, double.maxFinite, Colors.black),
 ];
 
