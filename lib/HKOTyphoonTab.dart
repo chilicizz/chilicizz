@@ -231,6 +231,9 @@ class HKOTyphoonTrackWidget extends StatelessWidget {
         options: MapOptions(
           center: mid,
           zoom: 5.0,
+          interactiveFlags: InteractiveFlag.drag |
+              InteractiveFlag.pinchZoom |
+              InteractiveFlag.doubleTapZoom,
         ),
         layers: [
           TileLayerOptions(
