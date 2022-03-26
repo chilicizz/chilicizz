@@ -158,3 +158,28 @@ bool isSmallDevice() {
   final data = MediaQueryData.fromWindow(WidgetsBinding.instance!.window);
   return data.size.shortestSide < 600;
 }
+
+ListView loadingListView() {
+  return ListView(
+    children: const [
+      ListTile(
+        leading: CircularProgressIndicator(),
+        title: Text("Loading..."),
+      ),
+    ],
+  );
+}
+
+ListView hasErrorListView(AsyncSnapshot snapshot) {
+  return ListView(
+    children: [
+      ListTile(
+        leading: const CircleAvatar(
+          child: Icon(Icons.error),
+        ),
+        title: const Text("Error loading data"),
+        subtitle: Text("${snapshot.error}"),
+      ),
+    ],
+  );
+}

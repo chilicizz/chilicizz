@@ -8,7 +8,8 @@ import 'package:xml/xml.dart';
 const String infoUrl =
     "https://data.weather.gov.hk/weatherAPI/opendata/weather.php?dataType=warningInfo&lang=en";
 const String typhoonUrl =
-    "https://thingproxy.freeboard.io/fetch/https://www.weather.gov.hk/wxinfo/currwx/tc_list.xml";
+    "https://www.weather.gov.hk/wxinfo/currwx/tc_list.xml";
+const String thingProxyPrefix = "https://thingproxy.freeboard.io/fetch/";
 
 class WarningInformation {
   String warningStatementCode;
@@ -122,9 +123,9 @@ const Map<String, CircleAvatar> warningIconMap = {
 
 Future<List<Typhoon>> fetchTyphoonFeed() async {
   try {
-    var path = Uri.parse(typhoonUrl);
-    var response = await http.get(path, headers: {
-      HttpHeaders.contentTypeHeader: 'application/xml'});
+    var path = Uri.parse(thingProxyPrefix + typhoonUrl);
+    var response = await http
+        .get(path, headers: {HttpHeaders.contentTypeHeader: 'application/xml'});
     if (response.statusCode == 200) {
       var typhoonFeed = parseTyphoonFeed(response.body);
       return typhoonFeed;

@@ -19,14 +19,16 @@ class _HKOTyphoonTabState extends State<HKOTyphoonTab> {
   static const Duration tickInterval = Duration(minutes: 10);
 
   late Timer timer;
-  late List<Typhoon> typhoons;
-
+  late Future<List<Typhoon>> futureTyphoons;
   DateTime lastTick = DateTime.now();
+
+  Future<List<Typhoon>> dummyTyphoonList() async {
+    return [dummyTyphoon()];
+  }
 
   @override
   void initState() {
     super.initState();
-    typhoons = [];
     timer = Timer.periodic(tickInterval, (Timer t) => _tick(t: t));
     _tick();
   }
@@ -37,24 +39,10 @@ class _HKOTyphoonTabState extends State<HKOTyphoonTab> {
   }
 
   Future<void> _tick({Timer? t}) async {
-    try {
-      var fetchedTyphoons = await fetchTyphoonFeed();
+    setState(() {
+      futureTyphoons = fetchTyphoonFeed();
       lastTick = DateTime.now();
-      setState(() {
-        typhoons = fetchedTyphoons;
-      });
-    } catch (e) {
-      lastTick = DateTime.now();
-      setState(() {
-        typhoons = [
-          Typhoon(
-              id: -1,
-              chineseName: '$e',
-              englishName: "Failed to fetch typhoon data",
-              url: "")
-        ];
-      });
-    }
+    });
   }
 
   @override
@@ -68,7 +56,7 @@ class _HKOTyphoonTabState extends State<HKOTyphoonTab> {
             child: buildLastTick(lastTick),
             onLongPress: () {
               setState(() {
-                typhoons.add(dummyTyphoon());
+                futureTyphoons = dummyTyphoonList();
               });
             },
           ),
@@ -77,114 +65,117 @@ class _HKOTyphoonTabState extends State<HKOTyphoonTab> {
       body: Center(
         child: RefreshIndicator(
           onRefresh: _tick,
-          child: typhoons.isNotEmpty
-              ? ListView.builder(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  itemCount: typhoons.length,
-                  itemBuilder: (BuildContext context, int index) {
-                    var typhoon = typhoons[index];
-                    return FutureBuilder(
-                      initialData: null,
-                      future: typhoon.getTyphoonTrack(),
-                      builder: (BuildContext context,
-                          AsyncSnapshot<TyphoonTrack?> snapshot) {
-                        switch (snapshot.connectionState) {
-                          case ConnectionState.waiting:
-                            return ListTile(
-                              leading: const CircularProgressIndicator(),
-                              title: FittedBox(
-                                alignment: Alignment.centerLeft,
-                                fit: BoxFit.scaleDown,
-                                child: Text(
-                                    "${typhoon.englishName} (${typhoon.chineseName})",
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .headlineMedium),
-                              ),
-                              subtitle: buildLastTick(lastTick),
-                            );
-                          default:
-                            if (snapshot.hasError) {
-                              return ListView(
-                                children: [
-                                  ListTile(
-                                    leading: const CircleAvatar(
-                                      child: Icon(Icons.error),
-                                    ),
-                                    title: const Text(
-                                        "Error loading typhoon data"),
-                                    subtitle: Text(snapshot.error.toString()),
-                                  )
-                                ],
-                              );
-                            } else {
-                              if (snapshot.data != null) {
-                                TyphoonTrack track = snapshot.data!;
-                                return ExpansionTile(
-                                  leading: CircleAvatar(
-                                    child: const Icon(Icons.storm),
-                                    backgroundColor:
-                                        track.current.getTyphoonClass().color,
-                                  ),
-                                  title: FittedBox(
-                                    alignment: Alignment.centerLeft,
-                                    fit: BoxFit.scaleDown,
-                                    child: Text(
-                                        "${track.current.intensity} ${typhoon.englishName} (${typhoon.chineseName})",
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .headlineMedium),
-                                  ),
-                                  subtitle: Text(
-                                      "${shortDateFormat(track.bulletin.time)} ${!track.current.maximumWind!.isNaN ? '${track.current.maximumWind} km/h' : ""}"),
-                                  initiallyExpanded: !isSmallDevice(),
-                                  children: [
-                                    SizedBox(
-                                      height: 500,
-                                      child:
-                                          HKOTyphoonTrackWidget(snapshot.data!),
-                                    ),
-                                  ],
-                                );
-                              } else {
-                                return ListTile(
-                                  leading: const Tooltip(
-                                    child: Icon(Icons.error),
-                                    message:
-                                        "Failed to load typhoon track data",
-                                  ),
-                                  title: FittedBox(
-                                    alignment: Alignment.centerLeft,
-                                    fit: BoxFit.scaleDown,
-                                    child: Text(
-                                        "${typhoon.englishName} (${typhoon.chineseName})",
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .headlineMedium),
-                                  ),
-                                  subtitle: buildLastTick(lastTick),
-                                );
-                              }
-                            }
-                        }
-                      },
-                    );
-                  },
-                )
-              : ListView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  children: [
-                    ListTile(
-                      leading: const CircleAvatar(
-                        child: Icon(Icons.done),
-                      ),
-                      title: const Text("No current typhoon warnings"),
-                      subtitle: buildLastTick(lastTick),
-                    )
-                  ],
-                ),
+          child: FutureBuilder(
+            future: futureTyphoons,
+            builder:
+                (BuildContext context, AsyncSnapshot<List<Typhoon>> snapshot) {
+              switch (snapshot.connectionState) {
+                case ConnectionState.waiting:
+                  return loadingListView();
+                default:
+                  List<Typhoon> typhoons;
+                  if (snapshot.hasError) {
+                    return hasErrorListView(snapshot);
+                  } else {
+                    typhoons = snapshot.data ?? [];
+                  }
+                  return typhoons.isNotEmpty
+                      ? ListView.builder(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          itemCount: typhoons.length,
+                          itemBuilder: (BuildContext context, int index) {
+                            var typhoon = typhoons[index];
+                            return buildTyphoonTile(typhoon);
+                          },
+                        )
+                      : buildNoCurrentTyphoons();
+              }
+            },
+          ),
         ),
       ),
+    );
+  }
+
+  ListView buildNoCurrentTyphoons() {
+    return ListView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      children: [
+        ListTile(
+          leading: const CircleAvatar(
+            child: Icon(Icons.done),
+          ),
+          title: const Text("No current typhoon warnings"),
+          subtitle: buildLastTick(lastTick),
+        )
+      ],
+    );
+  }
+
+  FutureBuilder<TyphoonTrack?> buildTyphoonTile(Typhoon typhoon) {
+    return FutureBuilder(
+      initialData: null,
+      future: typhoon.getTyphoonTrack(),
+      builder: (BuildContext context, AsyncSnapshot<TyphoonTrack?> snapshot) {
+        switch (snapshot.connectionState) {
+          case ConnectionState.waiting:
+            return ListTile(
+              leading: const CircularProgressIndicator(),
+              title: FittedBox(
+                alignment: Alignment.centerLeft,
+                fit: BoxFit.scaleDown,
+                child: Text("${typhoon.englishName} (${typhoon.chineseName})",
+                    style: Theme.of(context).textTheme.headlineMedium),
+              ),
+              subtitle: buildLastTick(lastTick),
+            );
+          default:
+            if (snapshot.hasError) {
+              return hasErrorListView(snapshot);
+            } else {
+              if (snapshot.data != null) {
+                TyphoonTrack track = snapshot.data!;
+                return ExpansionTile(
+                  leading: CircleAvatar(
+                    child: const Icon(Icons.storm),
+                    backgroundColor: track.current.getTyphoonClass().color,
+                  ),
+                  title: FittedBox(
+                    alignment: Alignment.centerLeft,
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                        "${track.current.intensity} ${typhoon.englishName} (${typhoon.chineseName})",
+                        style: Theme.of(context).textTheme.headlineMedium),
+                  ),
+                  subtitle: Text(
+                      "${shortDateFormat(track.bulletin.time)} ${!track.current.maximumWind!.isNaN ? '${track.current.maximumWind} km/h' : ""}"),
+                  initiallyExpanded: !isSmallDevice(),
+                  children: [
+                    SizedBox(
+                      height: 500,
+                      child: HKOTyphoonTrackWidget(snapshot.data!),
+                    ),
+                  ],
+                );
+              } else {
+                return ListTile(
+                  leading: const Tooltip(
+                    child: Icon(Icons.error),
+                    message: "Failed to load typhoon track data",
+                  ),
+                  title: FittedBox(
+                    alignment: Alignment.centerLeft,
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                        "${typhoon.englishName} (${typhoon.chineseName})",
+                        style: Theme.of(context).textTheme.headlineMedium),
+                  ),
+                  subtitle: buildLastTick(lastTick),
+                );
+              }
+            }
+        }
+      },
     );
   }
 }

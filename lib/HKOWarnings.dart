@@ -94,22 +94,10 @@ class _HKOWarningsState extends State<HKOWarnings> {
                 AsyncSnapshot<List<WarningInformation>> snapshot) {
               switch (snapshot.connectionState) {
                 case ConnectionState.waiting:
-                  return ListView(children: const [
-                    ListTile(
-                      leading: CircularProgressIndicator(),
-                      title: Text("Loading..."),
-                    ),
-                  ]);
+                  return loadingListView();
                 default:
                   if (snapshot.hasError) {
-                    return ListView(children: [
-                      ListTile(
-                        leading: const CircleAvatar(
-                          child: Icon(Icons.error),
-                        ),
-                        title: Text("${snapshot.error}"),
-                      ),
-                    ]);
+                    return hasErrorListView(snapshot);
                   } else {
                     var warnings = snapshot.data ?? [];
                     return warnings.isNotEmpty
