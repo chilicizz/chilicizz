@@ -91,7 +91,7 @@ class _HKOTyphoonTabState extends State<HKOTyphoonTab> {
                         switch (snapshot.connectionState) {
                           case ConnectionState.waiting:
                             return ListTile(
-                              trailing: const CircularProgressIndicator(),
+                              leading: const CircularProgressIndicator(),
                               title: FittedBox(
                                 alignment: Alignment.centerLeft,
                                 fit: BoxFit.scaleDown,
@@ -105,8 +105,18 @@ class _HKOTyphoonTabState extends State<HKOTyphoonTab> {
                             );
                           default:
                             if (snapshot.hasError) {
-                              return Text(
-                                  "Error: ${snapshot.error.toString()}");
+                              return ListView(
+                                children: [
+                                  ListTile(
+                                    leading: const CircleAvatar(
+                                      child: Icon(Icons.error),
+                                    ),
+                                    title: const Text(
+                                        "Error loading typhoon data"),
+                                    subtitle: Text(snapshot.error.toString()),
+                                  )
+                                ],
+                              );
                             } else {
                               if (snapshot.data != null) {
                                 TyphoonTrack track = snapshot.data!;
@@ -138,7 +148,7 @@ class _HKOTyphoonTabState extends State<HKOTyphoonTab> {
                                 );
                               } else {
                                 return ListTile(
-                                  trailing: const Tooltip(
+                                  leading: const Tooltip(
                                     child: Icon(Icons.error),
                                     message:
                                         "Failed to load typhoon track data",
@@ -165,6 +175,9 @@ class _HKOTyphoonTabState extends State<HKOTyphoonTab> {
                   physics: const AlwaysScrollableScrollPhysics(),
                   children: [
                     ListTile(
+                      leading: const CircleAvatar(
+                        child: Icon(Icons.done),
+                      ),
                       title: const Text("No current typhoon warnings"),
                       subtitle: buildLastTick(lastTick),
                     )

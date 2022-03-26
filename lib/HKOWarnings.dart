@@ -18,14 +18,13 @@ class _HKOWarningsState extends State<HKOWarnings> {
   static const Duration tickInterval = Duration(minutes: 10);
 
   late Timer timer;
-  late List<WarningInformation> warnings;
+  late Future<List<WarningInformation>> futureWarnings;
 
   DateTime lastTick = DateTime.now();
 
   @override
   void initState() {
     super.initState();
-    warnings = [];
     timer = Timer.periodic(tickInterval, (Timer t) => _tick(t: t));
     _tick();
   }
@@ -36,10 +35,9 @@ class _HKOWarningsState extends State<HKOWarnings> {
   }
 
   Future<void> _tick({Timer? t}) async {
-    var fetchedWarnings = await getWarnings();
-    lastTick = DateTime.now();
     setState(() {
-      warnings = fetchedWarnings;
+      futureWarnings = getWarnings();
+      lastTick = DateTime.now();
     });
   }
 
@@ -56,6 +54,15 @@ class _HKOWarningsState extends State<HKOWarnings> {
     return [];
   }
 
+  Future<List<WarningInformation>> dummyWarnings() async {
+    List<WarningInformation> warnings = [];
+    warnings.addAll(warningStringMap.keys
+        .map((key) => WarningInformation(
+            key, null, ["This is an example warning"], DateTime.now()))
+        .toList());
+    return warnings;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -69,11 +76,7 @@ class _HKOWarningsState extends State<HKOWarnings> {
             ),
             onLongPress: () async {
               setState(() {
-                warnings = [];
-                warnings.addAll(warningStringMap.keys
-                    .map((key) => WarningInformation(key, null,
-                        ["This is an example warning"], DateTime.now()))
-                    .toList());
+                futureWarnings = dummyWarnings();
               });
               await Future.delayed(const Duration(seconds: 10));
               _tick();
@@ -84,36 +87,67 @@ class _HKOWarningsState extends State<HKOWarnings> {
       body: Center(
         child: RefreshIndicator(
           onRefresh: _tick,
-          child: warnings.isNotEmpty
-              ? ListView.builder(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  itemCount: warnings.length,
-                  itemBuilder: (BuildContext context, int index) {
-                    var warning = warnings[index];
-                    CircleAvatar icon = warning.getCircleAvatar();
-                    return ExpansionTile(
-                      leading: icon,
-                      title: Text(warning.getDescription()),
-                      subtitle: buildIssued(warning.updateTime),
-                      initiallyExpanded: !isSmallDevice(),
-                      children: [
-                        for (var s in warning.contents)
-                          ListTile(
-                            title: Text(s),
-                          )
-                      ],
-                    );
-                  },
-                )
-              : ListView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  children: [
+          child: FutureBuilder<List<WarningInformation>>(
+            future: futureWarnings,
+            initialData: const [],
+            builder: (BuildContext context,
+                AsyncSnapshot<List<WarningInformation>> snapshot) {
+              switch (snapshot.connectionState) {
+                case ConnectionState.waiting:
+                  return ListView(children: const [
                     ListTile(
-                      title: const Text("No active warnings"),
-                      subtitle: buildLastTick(lastTick),
-                    )
-                  ],
-                ),
+                      leading: CircularProgressIndicator(),
+                      title: Text("Loading..."),
+                    ),
+                  ]);
+                default:
+                  if (snapshot.hasError) {
+                    return ListView(children: [
+                      ListTile(
+                        leading: const CircleAvatar(
+                          child: Icon(Icons.error),
+                        ),
+                        title: Text("${snapshot.error}"),
+                      ),
+                    ]);
+                  } else {
+                    var warnings = snapshot.data ?? [];
+                    return warnings.isNotEmpty
+                        ? ListView.builder(
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            itemCount: warnings.length,
+                            itemBuilder: (BuildContext context, int index) {
+                              var warning = warnings[index];
+                              CircleAvatar icon = warning.getCircleAvatar();
+                              return ExpansionTile(
+                                leading: icon,
+                                title: Text(warning.getDescription()),
+                                subtitle: buildIssued(warning.updateTime),
+                                initiallyExpanded: !isSmallDevice(),
+                                children: [
+                                  for (var s in warning.contents)
+                                    ListTile(
+                                      title: Text(s),
+                                    )
+                                ],
+                              );
+                            },
+                          )
+                        : ListView(
+                            children: [
+                              ListTile(
+                                leading: const CircleAvatar(
+                                  child: Icon(Icons.done),
+                                ),
+                                title: const Text("No active warnings"),
+                                subtitle: buildLastTick(lastTick),
+                              ),
+                            ],
+                          );
+                  }
+              }
+            },
+          ),
         ),
       ),
     );
