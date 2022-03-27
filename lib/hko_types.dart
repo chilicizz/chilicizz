@@ -9,7 +9,8 @@ const String infoUrl =
     "https://data.weather.gov.hk/weatherAPI/opendata/weather.php?dataType=warningInfo&lang=en";
 const String typhoonUrl =
     "https://www.weather.gov.hk/wxinfo/currwx/tc_list.xml";
-const String thingProxyPrefix = "https://thingproxy.freeboard.io/fetch/";
+const String corsProxyPrefix =
+    "https://proxy.chilicizz.workers.dev/corsproxy/?apiurl=";
 
 class WarningInformation {
   String warningStatementCode;
@@ -29,7 +30,10 @@ class WarningInformation {
   CircleAvatar getCircleAvatar() {
     return warningIconMap[subType ?? warningStatementCode] ??
         CircleAvatar(
-            child: FittedBox(child: Text(subType ?? warningStatementCode)));
+          child: FittedBox(
+            child: Text(subType ?? warningStatementCode),
+          ),
+        );
   }
 }
 
@@ -123,9 +127,13 @@ const Map<String, CircleAvatar> warningIconMap = {
 
 Future<List<Typhoon>> fetchTyphoonFeed() async {
   try {
-    var path = Uri.parse(thingProxyPrefix + typhoonUrl);
-    var response = await http
-        .get(path, headers: {HttpHeaders.contentTypeHeader: 'application/xml'});
+    var path = Uri.parse(corsProxyPrefix + typhoonUrl);
+    var response = await http.get(path, headers: {
+      HttpHeaders.contentTypeHeader: 'application/xml',
+      HttpHeaders.accessControlAllowOriginHeader: '*',
+      HttpHeaders.accessControlAllowMethodsHeader: 'GET,HEAD,POST,OPTIONS',
+      HttpHeaders.accessControlAllowHeadersHeader: '*',
+    });
     if (response.statusCode == 200) {
       var typhoonFeed = parseTyphoonFeed(response.body);
       return typhoonFeed;
@@ -152,7 +160,8 @@ class Typhoon {
 
   Future<TyphoonTrack?> getTyphoonTrack() async {
     try {
-      var response = await http.get(Uri.parse(url));
+      Uri uri = Uri.parse(corsProxyPrefix + url);
+      var response = await http.get(uri);
       if (response.statusCode == 200) {
         var typhoonTrack = parseTyphoonTrack(response.body);
         return typhoonTrack;

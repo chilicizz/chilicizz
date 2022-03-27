@@ -22,7 +22,7 @@ AQIData marshalJSON(dynamic jsonResult) {
   }
   for (IAQIRecord entry in iqiEntries) {
     if (jsonResult?["forecast"]?["daily"]?[entry.code] != null) {
-      var cutoff = DateTime.now().subtract(const Duration(days: 2));
+      var cutoff = DateTime.now().subtract(const Duration(days: 1));
       List<ForecastEntry> forecast = [];
       for (dynamic forecastData in jsonResult?["forecast"]?["daily"]
           ?[entry.code]) {

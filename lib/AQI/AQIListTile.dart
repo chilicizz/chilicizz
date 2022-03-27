@@ -167,8 +167,9 @@ class _AQIListTileState extends State<AQIListTile> {
           content: const Text("Are you sure you wish to delete this item?"),
           actions: <Widget>[
             TextButton(
-                onPressed: () => Navigator.of(context).pop(true),
-                child: const Text("DELETE")),
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text("DELETE"),
+            ),
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
               child: const Text("CANCEL"),
@@ -210,12 +211,13 @@ class _AQIListTileState extends State<AQIListTile> {
           },
         ),
         title: AQILocationAutocomplete(
-            selectionCallback: (value) => {
-                  widget.updateLocation(value),
-                  editingLocation = false,
-                },
-            initialValue: textController.value.text,
-            autofocus: editingLocation),
+          selectionCallback: (value) => {
+            widget.updateLocation(value),
+            editingLocation = false,
+          },
+          initialValue: textController.value.text,
+          autofocus: editingLocation,
+        ),
         trailing: ElevatedButton(
           onPressed: () {
             setState(() {
