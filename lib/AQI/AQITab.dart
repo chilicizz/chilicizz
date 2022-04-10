@@ -34,17 +34,6 @@ class _AQITabState extends State<AQITab> {
         return refresh();
       },
       child: Scaffold(
-        floatingActionButton: FloatingActionButton(
-          tooltip: 'Add a new tile',
-          child: const Icon(Icons.add),
-          onPressed: () {
-            showDialog(
-                context: context,
-                builder: (context) {
-                  return buildAQILocationDialog(context);
-                });
-          },
-        ),
         body: Center(
           child: FutureBuilder(
             future: _locations,
@@ -62,18 +51,40 @@ class _AQITabState extends State<AQITab> {
                   return locations.isNotEmpty
                       ? ListView.builder(
                           scrollDirection: Axis.vertical,
-                          itemCount: locations.length,
+                          itemCount: locations.length + 1,
+                          // add one for autocomplete
                           itemBuilder: (context, index) {
+                            if (index == locations.length) {
+                              return buildAutocompleteTile(context);
+                            }
                             return AQIListTile(
                               location: locations[index],
                               removeLocationCallback: removeLocation,
                               updateLocationCallback: updateLocation,
                             );
                           })
-                      : const Text("No locations added");
+                      : ListView(
+                          children: [buildAutocompleteTile(context)],
+                        );
               }
             },
           ),
+        ),
+      ),
+    );
+  }
+
+  ListTile buildAutocompleteTile(BuildContext context) {
+    return ListTile(
+      title:
+          buildAQILocationAutocomplete(context, addLocation, autofocus: true),
+      trailing: Tooltip(
+        message: "Current Location",
+        child: IconButton(
+          onPressed: () {
+            addLocation('here');
+          },
+          icon: const Icon(Icons.my_location),
         ),
       ),
     );
@@ -94,7 +105,6 @@ class _AQITabState extends State<AQITab> {
           child: IconButton(
             onPressed: () {
               addLocation('here');
-              Navigator.pop(context);
             },
             icon: const Icon(Icons.my_location),
           ),
@@ -114,6 +124,9 @@ class _AQITabState extends State<AQITab> {
     if (locations.contains(location)) {
       ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Location $location already exists')));
+      return;
+    }
+    if (location.isEmpty) {
       return;
     }
     setState(() {

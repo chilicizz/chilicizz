@@ -107,6 +107,7 @@ class _AQIListTileState extends State<AQIListTile> {
                   });
                 },
                 child: ExpansionTile(
+                  //initiallyExpanded: !isSmallDevice(),
                   leading: Tooltip(
                     message: data!.getLevel().name,
                     child: CircleAvatar(
@@ -124,7 +125,6 @@ class _AQIListTileState extends State<AQIListTile> {
                         style: Theme.of(context).textTheme.headlineSmall),
                   ),
                   subtitle: buildLastUpdatedText(data?.lastUpdatedTime),
-                  initiallyExpanded: !isSmallDevice(),
                   children: [
                     ListTile(
                       title: Wrap(

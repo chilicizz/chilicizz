@@ -4,7 +4,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
-import 'common.dart';
+import '../common.dart';
 import 'hko_types.dart';
 
 class HKOWarnings extends StatefulWidget {

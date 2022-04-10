@@ -62,8 +62,17 @@ Future<http.Response> locationQueryHttp(location) {
       'https://api.waqi.info/search/?keyword=$location&token=$token'));
 }
 
+Map<String, List<AQILocation>> cache = {};
+
 Future<List<AQILocation>> locationQuery(String location) async {
-  var response = await locationQueryHttp(location.replaceAll('/', ''));
+  location = location.toLowerCase().replaceAll('/', '');
+  String additional = location.contains(" ")
+      ? location.substring(location.indexOf(" ") + 1, location.length)
+      : "";
+  if (cache.containsKey(location)) {
+    return cache[location]!;
+  }
+  var response = await locationQueryHttp(location);
   if (response.statusCode == 200) {
     var aqiFeed = jsonDecode(response.body);
     if (aqiFeed?["status"]?.contains("ok")) {
@@ -75,6 +84,12 @@ Future<List<AQILocation>> locationQuery(String location) async {
             AQILocation(entry["station"]?["name"], entry["station"]?["url"]));
       }
       list.sort((a, b) => a.url.compareTo(b.url));
+      if (additional.isNotEmpty) {
+        list = list
+            .where((element) => element.name.toLowerCase().contains(additional))
+            .toList();
+      }
+      cache[location] = list;
       return list;
     } else {
       debugPrint("Failed to fetch data $location");

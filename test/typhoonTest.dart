@@ -7,7 +7,7 @@
 
 import 'dart:io';
 
-import 'package:chilicizz/hko_types.dart';
+import 'package:chilicizz/HKO/hko_types.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

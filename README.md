@@ -7,3 +7,5 @@ Homepage for Cyril Ng Lung Kit
 * AQI Dashboard using data from aqicn.org
 * HK Observatory warnings from hko.gov.hk
 * HK Observatory typhoon warnings (in progress)
+
+flutter packages pub run build_runner build

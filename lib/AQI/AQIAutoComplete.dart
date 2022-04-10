@@ -3,11 +3,11 @@ import 'package:flutter/material.dart';
 import 'AQICommon.dart';
 
 class AQILocationAutocomplete extends StatelessWidget {
-  Function(String value) selectionCallback;
-  String? initialValue;
-  bool autofocus;
+  final Function(String value) selectionCallback;
+  final String? initialValue;
+  final bool autofocus;
 
-  AQILocationAutocomplete(
+  const AQILocationAutocomplete(
       {Key? key,
       required this.selectionCallback,
       this.autofocus = false,
@@ -40,7 +40,7 @@ Autocomplete<AQILocation> buildAQILocationAutocomplete(
         controller: textEditingController,
         decoration: const InputDecoration(hintText: "enter the name of a city"),
         onSubmitted: (value) {
-          selectionCallback(value);
+          onFieldSubmitted();
         },
       );
     },
@@ -50,7 +50,7 @@ Autocomplete<AQILocation> buildAQILocationAutocomplete(
     optionsBuilder: (TextEditingValue textEditingValue) {
       if (textEditingValue.text.isNotEmpty &&
           textEditingValue.text.length > 3) {
-        return locationQuery(textEditingValue.text);
+        return locationQuery(textEditingValue.text.trim());
       }
       return const Iterable<AQILocation>.empty();
     },

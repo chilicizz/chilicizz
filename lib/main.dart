@@ -1,8 +1,10 @@
-import 'package:chilicizz/HKOTyphoonTab.dart';
+import 'package:chilicizz/HKO/HKOTyphoonTab.dart';
+import 'package:chilicizz/signInForm.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import 'AQI/AQITab.dart';
-import 'HKOWarnings.dart';
+import 'HKO/HKOWarnings.dart';
 import 'common.dart';
 import 'counter.dart';
 
@@ -26,17 +28,27 @@ final List<NavRoute> routes = [
             buildFunction: (context) => const Dashboard(initial: 2)),
       ]),
   NavRoute(
-      path: '/counter',
-      label: "Counter",
-      buildFunction: (context) => const MyHomePage(title: "demo")),
+    path: '/login',
+    label: "Login",
+    buildFunction: (context) => const SignInHttpDemo(),
+  ),
+  NavRoute(
+    path: '/counter',
+    label: "Counter",
+    buildFunction: (context) => const MyHomePage(title: "demo"),
+  ),
 ];
 
 void main() {
-  runApp(const MyApp());
+  runApp(ChangeNotifierProvider(
+    child: const MyApp(),
+    create: (BuildContext context) {},
+  ));
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     Map<String, Widget Function(BuildContext)> appRoutes = {};
@@ -92,5 +104,33 @@ class _DashboardState extends State<Dashboard> {
         ),
       ),
     );
+  }
+}
+
+class User {
+  String username;
+  String firstName;
+  String lastName;
+
+  User(this.username, this.firstName, this.lastName);
+}
+
+class Auth extends ChangeNotifier {
+  // https://docs.flutter.dev/development/data-and-backend/state-mgmt/simple
+  // Consumer<Auth>()
+  User? _loggedInUser;
+
+  bool isLoggedIn() {
+    return _loggedInUser != null;
+  }
+
+  void logIn(User user) {
+    _loggedInUser = user;
+    notifyListeners();
+  }
+
+  void logOut() {
+    _loggedInUser = null;
+    notifyListeners();
   }
 }
