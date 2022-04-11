@@ -35,6 +35,14 @@ class _AQITabState extends State<AQITab> {
         return refresh();
       },
       child: Scaffold(
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            setState(() {
+              _displayInput = true;
+            });
+          },
+          child: const Icon(Icons.add),
+        ),
         body: Center(
           child: FutureBuilder(
             future: _locations,
@@ -51,23 +59,14 @@ class _AQITabState extends State<AQITab> {
                   }
                   return locations.isNotEmpty
                       ? ListView.builder(
-                          scrollDirection: Axis.vertical,
-                          itemCount: locations.length + 1,
+                      scrollDirection: Axis.vertical,
+                          itemCount: _displayInput
+                              ? locations.length + 1
+                              : locations.length,
                           // add one for autocomplete
                           itemBuilder: (context, index) {
                             if (index == locations.length) {
-                              return _displayInput
-                                  ? buildAutocompleteTile(context)
-                                  : IconButton(
-                                      onPressed: () {
-                                        setState(() {
-                                          _displayInput = true;
-                                        });
-                                      },
-                                      color:
-                                          Theme.of(context).colorScheme.primary,
-                                      icon: const Icon(Icons.add_circle),
-                                    );
+                              return buildAutocompleteTile(context);
                             }
                             return AQIListTile(
                               location: locations[index],
@@ -76,8 +75,8 @@ class _AQITabState extends State<AQITab> {
                             );
                           })
                       : ListView(
-                          children: [buildAutocompleteTile(context)],
-                        );
+                    children: [buildAutocompleteTile(context)],
+                  );
               }
             },
           ),

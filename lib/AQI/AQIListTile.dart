@@ -12,7 +12,7 @@ class AQIListTile extends StatefulWidget {
   final Function(String) removeLocationCallback;
   final Function(String, String) updateLocationCallback;
 
-  AQIListTile(
+  const AQIListTile(
       {Key? key,
       required this.location,
       required this.removeLocationCallback,
@@ -167,12 +167,12 @@ class _AQIListTileState extends State<AQIListTile> {
           content: const Text("Are you sure you wish to delete this item?"),
           actions: <Widget>[
             TextButton(
-              onPressed: () => Navigator.of(context).pop(true),
-              child: const Text("DELETE"),
-            ),
-            TextButton(
               onPressed: () => Navigator.of(context).pop(false),
               child: const Text("CANCEL"),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text("DELETE"),
             ),
           ],
         );

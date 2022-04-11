@@ -1,4 +1,5 @@
 import 'package:chilicizz/HKO/HKOTyphoonTab.dart';
+import 'package:chilicizz/RSSReader.dart';
 import 'package:chilicizz/signInForm.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -31,6 +32,11 @@ final List<NavRoute> routes = [
     path: '/login',
     label: "Login",
     buildFunction: (context) => const SignInHttpDemo(),
+  ),
+  NavRoute(
+    path: '/rss',
+    label: "RSS Reader",
+    buildFunction: (context) => const RSSReader(),
   ),
   NavRoute(
     path: '/counter',

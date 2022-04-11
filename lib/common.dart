@@ -46,9 +46,9 @@ class NavigationDrawer extends StatelessWidget {
               child: Column(
                 children: const <Widget>[
                   Padding(
-                    padding: EdgeInsets.all(10.0),
+                    padding: EdgeInsets.all(5.0),
                     child: SizedBox(
-                        height: 64,
+                        height: 60,
                         child: Image(
                             fit: BoxFit.fill,
                             image: AssetImage('assets/cn.png'))),
