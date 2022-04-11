@@ -18,6 +18,7 @@ class _AQITabState extends State<AQITab> {
   final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
   List<String> locations = [];
   late Future<List<String>> _locations;
+  bool _displayInput = false;
 
   @override
   void initState() {
@@ -55,7 +56,18 @@ class _AQITabState extends State<AQITab> {
                           // add one for autocomplete
                           itemBuilder: (context, index) {
                             if (index == locations.length) {
-                              return buildAutocompleteTile(context);
+                              return _displayInput
+                                  ? buildAutocompleteTile(context)
+                                  : IconButton(
+                                      onPressed: () {
+                                        setState(() {
+                                          _displayInput = true;
+                                        });
+                                      },
+                                      color:
+                                          Theme.of(context).colorScheme.primary,
+                                      icon: const Icon(Icons.add_circle),
+                                    );
                             }
                             return AQIListTile(
                               location: locations[index],
@@ -76,6 +88,13 @@ class _AQITabState extends State<AQITab> {
 
   ListTile buildAutocompleteTile(BuildContext context) {
     return ListTile(
+      leading: IconButton(
+        color: Theme.of(context).colorScheme.primary,
+        onPressed: () {
+          addLocation("");
+        },
+        icon: const Icon(Icons.cancel),
+      ),
       title:
           buildAQILocationAutocomplete(context, addLocation, autofocus: true),
       trailing: Tooltip(
@@ -126,10 +145,11 @@ class _AQITabState extends State<AQITab> {
           SnackBar(content: Text('Location $location already exists')));
       return;
     }
-    if (location.isEmpty) {
-      return;
-    }
     setState(() {
+      _displayInput = false;
+      if (location.isEmpty) {
+        return;
+      }
       locations.add(location);
       prefs.setStringList(aqiLocations, locations).then((bool success) => {
             ScaffoldMessenger.of(context).showSnackBar(
