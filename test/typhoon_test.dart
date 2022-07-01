@@ -24,7 +24,7 @@ void main() {
           reason: "Name not parsed correctly");
       expect(typhoons[0].chineseName, '舒力基',
           reason: "Chinese name not parsed correctly");
-      expect(typhoons[0].url,
+      expect(typhoons[0].url.trim(),
           'http://www.weather.gov.hk/wxinfo/currwx/hko_tctrack_2102.xml',
           reason: "URL Not parsed correctly");
     });
@@ -42,6 +42,12 @@ void main() {
           reason: "Should load current status");
       expect(typhoonTrack?.past != null && typhoonTrack!.past.isNotEmpty, true,
           reason: "Should load past status");
+    });
+
+    test('testFetchTyphoon', () async {
+      List<Typhoon> fileContents = await fetchTyphoonFeed();
+      expect(fileContents.isNotEmpty, true,
+          reason: "Test file should not be empty");
     });
   });
 }

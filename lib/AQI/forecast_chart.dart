@@ -1,7 +1,7 @@
 import 'package:charts_flutter/flutter.dart' as charts;
 import 'package:flutter/material.dart';
 
-import 'AQICommon.dart';
+import 'aqi_common.dart';
 
 class ForecastChart extends StatelessWidget {
   late List<charts.Series<ForecastEntry, DateTime>> seriesList;

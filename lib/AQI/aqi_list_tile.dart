@@ -3,9 +3,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../common.dart';
-import 'AQIAutoComplete.dart';
-import 'AQICommon.dart';
-import 'ForecastChart.dart';
+import 'aqi_auto_complete.dart';
+import 'aqi_common.dart';
+import 'forecast_chart.dart';
 
 class AQIListTile extends StatefulWidget {
   final String location;

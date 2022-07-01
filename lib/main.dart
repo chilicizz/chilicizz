@@ -1,11 +1,11 @@
-import 'package:chilicizz/HKO/HKOTyphoonTab.dart';
-import 'package:chilicizz/RSSReader.dart';
-import 'package:chilicizz/signInForm.dart';
+import 'package:chilicizz/HKO/hko_typhoon_tab.dart';
+import 'package:chilicizz/rss_reader.dart';
+import 'package:chilicizz/signin_form.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'AQI/AQITab.dart';
-import 'HKO/HKOWarnings.dart';
+import 'AQI/aqi_tab.dart';
+import 'HKO/hko_warnings.dart';
 import 'common.dart';
 import 'counter.dart';
 

@@ -7,7 +7,7 @@ import 'package:json_annotation/json_annotation.dart';
 import 'common.dart';
 import 'main.dart';
 
-part 'signInForm.g.dart';
+part 'signin_form.g.dart';
 
 @JsonSerializable()
 class FormData {

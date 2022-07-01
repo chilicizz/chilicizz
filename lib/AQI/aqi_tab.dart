@@ -1,10 +1,10 @@
 import 'dart:async';
 
-import 'package:chilicizz/AQI/AQIListTile.dart';
+import 'package:chilicizz/AQI/aqi_list_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'AQIAutoComplete.dart';
+import 'aqi_auto_complete.dart';
 
 class AQITab extends StatefulWidget {
   const AQITab({Key? key}) : super(key: key);

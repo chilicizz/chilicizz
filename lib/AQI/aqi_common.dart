@@ -130,12 +130,12 @@ class AQIData {
   AQIData(this.cityName, this.aqi, this.lastUpdatedTime);
 
   AQILevel getLevel() {
-    for (final level in AQIThresholds) {
+    for (final level in aqiThresholds) {
       if (level.within(aqi)) {
         return level;
       }
     }
-    return AQIThresholds.last;
+    return aqiThresholds.last;
   }
 
   // Remove the parenthesis
@@ -204,7 +204,7 @@ class ForecastEntry {
       required this.date});
 }
 
-const AQIThresholds = [
+const aqiThresholds = [
   AQILevel(
       Colors.grey,
       "Unavailable",

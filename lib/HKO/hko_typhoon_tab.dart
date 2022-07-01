@@ -5,7 +5,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../common.dart';
-import 'dummyTyphoon.dart';
+import 'dummy_typhoon.dart';
 import 'hko_types.dart';
 
 class HKOTyphoonTab extends StatefulWidget {

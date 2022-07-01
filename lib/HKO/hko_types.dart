@@ -1,11 +1,12 @@
-import 'dart:io';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart';
 import 'package:xml/xml.dart';
 
-//https://data.weather.gov.hk/weatherAPI/doc/HKO_Open_Data_API_Documentation.pdf
+// https://www.hko.gov.hk/en/abouthko/opendata_intro.htm
+// https://data.weather.gov.hk/weatherAPI/doc/HKO_Open_Data_API_Documentation.pdf
 const String infoUrl =
     "https://data.weather.gov.hk/weatherAPI/opendata/weather.php?dataType=warningInfo&lang=en";
 const String typhoonUrl =
@@ -144,15 +145,11 @@ const Map<String, CircleAvatar> warningIconMap = {
 
 Future<List<Typhoon>> fetchTyphoonFeed() async {
   try {
-    var path = Uri.parse(corsProxyPrefix + typhoonUrl);
-    var response = await http.get(path, headers: {
-      HttpHeaders.contentTypeHeader: 'application/xml',
-      HttpHeaders.accessControlAllowOriginHeader: '*',
-      HttpHeaders.accessControlAllowMethodsHeader: 'GET,HEAD,POST,OPTIONS',
-      HttpHeaders.accessControlAllowHeadersHeader: '*',
-    });
+    var path = Uri.parse(typhoonUrl);
+    var response = await http.get(path);
     if (response.statusCode == 200) {
-      var typhoonFeed = parseTyphoonFeed(response.body);
+      String xmlString = const Utf8Decoder().convert(response.bodyBytes);
+      var typhoonFeed = parseTyphoonFeed(xmlString);
       return typhoonFeed;
     } else {
       throw Exception('Feed returned ${response.body}');
@@ -180,7 +177,8 @@ class Typhoon {
       Uri uri = Uri.parse(corsProxyPrefix + url);
       var response = await http.get(uri);
       if (response.statusCode == 200) {
-        var typhoonTrack = parseTyphoonTrack(response.body);
+        String xmlDoc = const Utf8Decoder().convert(response.bodyBytes);
+        var typhoonTrack = parseTyphoonTrack(xmlDoc);
         return typhoonTrack;
       }
     } catch (e) {
@@ -274,6 +272,7 @@ List<Typhoon> parseTyphoonFeed(String xmlString) {
       );
     }).toList();
   } catch (e) {
+    debugPrint(xmlString.replaceAll('\n', ''));
     debugPrint("Failed to parse typhoon feed $e");
     return [];
   }
@@ -310,6 +309,7 @@ TyphoonTrack? parseTyphoonTrack(String xmlString) {
     past.add(currentAnalysis); // add latest for easy reference
     return TyphoonTrack(bulletin, currentAnalysis, past);
   } catch (e) {
+    debugPrint(xmlString.replaceAll('\n', ''));
     debugPrint("Failed to parse typhoon track data $e");
     return null;
   }
