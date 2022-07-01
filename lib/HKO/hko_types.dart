@@ -145,7 +145,7 @@ const Map<String, CircleAvatar> warningIconMap = {
 
 Future<List<Typhoon>> fetchTyphoonFeed() async {
   try {
-    var path = Uri.parse(typhoonUrl);
+    var path = Uri.parse(corsProxyPrefix + typhoonUrl);
     var response = await http.get(path);
     if (response.statusCode == 200) {
       String xmlString = const Utf8Decoder().convert(response.bodyBytes);
