@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart';
 import 'package:xml/xml.dart';
 
+//https://data.weather.gov.hk/weatherAPI/doc/HKO_Open_Data_API_Documentation.pdf
 const String infoUrl =
     "https://data.weather.gov.hk/weatherAPI/opendata/weather.php?dataType=warningInfo&lang=en";
 const String typhoonUrl =
@@ -65,10 +66,10 @@ const Map<String, String> warningStringMap = {
   "WRAINB": "Black Rainstorm Warning",
   "TC1": "Standby Signal No.1",
   "TC3": "Strong Wind Signal No.3",
-  "T8NE": "No.8 North East Gale or Storm",
-  "T8SE": "No.8 South East Gale or Storm",
-  "T8SW": "No.8 South West Gale or Storm",
-  "T8NW": "No.8 North West Gale or Storm",
+  "TC8NE": "No.8 North East Gale or Storm",
+  "TC8SE": "No.8 South East Gale or Storm",
+  "TC8SW": "No.8 South West Gale or Storm",
+  "TC8NW": "No.8 North West Gale or Storm",
   "TC9": "Increasing Gale or Storm No.9",
   "TC10": "Hurricane Signal No.10",
   "WFROST": "Frost Warning",
@@ -92,14 +93,30 @@ const Map<String, CircleAvatar> warningIconMap = {
   "WRAINA": CircleAvatar(child: Text('🌧'), backgroundColor: Colors.amber),
   "WRAINR": CircleAvatar(child: Text('🌧'), backgroundColor: Colors.red),
   "WRAINB": CircleAvatar(child: Text('🌧'), backgroundColor: Colors.black),
-  "TC1": CircleAvatar(child: Text("T1"), backgroundColor: Colors.amber),
-  "TC3": CircleAvatar(child: Text("T3"), backgroundColor: Colors.amber),
-  "T8NE": CircleAvatar(child: Text("T8"), backgroundColor: Colors.amber),
-  "T8SE": CircleAvatar(child: Text("T8"), backgroundColor: Colors.amber),
-  "T8SW": CircleAvatar(child: Text("T8"), backgroundColor: Colors.amber),
-  "T8NW": CircleAvatar(child: Text("T8"), backgroundColor: Colors.amber),
-  "TC9": CircleAvatar(child: Text("T9"), backgroundColor: Colors.amber),
-  "TC10": CircleAvatar(child: Text("T10"), backgroundColor: Colors.amber),
+  "TC1": CircleAvatar(
+      child: Text("T1", style: TextStyle(color: Colors.black)),
+      backgroundColor: Colors.amber),
+  "TC3": CircleAvatar(
+      child: Text("T3", style: TextStyle(color: Colors.black)),
+      backgroundColor: Colors.amber),
+  "TC8NE": CircleAvatar(
+      child: Text("T8", style: TextStyle(color: Colors.black)),
+      backgroundColor: Colors.amber),
+  "TC8SE": CircleAvatar(
+      child: Text("T8", style: TextStyle(color: Colors.black)),
+      backgroundColor: Colors.amber),
+  "TC8SW": CircleAvatar(
+      child: Text("T8", style: TextStyle(color: Colors.black)),
+      backgroundColor: Colors.amber),
+  "TC8NW": CircleAvatar(
+      child: Text("T8", style: TextStyle(color: Colors.black)),
+      backgroundColor: Colors.amber),
+  "TC9": CircleAvatar(
+      child: Text("T9", style: TextStyle(color: Colors.black)),
+      backgroundColor: Colors.amber),
+  "TC10": CircleAvatar(
+      child: Text("T10", style: TextStyle(color: Colors.black)),
+      backgroundColor: Colors.amber),
 
   "WFROST": CircleAvatar(
       child: Icon(Icons.ac_unit, color: Colors.white),
