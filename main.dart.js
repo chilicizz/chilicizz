@@ -10052,7 +10052,7 @@ A.h2().$1(J.en(l))}}return g},
 auK(){var s=0,r=A.W(t.Do),q,p=2,o,n=[],m,l,k,j,i,h,g,f
 var $async$auK=A.X(function(a,b){if(a===1){o=b
 s=p}while(true)switch(s){case 0:p=4
-m=A.jV("https://www.weather.gov.hk/wxinfo/currwx/tc_list.xml")
+m=A.jV("https://proxy.chilicizz.workers.dev/corsproxy/?apiurl=https://www.weather.gov.hk/wxinfo/currwx/tc_list.xml")
 s=7
 return A.a1(A.a_T(m),$async$auK)
 case 7:l=b
