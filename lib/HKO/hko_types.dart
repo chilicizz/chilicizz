@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -146,7 +147,12 @@ const Map<String, CircleAvatar> warningIconMap = {
 Future<List<Typhoon>> fetchTyphoonFeed() async {
   try {
     var path = Uri.parse(corsProxyPrefix + typhoonUrl);
-    var response = await http.get(path);
+    var response = await http.get(path, headers: {
+      HttpHeaders.contentTypeHeader: 'application/xml',
+      HttpHeaders.accessControlAllowOriginHeader: '*',
+      HttpHeaders.accessControlAllowMethodsHeader: 'GET,HEAD,POST,OPTIONS',
+      HttpHeaders.accessControlAllowHeadersHeader: '*',
+    });
     if (response.statusCode == 200) {
       String xmlString = const Utf8Decoder().convert(response.bodyBytes);
       var typhoonFeed = parseTyphoonFeed(xmlString);
@@ -175,7 +181,12 @@ class Typhoon {
   Future<TyphoonTrack?> getTyphoonTrack() async {
     try {
       Uri uri = Uri.parse(corsProxyPrefix + url);
-      var response = await http.get(uri);
+      var response = await http.get(uri, headers: {
+        HttpHeaders.contentTypeHeader: 'application/xml',
+        HttpHeaders.accessControlAllowOriginHeader: '*',
+        HttpHeaders.accessControlAllowMethodsHeader: 'GET,HEAD,POST,OPTIONS',
+        HttpHeaders.accessControlAllowHeadersHeader: '*',
+      });
       if (response.statusCode == 200) {
         String xmlDoc = const Utf8Decoder().convert(response.bodyBytes);
         var typhoonTrack = parseTyphoonTrack(xmlDoc);
@@ -191,23 +202,25 @@ class Typhoon {
 class TyphoonTrack {
   TyphoonBulletin bulletin;
   List<TyphoonPosition> past;
+  List<TyphoonPosition> forecast;
   TyphoonPosition current;
 
-  TyphoonTrack(this.bulletin, this.current, this.past);
+  TyphoonTrack(this.bulletin, this.current, this.past, this.forecast);
 }
 
 class TyphoonPosition {
-  late String intensity;
-  late double? maximumWind; // km/h
-  late DateTime? time; // if no time then interpolated position
+  late int index;
+  String? intensity;
+  double? maximumWind; // km/h
+  DateTime? time; // if no time then interpolated position
   late double latitude; // N
   late double longitude; // E
   TyphoonClass _class = unknownClass;
 
   TyphoonPosition();
 
-  LatLng getLatLng() {
-    return LatLng(latitude, longitude);
+  LatLng getLatLng({latitudeOffset = 0, longitudeOffset = 0}) {
+    return LatLng(latitude + latitudeOffset, longitude + longitudeOffset);
   }
 
   TyphoonClass getTyphoonClass() {
@@ -302,12 +315,22 @@ TyphoonTrack? parseTyphoonTrack(String xmlString) {
         .map(parseEntry)
         .whereType<TyphoonPosition>()
         .toList();
+
+    final forecastInformationElements =
+        document.findAllElements('ForecastInformation');
+    List<TyphoonPosition> forecast = forecastInformationElements
+        .map(parseEntry)
+        .whereType<TyphoonPosition>()
+        .toList();
+    forecast.sort((a, b) {
+      return a.index.compareTo(b.index);
+    });
     // oldest first
     past.sort((a, b) {
-      return a.time!.compareTo(b.time!);
+      return a.index.compareTo(b.index);
     });
     past.add(currentAnalysis); // add latest for easy reference
-    return TyphoonTrack(bulletin, currentAnalysis, past);
+    return TyphoonTrack(bulletin, currentAnalysis, past, forecast);
   } catch (e) {
     debugPrint(xmlString.replaceAll('\n', ''));
     debugPrint("Failed to parse typhoon track data $e");
@@ -336,6 +359,8 @@ TyphoonPosition? parseEntry(XmlElement element) {
       } else if (child.name.local == 'MaximumWind') {
         entry.maximumWind =
             double.tryParse(removeNonNumeric(child.text)) ?? double.nan;
+      } else if (child.name.local == 'Index') {
+        entry.index = int.tryParse(removeNonNumeric(child.text)) ?? 0;
       }
     }
     return entry;

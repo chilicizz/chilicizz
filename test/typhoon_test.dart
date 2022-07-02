@@ -44,6 +44,21 @@ void main() {
           reason: "Should load past status");
     });
 
+    test('testParseTyphoonTrack2', () async {
+      String fileContents =
+          await File('test/resources/typhoonTrackExample2.xml').readAsString();
+      expect(fileContents.isNotEmpty, true,
+          reason: "Test file should not be empty");
+      TyphoonTrack? typhoonTrack = parseTyphoonTrack(fileContents);
+      expect(typhoonTrack != null, true, reason: "Should load track data");
+      expect(typhoonTrack?.bulletin != null, true,
+          reason: "Should load track bulletin data");
+      expect(typhoonTrack?.current != null, true,
+          reason: "Should load current status");
+      expect(typhoonTrack?.past != null && typhoonTrack!.past.isNotEmpty, true,
+          reason: "Should load past status");
+    });
+
     test('testFetchTyphoon', () async {
       List<Typhoon> fileContents = await fetchTyphoonFeed();
       expect(fileContents.isNotEmpty, true,

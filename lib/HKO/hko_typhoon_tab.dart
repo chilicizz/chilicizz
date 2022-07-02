@@ -212,14 +212,40 @@ class HKOTyphoonTrackWidget extends StatelessWidget {
         lastClass = currentIteration;
       }
     }
-    // make sure we add the last bit
+    // make sure we add the currentSection
     trackLines.add(
       Polyline(
         points: currentSection,
-        color: track.past.last.getTyphoonClass().color,
+        color: track.current.getTyphoonClass().color,
         strokeWidth: 3,
       ),
     );
+    lastClass = track.current.getTyphoonClass();
+    // do the forecast
+    List<TyphoonPosition> dates = [];
+    for (int i = 0; i < track.forecast.length; i++) {
+      TyphoonPosition position = track.forecast[i];
+      if (position.time != null) {
+        dates.add(position);
+      }
+
+      allPositions.add(position.getLatLng());
+      currentSection.add(position.getLatLng());
+      // when it changes typhoon class
+      TyphoonClass currentIteration = position.getTyphoonClass();
+      if (currentIteration != lastClass && currentIteration != unknownClass) {
+        trackLines.add(
+          Polyline(
+            points: currentSection,
+            color: lastClass.color,
+            strokeWidth: 3,
+          ),
+        );
+        currentSection = [position.getLatLng()];
+        // update
+        lastClass = currentIteration;
+      }
+    }
     // middle of the typhoon and hk
     LatLng mid = LatLng(
         (hkLatitudeLongitude.latitude + track.current.getLatLng().latitude) / 2,
@@ -237,8 +263,10 @@ class HKOTyphoonTrackWidget extends StatelessWidget {
         ),
         layers: [
           TileLayerOptions(
-            urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-            //"http://a.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png",
+            //https://wiki.openstreetmap.org/wiki/Tiles
+            urlTemplate:
+                //"https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                "http://b.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png",
             subdomains: ['a', 'b', 'c'],
             attributionBuilder: (_) {
               return Text("© OpenStreetMap / ${track.bulletin.provider}");
@@ -258,12 +286,20 @@ class HKOTyphoonTrackWidget extends StatelessWidget {
                     const Icon(Icons.location_pin, color: Colors.red),
               ),
               Marker(
-                width: 20.0,
-                height: 20.0,
+                width: 30.0,
+                height: 30.0,
                 point: track.current.getLatLng(),
                 builder: (ctx) => Icon(Icons.storm,
                     color: track.current.getTyphoonClass().color),
               ),
+              for (var position in dates)
+                Marker(
+                  point: position.getLatLng(longitudeOffset: 0.2),
+                  builder: (ctx) => Text(
+                    dayMonthFormat(position.time),
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
             ],
           ),
         ],

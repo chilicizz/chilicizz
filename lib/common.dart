@@ -129,6 +129,21 @@ String shortDateFormat(DateTime? dateTime) {
   }
 }
 
+String dayMonthFormat(DateTime? dateTime) {
+  if (dateTime != null) {
+    return formatDate(
+      dateTime.toLocal(),
+      [
+        d,
+        "/",
+        m,
+      ],
+    );
+  } else {
+    return "";
+  }
+}
+
 Text buildLastUpdatedText(DateTime? lastUpdateTime) {
   if (lastUpdateTime != null) {
     return Text("last updated ${simpleDateFormat(lastUpdateTime.toLocal())}");
