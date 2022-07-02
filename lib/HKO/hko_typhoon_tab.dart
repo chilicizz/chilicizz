@@ -266,7 +266,7 @@ class HKOTyphoonTrackWidget extends StatelessWidget {
             //https://wiki.openstreetmap.org/wiki/Tiles
             urlTemplate:
                 //"https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-                "http://b.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png",
+                "https://b.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png",
             subdomains: ['a', 'b', 'c'],
             attributionBuilder: (_) {
               return Text("© OpenStreetMap / ${track.bulletin.provider}");
