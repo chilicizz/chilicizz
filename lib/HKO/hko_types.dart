@@ -146,9 +146,12 @@ const Map<String, CircleAvatar> warningIconMap = {
 
 Future<List<Typhoon>> fetchTyphoonFeed() async {
   try {
-    var path = Uri.parse(typhoonUrl);
+    var path = Uri.parse(corsProxyPrefix + typhoonUrl);
     var response = await http.get(path, headers: {
       HttpHeaders.contentTypeHeader: 'application/xml',
+      HttpHeaders.accessControlAllowOriginHeader: '*',
+      HttpHeaders.accessControlAllowMethodsHeader: 'GET,HEAD,POST,OPTIONS',
+      HttpHeaders.accessControlAllowHeadersHeader: '*',
     });
     if (response.statusCode == 200) {
       String xmlString = const Utf8Decoder().convert(response.bodyBytes);
@@ -177,9 +180,12 @@ class Typhoon {
 
   Future<TyphoonTrack?> getTyphoonTrack() async {
     try {
-      Uri uri = Uri.parse(url);
+      Uri uri = Uri.parse(corsProxyPrefix + url);
       var response = await http.get(uri, headers: {
         HttpHeaders.contentTypeHeader: 'application/xml',
+        HttpHeaders.accessControlAllowOriginHeader: '*',
+        HttpHeaders.accessControlAllowMethodsHeader: 'GET,HEAD,POST,OPTIONS',
+        HttpHeaders.accessControlAllowHeadersHeader: '*',
       });
       if (response.statusCode == 200) {
         String xmlDoc = const Utf8Decoder().convert(response.bodyBytes);
@@ -275,7 +281,11 @@ List<Typhoon> parseTyphoonFeed(String xmlString) {
             element.findElements("TropicalCycloneChineseName").single.text,
         englishName:
             element.findElements("TropicalCycloneEnglishName").single.text,
-        url: element.findElements("TropicalCycloneURL").single.text,
+        url: element
+            .findElements("TropicalCycloneURL")
+            .single
+            .text
+            .replaceAll("http://", "https://"),
       );
     }).toList();
   } catch (e) {
