@@ -8,6 +8,9 @@ import '../common.dart';
 import 'dummy_typhoon.dart';
 import 'hko_types.dart';
 
+final LatLng hkLatLng = LatLng(22.3453, 114.1372);
+const Distance haversineCalc = Distance(calculator: Haversine());
+
 class HKOTyphoonTab extends StatefulWidget {
   const HKOTyphoonTab({Key? key}) : super(key: key);
 
@@ -134,7 +137,14 @@ class _HKOTyphoonTabState extends State<HKOTyphoonTab> {
               return hasErrorListView(snapshot);
             } else {
               if (snapshot.data != null) {
-                TyphoonTrack track = snapshot.data!;
+                final TyphoonTrack track = snapshot.data!;
+                final double distKm = haversineCalc.as(
+                    LengthUnit.Kilometer, hkLatLng, track.current.getLatLng());
+                final String currentDistance =
+                    !distKm.isNaN ? '($distKm km)' : "";
+                final String maxWindSpeed = !track.current.maximumWind!.isNaN
+                    ? '<${track.current.maximumWind} km/h'
+                    : "";
                 return ExpansionTile(
                   leading: CircleAvatar(
                     child: const Icon(Icons.storm),
@@ -148,7 +158,7 @@ class _HKOTyphoonTabState extends State<HKOTyphoonTab> {
                         style: Theme.of(context).textTheme.headlineMedium),
                   ),
                   subtitle: Text(
-                      "${shortDateFormat(track.bulletin.time)} ${!track.current.maximumWind!.isNaN ? '${track.current.maximumWind} km/h' : ""}"),
+                      "${shortDateFormat(track.bulletin.time)} $currentDistance $maxWindSpeed"),
                   initiallyExpanded: !isSmallDevice(),
                   children: [
                     SizedBox(
@@ -182,19 +192,28 @@ class _HKOTyphoonTabState extends State<HKOTyphoonTab> {
 
 class HKOTyphoonTrackWidget extends StatelessWidget {
   final TyphoonTrack track;
-  static final LatLng hkLatitudeLongitude = LatLng(22.3453, 114.1372);
 
   const HKOTyphoonTrackWidget(this.track, {Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    double minDistance = double.infinity;
+    TyphoonPosition? closestPosition;
     List<Polyline> trackLines = [];
     TyphoonClass lastClass = track.past.first.getTyphoonClass();
     List<LatLng> allPositions = [];
     List<LatLng> currentSection = [];
     // iterate through track
     for (int i = 0; i < track.past.length; i++) {
-      TyphoonPosition position = track.past[i];
+      final TyphoonPosition position = track.past[i];
+      // update if closer
+      final double distKm = haversineCalc.as(
+          LengthUnit.Kilometer, hkLatLng, position.getLatLng());
+      if (closestPosition == null || distKm < minDistance) {
+        closestPosition = position;
+        minDistance = distKm;
+      }
+
       allPositions.add(position.getLatLng());
       currentSection.add(position.getLatLng());
       // when it changes typhoon class
@@ -221,10 +240,17 @@ class HKOTyphoonTrackWidget extends StatelessWidget {
       ),
     );
     lastClass = track.current.getTyphoonClass();
-    // do the forecast
+    // plot the forecast
     List<TyphoonPosition> dates = [];
     for (int i = 0; i < track.forecast.length; i++) {
-      TyphoonPosition position = track.forecast[i];
+      final TyphoonPosition position = track.forecast[i];
+      // update if closer
+      final double distKm = haversineCalc.as(
+          LengthUnit.Kilometer, hkLatLng, position.getLatLng());
+      if (closestPosition == null || distKm < minDistance) {
+        closestPosition = position;
+        minDistance = distKm;
+      }
       if (position.time != null) {
         dates.add(position);
       }
@@ -246,17 +272,40 @@ class HKOTyphoonTrackWidget extends StatelessWidget {
         lastClass = currentIteration;
       }
     }
-    // middle of the typhoon and hk
-    LatLng mid = LatLng(
-        (hkLatitudeLongitude.latitude + track.current.getLatLng().latitude) / 2,
-        (hkLatitudeLongitude.longitude + track.current.getLatLng().longitude) /
-            2);
+    // centre the map at the middle of the typhoon and hk
+    final LatLng mid = LatLng(
+        (hkLatLng.latitude + track.current.getLatLng().latitude) / 2,
+        (hkLatLng.longitude + track.current.getLatLng().longitude) / 2);
+
+    // calculate the minimum expected distance
+    trackLines.add(Polyline(
+      points: [hkLatLng, closestPosition!.getLatLng()],
+      color: Colors.deepPurple,
+      strokeWidth: 1,
+      isDotted: false,
+    ));
+    // marker
+    final Marker closestDistance = Marker(
+      height: 30,
+      width: 60,
+      point: LatLng(
+          (hkLatLng.latitude + closestPosition.getLatLng().latitude) / 2,
+          (hkLatLng.longitude + closestPosition.getLatLng().longitude) / 2),
+      builder: (ctx) => FittedBox(
+        child: Text(
+          "$minDistance km",
+          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+        ),
+      ),
+    );
     return SizedBox(
       height: 500,
       child: FlutterMap(
         options: MapOptions(
           center: mid,
           zoom: 5.0,
+          minZoom: 5.0,
+          maxZoom: 10.0,
           interactiveFlags: InteractiveFlag.drag |
               InteractiveFlag.pinchZoom |
               InteractiveFlag.doubleTapZoom,
@@ -266,8 +315,8 @@ class HKOTyphoonTrackWidget extends StatelessWidget {
             //https://wiki.openstreetmap.org/wiki/Tiles
             urlTemplate:
                 //"https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-                "https://b.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png",
-            subdomains: ['a', 'b', 'c'],
+                "https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png",
+            subdomains: ['a', 'b'],
             attributionBuilder: (_) {
               return Text("© OpenStreetMap / ${track.bulletin.provider}");
             },
@@ -279,19 +328,20 @@ class HKOTyphoonTrackWidget extends StatelessWidget {
           MarkerLayerOptions(
             markers: [
               Marker(
-                width: 20.0,
-                height: 20.0,
-                point: hkLatitudeLongitude,
+                width: 30.0,
+                height: 30.0,
+                point: hkLatLng,
                 builder: (ctx) =>
                     const Icon(Icons.location_pin, color: Colors.red),
               ),
               Marker(
-                width: 30.0,
-                height: 30.0,
+                width: 50.0,
+                height: 50.0,
                 point: track.current.getLatLng(),
                 builder: (ctx) => Icon(Icons.storm,
                     color: track.current.getTyphoonClass().color),
               ),
+              // Draw dates for forecast
               for (var position in dates)
                 Marker(
                   point: position.getLatLng(longitudeOffset: 0.2),
@@ -300,6 +350,7 @@ class HKOTyphoonTrackWidget extends StatelessWidget {
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ),
+              closestDistance,
             ],
           ),
         ],
