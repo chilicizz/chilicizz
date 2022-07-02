@@ -25,7 +25,7 @@ void main() {
       expect(typhoons[0].chineseName, '舒力基',
           reason: "Chinese name not parsed correctly");
       expect(typhoons[0].url.trim(),
-          'http://www.weather.gov.hk/wxinfo/currwx/hko_tctrack_2102.xml',
+          'https://www.weather.gov.hk/wxinfo/currwx/hko_tctrack_2102.xml',
           reason: "URL Not parsed correctly");
     });
 
