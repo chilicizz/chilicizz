@@ -10052,10 +10052,10 @@ A.h2().$1(J.eo(l))}}return g},
 auL(){var s=0,r=A.W(t.Do),q,p=2,o,n=[],m,l,k,j,i,h,g,f
 var $async$auL=A.X(function(a,b){if(a===1){o=b
 s=p}while(true)switch(s){case 0:p=4
-m=A.jU("https://proxy.chilicizz.workers.dev/corsproxy/?apiurl=https://www.weather.gov.hk/wxinfo/currwx/tc_list.xml")
+m=A.jU("https://www.weather.gov.hk/wxinfo/currwx/tc_list.xml")
 h=t.N
 s=7
-return A.a2(A.a_T(m,A.aG(["content-type","application/xml","access-control-allow-origin","*","access-control-allow-methods","GET,HEAD,POST,OPTIONS","access-control-allow-headers","*"],h,h)),$async$auL)
+return A.a2(A.a_T(m,A.aG(["content-type","application/xml"],h,h)),$async$auL)
 case 7:l=b
 if(l.b===200){k=B.c3.d0(l.w)
 j=A.aWS(k)
@@ -46802,10 +46802,10 @@ A.i4.prototype={
 pQ(){var s=0,r=A.W(t.Bh),q,p=2,o,n=[],m=this,l,k,j,i,h,g,f,e
 var $async$pQ=A.X(function(a,b){if(a===1){o=b
 s=p}while(true)switch(s){case 0:p=4
-l=A.jU("https://proxy.chilicizz.workers.dev/corsproxy/?apiurl="+m.d)
+l=A.jU(m.d)
 g=t.N
 s=7
-return A.a2(A.a_T(l,A.aG(["content-type","application/xml","access-control-allow-origin","*","access-control-allow-methods","GET,HEAD,POST,OPTIONS","access-control-allow-headers","*"],g,g)),$async$pQ)
+return A.a2(A.a_T(l,A.aG(["content-type","application/xml"],g,g)),$async$pQ)
 case 7:k=b
 if(k.b===200){j=B.c3.d0(k.w)
 i=A.aH9(j)
