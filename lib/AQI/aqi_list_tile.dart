@@ -111,7 +111,10 @@ class _AQIListTileState extends State<AQIListTile> {
                   leading: Tooltip(
                     message: data!.getLevel().name,
                     child: CircleAvatar(
-                      child: Text("${data?.aqi}"),
+                      child: Text(
+                        "${data?.aqi}",
+                        style: const TextStyle(color: Colors.black),
+                      ),
                       backgroundColor: data?.getLevel().color,
                     ),
                   ),
@@ -184,15 +187,17 @@ class _AQIListTileState extends State<AQIListTile> {
     return Tooltip(
       message: record.label,
       child: Chip(
-          avatar: CircleAvatar(
-            backgroundColor: record.getColour(value),
-            foregroundColor: Colors.white.withAlpha(200),
-            child: Padding(
-              padding: const EdgeInsets.all(1.0),
-              child: FittedBox(child: record.getIcon()),
-            ),
+        avatar: CircleAvatar(
+          backgroundColor: record.getColour(value),
+          foregroundColor: Colors.white.withAlpha(200),
+          child: Padding(
+            padding: const EdgeInsets.all(1.0),
+            child: FittedBox(child: record.getIcon()),
           ),
-          label: Text("$value ${record.unit ?? ''}")),
+        ),
+        label: Text(
+            "${value.toStringAsFixed(value > 50 ? 0 : 1)} ${record.unit ?? ''}"),
+      ),
     );
   }
 

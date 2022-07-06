@@ -147,7 +147,7 @@ class _HKOTyphoonTabState extends State<HKOTyphoonTab> {
                     : "";
                 return ExpansionTile(
                   leading: CircleAvatar(
-                    child: const Icon(Icons.storm),
+                    child: const Icon(Icons.storm, color: Colors.black),
                     backgroundColor: track.current.getTyphoonClass().color,
                   ),
                   title: FittedBox(
@@ -168,10 +168,12 @@ class _HKOTyphoonTabState extends State<HKOTyphoonTab> {
                   ],
                 );
               } else {
+                debugPrint(snapshot.error?.toString());
                 return ListTile(
-                  leading: const Tooltip(
-                    message: "Failed to load typhoon track data",
-                    child: CircleAvatar(
+                  leading: Tooltip(
+                    message:
+                        "Failed to load typhoon track data: ${snapshot.error?.toString()}",
+                    child: const CircleAvatar(
                       child: Icon(Icons.error_outline),
                     ),
                   ),
@@ -312,6 +314,11 @@ class HKOTyphoonTrackWidget extends StatelessWidget {
               InteractiveFlag.pinchZoom |
               InteractiveFlag.doubleTapZoom,
         ),
+        nonRotatedChildren: [
+          AttributionWidget.defaultWidget(
+            source: "OpenStreetMap / ${track.bulletin.provider}",
+          )
+        ],
         layers: [
           TileLayerOptions(
             //https://wiki.openstreetmap.org/wiki/Tiles
@@ -319,9 +326,6 @@ class HKOTyphoonTrackWidget extends StatelessWidget {
                 //"https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
                 "https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png",
             subdomains: ['a', 'b'],
-            attributionBuilder: (_) {
-              return Text("© OpenStreetMap / ${track.bulletin.provider}");
-            },
           ),
           PolylineLayerOptions(
             polylineCulling: true,

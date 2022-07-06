@@ -59,10 +59,12 @@ void main() {
           reason: "Should load past status");
     });
 
+    /*
     test('testFetchTyphoon', () async {
       List<Typhoon> fileContents = await fetchTyphoonFeed();
       expect(fileContents.isNotEmpty, true,
           reason: "Test file should not be empty");
     });
+     */
   });
 }
