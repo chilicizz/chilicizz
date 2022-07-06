@@ -170,8 +170,10 @@ class _HKOTyphoonTabState extends State<HKOTyphoonTab> {
               } else {
                 return ListTile(
                   leading: const Tooltip(
-                    child: Icon(Icons.error),
                     message: "Failed to load typhoon track data",
+                    child: CircleAvatar(
+                      child: Icon(Icons.error_outline),
+                    ),
                   ),
                   title: FittedBox(
                     alignment: Alignment.centerLeft,
