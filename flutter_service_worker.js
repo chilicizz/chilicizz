@@ -8,8 +8,8 @@ const RESOURCES = {
 "canvaskit/profiling/canvaskit.js": "ae2949af4efc61d28a4a80fffa1db900",
 "canvaskit/profiling/canvaskit.wasm": "95e736ab31147d1b2c7b25f11d4c32cd",
 "canvaskit/canvaskit.wasm": "4b83d89d9fecbea8ca46f2f760c5a9ba",
-"index.html": "b64396dbd11fa362d4237933de8d8474",
-"/": "b64396dbd11fa362d4237933de8d8474",
+"index.html": "8de70f32b80868be3eee509fda54624d",
+"/": "8de70f32b80868be3eee509fda54624d",
 "flutter.js": "eb2682e33f25cd8f1fc59011497c35f8",
 "icons/cn_192.png": "f2b2ddf130141d16c089172765508789",
 "icons/Icon-maskable-192.png": "c457ef57daa1d16f64b27b786ec2ea3c",
@@ -23,8 +23,8 @@ const RESOURCES = {
 "assets/fonts/MaterialIcons-Regular.otf": "95db9098c58fd6db106f1116bae85a0b",
 "assets/AssetManifest.json": "5c54310d84c86b620c8e83062f56d74a",
 "assets/assets/cn.png": "6bfed25e53937c2d9934f3575f94358f",
-"assets/NOTICES": "b98817631d9a0f7620f9e85bccb7c27e",
-"main.dart.js": "fb6f4130702d74be2bc2b34b3ef17cb8"
+"assets/NOTICES": "f29a431ae9eb4257609e4ba0289d8090",
+"main.dart.js": "4078df1bd8ffdbf7d5db0f0a1d2ff460"
 };
 
 // The application shell files that are downloaded before a service worker can
