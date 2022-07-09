@@ -170,7 +170,7 @@ bool isSmallScreen(BuildContext context) {
 }
 
 bool isSmallDevice() {
-  final data = MediaQueryData.fromWindow(WidgetsBinding.instance!.window);
+  final data = MediaQueryData.fromWindow(WidgetsBinding.instance.window);
   return data.size.shortestSide < 600;
 }
 
