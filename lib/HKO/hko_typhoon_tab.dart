@@ -108,7 +108,7 @@ class _HKOTyphoonTabState extends State<HKOTyphoonTab> {
           leading: const CircleAvatar(
             child: Icon(Icons.done),
           ),
-          title: const Text("No current typhoon warnings"),
+          title: const Text("No active typhoon warnings"),
           subtitle: buildLastTick(lastTick),
         )
       ],
@@ -147,8 +147,8 @@ class _HKOTyphoonTabState extends State<HKOTyphoonTab> {
                     : "";
                 return ExpansionTile(
                   leading: CircleAvatar(
-                    child: const Icon(Icons.storm, color: Colors.black),
                     backgroundColor: track.current.getTyphoonClass().color,
+                    child: const Icon(Icons.storm, color: Colors.black),
                   ),
                   title: FittedBox(
                     alignment: Alignment.centerLeft,

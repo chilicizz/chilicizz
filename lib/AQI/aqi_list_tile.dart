@@ -94,11 +94,11 @@ class _AQIListTileState extends State<AQIListTile> {
               },
               background: Container(
                 alignment: Alignment.centerLeft,
+                color: Colors.red,
                 child: const Padding(
                   padding: EdgeInsets.all(5),
                   child: Icon(Icons.delete),
                 ),
-                color: Colors.red,
               ),
               child: GestureDetector(
                 onLongPress: () {
@@ -111,11 +111,11 @@ class _AQIListTileState extends State<AQIListTile> {
                   leading: Tooltip(
                     message: data!.getLevel().name,
                     child: CircleAvatar(
+                      backgroundColor: data?.getLevel().color,
                       child: Text(
                         "${data?.aqi}",
                         style: const TextStyle(color: Colors.black),
                       ),
-                      backgroundColor: data?.getLevel().color,
                     ),
                   ),
                   title: FittedBox(

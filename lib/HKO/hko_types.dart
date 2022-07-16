@@ -87,61 +87,68 @@ const Map<String, String> warningStringMap = {
 const Map<String, CircleAvatar> warningIconMap = {
   // Fetch icons from https://www.hko.gov.hk/textonly/v2/explain/intro.htm
   "WFIREY": CircleAvatar(
-      child: Icon(Icons.local_fire_department, color: Colors.black),
-      backgroundColor: Colors.yellow),
+      backgroundColor: Colors.yellow,
+      child: Icon(Icons.local_fire_department, color: Colors.black)),
   "WFIRER": CircleAvatar(
-      child: Icon(Icons.local_fire_department, color: Colors.black),
-      backgroundColor: Colors.red),
-  "WRAINA": CircleAvatar(child: Text('🌧'), backgroundColor: Colors.amber),
-  "WRAINR": CircleAvatar(child: Text('🌧'), backgroundColor: Colors.red),
-  "WRAINB": CircleAvatar(child: Text('🌧'), backgroundColor: Colors.black),
+      backgroundColor: Colors.red,
+      child: Icon(Icons.local_fire_department, color: Colors.black)),
+  "WRAINA": CircleAvatar(backgroundColor: Colors.amber, child: Text('🌧')),
+  "WRAINR": CircleAvatar(backgroundColor: Colors.red, child: Text('🌧')),
+  "WRAINB": CircleAvatar(backgroundColor: Colors.black, child: Text('🌧')),
   "TC1": CircleAvatar(
-      child: Text("T1", style: TextStyle(color: Colors.black)),
-      backgroundColor: Colors.amber),
+      backgroundColor: Colors.amberAccent,
+      child: Text("T1",
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black))),
   "TC3": CircleAvatar(
-      child: Text("T3", style: TextStyle(color: Colors.black)),
-      backgroundColor: Colors.amber),
+      backgroundColor: Colors.amberAccent,
+      child: Text("T3",
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black))),
   "TC8NE": CircleAvatar(
-      child: Text("T8", style: TextStyle(color: Colors.black)),
-      backgroundColor: Colors.amber),
+      backgroundColor: Colors.amberAccent,
+      child: Text("T8",
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black))),
   "TC8SE": CircleAvatar(
-      child: Text("T8", style: TextStyle(color: Colors.black)),
-      backgroundColor: Colors.amber),
+      backgroundColor: Colors.amberAccent,
+      child: Text("T8",
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black))),
   "TC8SW": CircleAvatar(
-      child: Text("T8", style: TextStyle(color: Colors.black)),
-      backgroundColor: Colors.amber),
+      backgroundColor: Colors.amberAccent,
+      child: Text("T8",
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black))),
   "TC8NW": CircleAvatar(
-      child: Text("T8", style: TextStyle(color: Colors.black)),
-      backgroundColor: Colors.amber),
+      backgroundColor: Colors.amberAccent,
+      child: Text("T8",
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black))),
   "TC9": CircleAvatar(
-      child: Text("T9", style: TextStyle(color: Colors.black)),
-      backgroundColor: Colors.amber),
+      backgroundColor: Colors.amberAccent,
+      child: Text("T9",
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black))),
   "TC10": CircleAvatar(
-      child: Text("T10", style: TextStyle(color: Colors.black)),
-      backgroundColor: Colors.amber),
-
+      backgroundColor: Colors.amberAccent,
+      child: Text("T10",
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black))),
   "WFROST": CircleAvatar(
-      child: Icon(Icons.ac_unit, color: Colors.white),
-      backgroundColor: Colors.blue),
+      backgroundColor: Colors.blue,
+      child: Icon(Icons.ac_unit, color: Colors.white)),
   "WHOT": CircleAvatar(
-      child: Icon(Icons.thermostat, color: Colors.red),
-      backgroundColor: Colors.white54),
+      backgroundColor: Colors.amberAccent,
+      child: Icon(Icons.thermostat, color: Colors.red)),
   "WCOLD": CircleAvatar(
-      child: Icon(Icons.thermostat, color: Colors.blue),
-      backgroundColor: Colors.white54),
+      backgroundColor: Colors.amberAccent,
+      child: Icon(Icons.thermostat, color: Colors.blue)),
   "WMSGNL": CircleAvatar(
-      child: Icon(Icons.air, color: Colors.white),
-      backgroundColor: Colors.blue),
+      backgroundColor: Colors.cyan,
+      child: Icon(Icons.air, color: Colors.white)),
   "WFNTSA": CircleAvatar(
-      child: Icon(Icons.water, color: Colors.green),
-      backgroundColor: Colors.white54),
+      backgroundColor: Colors.cyan,
+      child: Icon(Icons.water, color: Colors.lime)),
   "WL": CircleAvatar(
-      child: Icon(Icons.report_problem, color: Colors.yellow),
-      backgroundColor: Colors.brown),
-  "WTMW": CircleAvatar(child: Text("🌊"), backgroundColor: Colors.amber),
+      backgroundColor: Colors.brown,
+      child: Icon(Icons.report_problem, color: Colors.yellow)),
+  "WTMW": CircleAvatar(backgroundColor: Colors.amberAccent, child: Text("🌊")),
   "WTS": CircleAvatar(
-      child: Icon(Icons.bolt, color: Colors.yellow),
-      backgroundColor: Colors.black),
+      backgroundColor: Colors.black,
+      child: Icon(Icons.bolt, color: Colors.yellow)),
 };
 
 Future<List<Typhoon>> fetchTyphoonFeed() async {

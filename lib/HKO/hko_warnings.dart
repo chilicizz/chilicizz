@@ -78,7 +78,7 @@ class _HKOWarningsState extends State<HKOWarnings> {
               setState(() {
                 futureWarnings = dummyWarnings();
               });
-              await Future.delayed(const Duration(seconds: 10));
+              await Future.delayed(const Duration(seconds: 30));
               _tick();
             },
           ),
@@ -127,7 +127,8 @@ class _HKOWarningsState extends State<HKOWarnings> {
                                 leading: const CircleAvatar(
                                   child: Icon(Icons.done),
                                 ),
-                                title: const Text("No active warnings"),
+                                title:
+                                    const Text("No weather warnings in force"),
                                 subtitle: buildLastTick(lastTick),
                               ),
                             ],
