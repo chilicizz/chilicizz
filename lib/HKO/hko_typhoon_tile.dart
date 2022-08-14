@@ -66,6 +66,24 @@ class TyphoonTile extends StatelessWidget {
                       height: 500,
                       child: HKOTyphoonTrackWidget(snapshot.data!),
                     ),
+                    ListTile(
+                      subtitle: Wrap(
+                        alignment: WrapAlignment.spaceEvenly,
+                        runSpacing: 1,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        children: typhoonClasses.map((typhoonClass) {
+                          return Chip(
+                            label: Text(
+                                "${typhoonClass.name} > ${typhoonClass.minWind} km/h"),
+                            avatar: CircleAvatar(
+                              backgroundColor: Colors.grey,
+                              child:
+                                  Icon(Icons.storm, color: typhoonClass.color),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    )
                   ],
                 );
               } else {

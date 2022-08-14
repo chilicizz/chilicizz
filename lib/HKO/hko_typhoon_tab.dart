@@ -83,9 +83,8 @@ class _HKOTyphoonTabState extends State<HKOTyphoonTab> {
                           physics: const AlwaysScrollableScrollPhysics(),
                           itemCount: typhoons.length,
                           itemBuilder: (BuildContext context, int index) {
-                            var typhoon = typhoons[index];
                             return TyphoonTile(
-                              typhoon: typhoon,
+                              typhoon: typhoons[index],
                               lastTick: lastTick,
                             );
                           },
@@ -103,20 +102,21 @@ class _HKOTyphoonTabState extends State<HKOTyphoonTab> {
     return ListView(
       physics: const AlwaysScrollableScrollPhysics(),
       children: [
-        ListTile(
+        ExpansionTile(
           leading: const CircleAvatar(
             child: Icon(Icons.done),
           ),
           title: const Text("No active typhoon warnings"),
           subtitle: buildLastTick(lastTick),
+          children: const [
+            ListTile(
+              title: Text(
+                  "Tropical cyclone track information data provided by Hong Kong Observatory and "
+                  "is expected to be updated when a tropical cyclone forms within or enters the area bounded by 7-36N and 100-140E"),
+              subtitle: Text(""),
+            ),
+          ],
         ),
-        ListTile(
-          leading: const CircleAvatar(
-            child: Icon(Icons.done),
-          ),
-          title: const Text("No active typhoon warnings"),
-          subtitle: buildLastTick(lastTick),
-        )
       ],
     );
   }

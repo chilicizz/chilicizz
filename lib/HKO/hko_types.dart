@@ -321,7 +321,7 @@ class TyphoonClass {
 TyphoonClass unknownClass = TyphoonClass("unknown", -1, -1, Colors.grey);
 
 List<TyphoonClass> typhoonClasses = [
-  TyphoonClass("Extratropical Low", double.minPositive, 41, Colors.blue),
+  TyphoonClass("Extratropical Low", 0, 41, Colors.blue),
   TyphoonClass("Tropical Depression", 41, 62, Colors.lightGreen),
   TyphoonClass("Tropical Storm", 62, 87, Colors.yellow),
   TyphoonClass("Severe Tropical Storm", 87, 117, Colors.orange),
