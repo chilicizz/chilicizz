@@ -109,9 +109,9 @@ class _AQIListTileState extends State<AQIListTile> {
                 child: ExpansionTile(
                   //initiallyExpanded: !isSmallDevice(),
                   leading: Tooltip(
-                    message: data!.getLevel().name,
+                    message: data!.level.name,
                     child: CircleAvatar(
-                      backgroundColor: data?.getLevel().color,
+                      backgroundColor: data?.level.color,
                       child: Text(
                         "${data?.aqi}",
                         style: const TextStyle(color: Colors.black),
@@ -146,8 +146,8 @@ class _AQIListTileState extends State<AQIListTile> {
                       ),
                     ),
                     ListTile(
-                      title: Text(data!.getLevel().name),
-                      subtitle: Text(data!.getLevel().longDescription()),
+                      title: Text(data!.level.name),
+                      subtitle: Text(data!.level.longDescription()),
                     ),
                     for (Attribution attribution in data!.attributions)
                       ListTile(

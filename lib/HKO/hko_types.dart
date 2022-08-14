@@ -16,13 +16,22 @@ const String corsProxyPrefix =
     "https://proxy.chilicizz.workers.dev/corsproxy/?apiurl=";
 
 class WarningInformation {
-  String warningStatementCode;
-  String? subType;
-  List<String> contents;
-  DateTime updateTime;
+  final String warningStatementCode;
+  final String? subType;
+  final List<String> contents;
+  final DateTime updateTime;
 
   WarningInformation(
       this.warningStatementCode, this.subType, this.contents, this.updateTime);
+
+  factory WarningInformation.fromJSON(dynamic entry) {
+    String warningStatementCode = entry?["warningStatementCode"];
+    String? subType = entry?["subtype"];
+    var updateTime = DateTime.parse("${entry?["updateTime"]}");
+    List<String> contents = [for (var i in entry?["contents"]) '$i'];
+    return WarningInformation(
+        warningStatementCode, subType, contents, updateTime);
+  }
 
   String getDescription() {
     return warningStringMap[subType ?? warningStatementCode] ??
@@ -47,12 +56,7 @@ List<WarningInformation> extractWarnings(dynamic json) {
   }
   for (dynamic entry in json?["details"]) {
     try {
-      String warningStatementCode = entry?["warningStatementCode"];
-      String? subType = entry?["subtype"];
-      var updateTime = DateTime.parse("${entry?["updateTime"]}");
-      List<String> contents = [for (var i in entry?["contents"]) '$i'];
-      result.add(WarningInformation(
-          warningStatementCode, subType, contents, updateTime));
+      result.add(WarningInformation.fromJSON(entry));
     } catch (e) {
       debugPrint(e.toString());
     }
@@ -174,10 +178,10 @@ Future<List<Typhoon>> fetchTyphoonFeed() async {
 }
 
 class Typhoon {
-  int id;
-  String englishName;
-  String chineseName;
-  String url;
+  final int id;
+  final String englishName;
+  final String chineseName;
+  final String url;
 
   Typhoon(
       {required this.id,
@@ -207,48 +211,105 @@ class Typhoon {
 }
 
 class TyphoonTrack {
-  TyphoonBulletin bulletin;
-  List<TyphoonPosition> past;
-  List<TyphoonPosition> forecast;
-  TyphoonPosition current;
+  final TyphoonBulletin bulletin;
+  final List<TyphoonPosition> past;
+  final List<TyphoonPosition> forecast;
+  final TyphoonPosition current;
 
   TyphoonTrack(this.bulletin, this.current, this.past, this.forecast);
+
+  factory TyphoonTrack.fromXML(String xmlString) {
+    final document = XmlDocument.parse(xmlString);
+    final bulletinElement = document.findAllElements('BulletinHeader').single;
+
+    TyphoonBulletin bulletin = TyphoonBulletin.fromXmlElement(bulletinElement);
+    final analysisElement =
+        document.findAllElements('AnalysisInformation').single;
+    TyphoonPosition currentAnalysis = parseEntry(analysisElement)!;
+
+    final pastInformationElements = document.findAllElements('PastInformation');
+    List<TyphoonPosition> past = pastInformationElements
+        .map(parseEntry)
+        .whereType<TyphoonPosition>()
+        .toList();
+
+    final forecastInformationElements =
+        document.findAllElements('ForecastInformation');
+    List<TyphoonPosition> forecast = forecastInformationElements
+        .map(parseEntry)
+        .whereType<TyphoonPosition>()
+        .toList();
+    forecast.sort((a, b) {
+      return a.index.compareTo(b.index);
+    });
+    // oldest first
+    past.sort((a, b) {
+      return a.index.compareTo(b.index);
+    });
+    past.add(currentAnalysis); // add latest for easy reference
+    return TyphoonTrack(bulletin, currentAnalysis, past, forecast);
+  }
 }
 
 class TyphoonPosition {
-  late int index;
-  String? intensity;
-  double? maximumWind; // km/h
-  DateTime? time; // if no time then interpolated position
-  late double latitude; // N
-  late double longitude; // E
-  TyphoonClass _class = unknownClass;
+  final int index;
+  final String? intensity;
+  final double? maximumWind; // km/h
+  final DateTime? time; // if no time then interpolated position
+  final double latitude; // N
+  final double longitude; // E
+  final TyphoonClass typhoonClass;
 
-  TyphoonPosition();
+  TyphoonPosition(this.index, this.intensity, this.maximumWind, this.time,
+      this.latitude, this.longitude, this.typhoonClass);
+
+  factory TyphoonPosition.fromXMLElement(XmlElement element) {
+    int index = 0;
+    String? intensity;
+    double? maximumWind; // km/h
+    DateTime? time; // if no time then interpolated position
+    double latitude = double.nan; // N
+    double longitude = double.nan; // E
+    TyphoonClass typhoonClass = unknownClass;
+    for (var child in element.childElements) {
+      if (child.name.local == 'Intensity') {
+        intensity = child.text;
+      } else if (child.name.local == 'Latitude') {
+        latitude = double.tryParse(removeNonNumeric(child.text)) ?? double.nan;
+      } else if (child.name.local == 'Longitude') {
+        longitude = double.tryParse(removeNonNumeric(child.text)) ?? double.nan;
+      } else if (child.name.local == 'Time') {
+        time = DateTime.parse(child.text);
+      } else if (child.name.local == 'MaximumWind') {
+        maximumWind =
+            double.tryParse(removeNonNumeric(child.text)) ?? double.nan;
+      } else if (child.name.local == 'Index') {
+        index = int.tryParse(removeNonNumeric(child.text)) ?? 0;
+      }
+    }
+    for (var referenceClass in typhoonClasses) {
+      double speed = maximumWind ?? 0;
+      if (referenceClass.within(speed)) {
+        typhoonClass = referenceClass;
+      }
+    }
+    if (latitude == double.nan || longitude == double.nan) {
+      throw Exception("Failed to parse");
+    }
+    return TyphoonPosition(
+        index, intensity, maximumWind, time, latitude, longitude, typhoonClass);
+  }
 
   LatLng getLatLng({latitudeOffset = 0, longitudeOffset = 0}) {
     return LatLng(latitude + latitudeOffset, longitude + longitudeOffset);
   }
-
-  TyphoonClass getTyphoonClass() {
-    if (_class == unknownClass) {
-      double speed = maximumWind ?? 0;
-      for (var typhoonClass in typhoonClasses) {
-        if (typhoonClass.within(speed)) {
-          _class = typhoonClass;
-          return typhoonClass;
-        }
-      }
-    }
-    return _class;
-  }
 }
 
 class TyphoonClass {
-  String name;
-  double minWind;
-  double maxWind;
-  Color color;
+  final String name;
+  final double minWind;
+  final double maxWind;
+  final Color color;
 
   TyphoonClass(this.name, this.minWind, this.maxWind, this.color);
 
@@ -270,11 +331,27 @@ List<TyphoonClass> typhoonClasses = [
 ];
 
 class TyphoonBulletin {
-  late String name;
-  late String provider;
-  late DateTime time;
+  final String name;
+  final String provider;
+  final DateTime time;
 
-  TyphoonBulletin();
+  TyphoonBulletin(this.name, this.provider, this.time);
+
+  factory TyphoonBulletin.fromXmlElement(XmlElement bulletinElement) {
+    String name = "";
+    String provider = "";
+    DateTime time = DateTime.now();
+    for (var element in bulletinElement.childElements) {
+      if (element.name.local == 'BulletinName') {
+        name = element.text;
+      } else if (element.name.local == 'BulletinProvider') {
+        provider = element.text;
+      } else if (element.name.local == 'BulletinTime') {
+        time = DateTime.parse(element.text);
+      }
+    }
+    return TyphoonBulletin(name, provider, time);
+  }
 }
 
 List<Typhoon> parseTyphoonFeed(String xmlString) {
@@ -304,44 +381,7 @@ List<Typhoon> parseTyphoonFeed(String xmlString) {
 
 TyphoonTrack? parseTyphoonTrack(String xmlString) {
   try {
-    final document = XmlDocument.parse(xmlString);
-    final bulletinElement = document.findAllElements('BulletinHeader').single;
-
-    TyphoonBulletin bulletin = TyphoonBulletin();
-    for (var element in bulletinElement.childElements) {
-      if (element.name.local == 'BulletinName') {
-        bulletin.name = element.text;
-      } else if (element.name.local == 'BulletinProvider') {
-        bulletin.provider = element.text;
-      } else if (element.name.local == 'BulletinTime') {
-        bulletin.time = DateTime.parse(element.text);
-      }
-    }
-    final analysisElement =
-        document.findAllElements('AnalysisInformation').single;
-    TyphoonPosition currentAnalysis = parseEntry(analysisElement)!;
-
-    final pastInformationElements = document.findAllElements('PastInformation');
-    List<TyphoonPosition> past = pastInformationElements
-        .map(parseEntry)
-        .whereType<TyphoonPosition>()
-        .toList();
-
-    final forecastInformationElements =
-        document.findAllElements('ForecastInformation');
-    List<TyphoonPosition> forecast = forecastInformationElements
-        .map(parseEntry)
-        .whereType<TyphoonPosition>()
-        .toList();
-    forecast.sort((a, b) {
-      return a.index.compareTo(b.index);
-    });
-    // oldest first
-    past.sort((a, b) {
-      return a.index.compareTo(b.index);
-    });
-    past.add(currentAnalysis); // add latest for easy reference
-    return TyphoonTrack(bulletin, currentAnalysis, past, forecast);
+    return TyphoonTrack.fromXML(xmlString);
   } catch (e) {
     debugPrint(xmlString.replaceAll('\n', ''));
     debugPrint("Failed to parse typhoon track data $e");
@@ -355,26 +395,7 @@ String removeNonNumeric(String entry) {
 
 TyphoonPosition? parseEntry(XmlElement element) {
   try {
-    TyphoonPosition entry = TyphoonPosition();
-    for (var child in element.childElements) {
-      if (child.name.local == 'Intensity') {
-        entry.intensity = child.text;
-      } else if (child.name.local == 'Latitude') {
-        entry.latitude =
-            double.tryParse(removeNonNumeric(child.text)) ?? double.nan;
-      } else if (child.name.local == 'Longitude') {
-        entry.longitude =
-            double.tryParse(removeNonNumeric(child.text)) ?? double.nan;
-      } else if (child.name.local == 'Time') {
-        entry.time = DateTime.parse(child.text);
-      } else if (child.name.local == 'MaximumWind') {
-        entry.maximumWind =
-            double.tryParse(removeNonNumeric(child.text)) ?? double.nan;
-      } else if (child.name.local == 'Index') {
-        entry.index = int.tryParse(removeNonNumeric(child.text)) ?? 0;
-      }
-    }
-    return entry;
+    return TyphoonPosition.fromXMLElement(element);
   } catch (e) {
     debugPrint("Failed to parse typhoon position data $e");
     return null;

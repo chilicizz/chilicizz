@@ -5,46 +5,6 @@ import 'package:http/http.dart' as http;
 
 const String token = String.fromEnvironment('AQI_TOKEN');
 
-AQIData marshalJSON(dynamic jsonResult) {
-  num aqi = double.tryParse("${jsonResult["aqi"]}") ?? -1;
-  DateTime feedUpdate =
-      DateTime.tryParse("${jsonResult?["time"]?["iso"]}") ?? DateTime.now();
-  AQIData data =
-      AQIData(jsonResult?["city"]?["name"], (aqi).floor(), feedUpdate);
-  for (dynamic attribution in jsonResult?["attributions"]) {
-    data.attributions
-        .add(Attribution("${attribution?["name"]}", "${attribution?["url"]}"));
-  }
-  for (IAQIRecord entry in iqiEntries) {
-    if (jsonResult?["iaqi"]?[entry.code]?["v"] != null) {
-      data.iaqiData[entry] = jsonResult?["iaqi"]?[entry.code]?["v"];
-    }
-  }
-  for (IAQIRecord entry in iqiEntries) {
-    if (jsonResult?["forecast"]?["daily"]?[entry.code] != null) {
-      var cutoff = DateTime.now().subtract(const Duration(days: 1));
-      List<ForecastEntry> forecast = [];
-      for (dynamic forecastData in jsonResult?["forecast"]?["daily"]
-          ?[entry.code]) {
-        try {
-          DateTime day = DateTime.parse("${forecastData["day"]}");
-          if (day.isAfter(cutoff)) {
-            forecast.add(ForecastEntry(
-                average: forecastData["avg"],
-                min: forecastData["min"],
-                max: forecastData["max"],
-                date: day));
-          }
-        } catch (e) {
-          // ignored
-        }
-      }
-      data.iaqiForecast[entry] = forecast;
-    }
-  }
-  return data;
-}
-
 class AQILocation {
   final String name;
   final String url;
@@ -108,7 +68,7 @@ Future<AQIData?> fetchAQIData(String location) async {
     if (response.statusCode == 200) {
       var aqiFeed = jsonDecode(response.body);
       if (aqiFeed?["status"]?.contains("ok")) {
-        return marshalJSON(aqiFeed?["data"]);
+        return AQIData.fromJSON(aqiFeed?["data"]);
       } else {
         debugPrint("AQI Feed returned error $location ${response.body}");
       }
@@ -120,22 +80,61 @@ Future<AQIData?> fetchAQIData(String location) async {
 }
 
 class AQIData {
-  String cityName;
-  DateTime lastUpdatedTime;
-  int aqi;
-  Map<IAQIRecord, double> iaqiData = {};
-  List<Attribution> attributions = [];
-  Map<IAQIRecord, List<ForecastEntry>> iaqiForecast = {};
+  final String cityName;
+  final DateTime lastUpdatedTime;
+  final int aqi;
+  final Map<IAQIRecord, double> iaqiData;
+  final List<Attribution> attributions;
+  final Map<IAQIRecord, List<ForecastEntry>> iaqiForecast;
+  final AQILevel level;
 
-  AQIData(this.cityName, this.aqi, this.lastUpdatedTime);
+  AQIData(this.cityName, this.lastUpdatedTime, this.aqi, this.iaqiData,
+      this.attributions, this.iaqiForecast, this.level);
 
-  AQILevel getLevel() {
-    for (final level in aqiThresholds) {
-      if (level.within(aqi)) {
-        return level;
+  factory AQIData.fromJSON(dynamic jsonResult) {
+    String cityName = jsonResult?["city"]?["name"];
+    Map<IAQIRecord, double> iaqiData = {};
+    List<Attribution> attributions = [];
+    Map<IAQIRecord, List<ForecastEntry>> iaqiForecast = {};
+    int aqi = (double.tryParse("${jsonResult["aqi"]}") ?? -1).floor();
+    DateTime lastUpdatedTime =
+        DateTime.tryParse("${jsonResult?["time"]?["iso"]}") ?? DateTime.now();
+    for (dynamic attribution in jsonResult?["attributions"]) {
+      attributions.add(
+          Attribution("${attribution?["name"]}", "${attribution?["url"]}"));
+    }
+    for (IAQIRecord entry in iqiEntries) {
+      if (jsonResult?["iaqi"]?[entry.code]?["v"] != null) {
+        iaqiData[entry] = jsonResult?["iaqi"]?[entry.code]?["v"];
       }
     }
-    return aqiThresholds.last;
+    for (IAQIRecord entry in iqiEntries) {
+      if (jsonResult?["forecast"]?["daily"]?[entry.code] != null) {
+        var cutoff = DateTime.now().subtract(const Duration(days: 1));
+        List<ForecastEntry> forecast = [];
+        for (dynamic forecastData in jsonResult?["forecast"]?["daily"]
+            ?[entry.code]) {
+          try {
+            ForecastEntry forecastEntryResult =
+                ForecastEntry.fromJSON(forecastData);
+            if (forecastEntryResult.date.isAfter(cutoff)) {
+              forecast.add(forecastEntryResult);
+            }
+          } catch (e) {
+            // ignored
+          }
+        }
+        iaqiForecast[entry] = forecast;
+      }
+    }
+    for (AQILevel thresholdLevel in aqiThresholds) {
+      if (thresholdLevel.within(aqi)) {
+        return AQIData(cityName, lastUpdatedTime, aqi, iaqiData, attributions,
+            iaqiForecast, thresholdLevel);
+      }
+    }
+    return AQIData(cityName, lastUpdatedTime, aqi, iaqiData, attributions,
+        iaqiForecast, aqiThresholds.last);
   }
 
   // Remove the parenthesis
@@ -145,8 +144,8 @@ class AQIData {
 }
 
 class Attribution {
-  String name;
-  String url;
+  final String name;
+  final String url;
 
   Attribution(this.name, this.url);
 }
@@ -171,11 +170,11 @@ class AQILevel {
 }
 
 class IAQIRecord {
-  String code;
-  String label;
-  String? unit;
-  IconData? iconData;
-  Color Function(double)? colourFunction;
+  final String code;
+  final String label;
+  final String? unit;
+  final IconData? iconData;
+  final Color Function(double)? colourFunction;
 
   IAQIRecord(this.code, this.label,
       {this.unit, this.iconData, this.colourFunction});
@@ -192,16 +191,25 @@ class IAQIRecord {
 }
 
 class ForecastEntry {
-  int average;
-  int min;
-  int max;
-  DateTime date;
+  final int average;
+  final int min;
+  final int max;
+  final DateTime date;
 
   ForecastEntry(
       {required this.average,
       required this.min,
       required this.max,
       required this.date});
+
+  factory ForecastEntry.fromJSON(dynamic forecastData) {
+    DateTime day = DateTime.parse("${forecastData["day"]}");
+    return ForecastEntry(
+        average: forecastData["avg"],
+        min: forecastData["min"],
+        max: forecastData["max"],
+        date: day);
+  }
 }
 
 const aqiThresholds = [
@@ -242,7 +250,7 @@ const aqiThresholds = [
       "Active children and adults, and people with respiratory disease, such as asthma, should avoid all outdoor exertion; everyone else, especially children, should limit outdoor exertion.",
       300),
   AQILevel(
-      Colors.black,
+      Colors.brown,
       "Hazardous",
       "Health alert: everyone may experience more serious health effects",
       "Everyone should avoid all outdoor exertion",

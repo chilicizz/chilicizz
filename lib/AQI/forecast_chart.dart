@@ -4,35 +4,20 @@ import 'package:flutter/material.dart';
 import 'aqi_common.dart';
 
 class ForecastChart extends StatelessWidget {
-  late List<charts.Series<ForecastEntry, DateTime>> seriesList;
+  final List<charts.Series<ForecastEntry, DateTime>> seriesList;
   final bool animate;
 
-  ForecastChart(series, List<ForecastEntry> forecast,
-      {Key? key, this.animate = true})
-      : super(key: key) {
-    seriesList = [
-      charts.Series<ForecastEntry, DateTime>(
-        id: series,
-        colorFn: (_, __) => charts.MaterialPalette.blue.shadeDefault,
-        domainFn: (ForecastEntry entry, _) => entry.date,
-        measureFn: (ForecastEntry entry, _) => entry.average,
-        data: forecast,
-        displayName: series,
-      ),
-    ];
-  }
+  const ForecastChart(series, List<ForecastEntry> forecast,
+      {Key? key, this.animate = true, required this.seriesList})
+      : super(key: key);
 
   ForecastChart.fromMap(Map<IAQIRecord, List<ForecastEntry>>? data,
       {Key? key, this.animate = true})
-      : super(key: key) {
-    if (data != null) {
-      seriesList = data.entries.map(generateFromEntry).toList();
-    } else {
-      seriesList = [];
-    }
-  }
+      : seriesList =
+            data != null ? data.entries.map(generateFromEntry).toList() : [],
+        super(key: key);
 
-  charts.Series<ForecastEntry, DateTime> generateFromEntry(
+  static charts.Series<ForecastEntry, DateTime> generateFromEntry(
       MapEntry<IAQIRecord, List<ForecastEntry>> entry) {
     var chartSeries = charts.Series<ForecastEntry, DateTime>(
       id: entry.key.code,
