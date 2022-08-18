@@ -43,46 +43,45 @@ class _AQITabState extends State<AQITab> {
           },
           child: const Icon(Icons.add),
         ),
-        body: Center(
-          child: FutureBuilder(
-            future: _locations,
-            builder:
-                (BuildContext context, AsyncSnapshot<List<String>> snapshot) {
-              switch (snapshot.connectionState) {
-                case ConnectionState.waiting:
-                  return const CircularProgressIndicator();
-                default:
-                  if (snapshot.hasError) {
-                    locations = [];
-                  } else {
-                    locations = snapshot.data ?? [];
-                  }
-                  return locations.isNotEmpty
-                      ? ListView.builder(
-                      scrollDirection: Axis.vertical,
-                          itemCount: _displayInput
-                              ? locations.length + 1
-                              : locations.length,
-                          // add one for autocomplete
-                          itemBuilder: (context, index) {
-                            if (index == locations.length) {
-                              return buildAutocompleteTile(context);
-                            }
-                            return AQIListTile(
-                              location: locations[index],
-                              removeLocationCallback: removeLocation,
-                              updateLocationCallback: updateLocation,
-                            );
-                          })
-                      : ListView(
-                    children: [buildAutocompleteTile(context)],
-                  );
-              }
-            },
-          ),
-        ),
+        body: _displayInput
+            ? buildAutoCompleteListView(context)
+            : Center(
+                child: FutureBuilder(
+                  future: _locations,
+                  builder: (BuildContext context,
+                      AsyncSnapshot<List<String>> snapshot) {
+                    switch (snapshot.connectionState) {
+                      case ConnectionState.waiting:
+                        return const CircularProgressIndicator();
+                      default:
+                        if (snapshot.hasError) {
+                          locations = [];
+                        } else {
+                          locations = snapshot.data ?? [];
+                        }
+                        return locations.isNotEmpty
+                            ? ListView.builder(
+                                scrollDirection: Axis.vertical,
+                                itemCount: locations.length,
+                                // add one for autocomplete
+                                itemBuilder: (context, index) {
+                                  return AQIListTile(
+                                    location: locations[index],
+                                    removeLocationCallback: removeLocation,
+                                    updateLocationCallback: updateLocation,
+                                  );
+                                })
+                            : buildAutoCompleteListView(context);
+                    }
+                  },
+                ),
+              ),
       ),
     );
+  }
+
+  ListView buildAutoCompleteListView(BuildContext context) {
+    return ListView(children: [buildAutocompleteTile(context)]);
   }
 
   ListTile buildAutocompleteTile(BuildContext context) {
@@ -105,35 +104,6 @@ class _AQITabState extends State<AQITab> {
           icon: const Icon(Icons.my_location),
         ),
       ),
-    );
-  }
-
-  AlertDialog buildAQILocationDialog(BuildContext context) {
-    return AlertDialog(
-      title: const Text("Add new tile"),
-      content: AQILocationAutocomplete(
-          selectionCallback: (value) {
-            addLocation(value);
-            Navigator.pop(context);
-          },
-          autofocus: true),
-      actions: [
-        Tooltip(
-          message: "Current Location",
-          child: IconButton(
-            onPressed: () {
-              addLocation('here');
-            },
-            icon: const Icon(Icons.my_location),
-          ),
-        ),
-        TextButton(
-          child: const Text('CANCEL'),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-      ],
     );
   }
 

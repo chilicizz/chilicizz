@@ -7,7 +7,6 @@ import 'package:provider/provider.dart';
 import 'AQI/aqi_tab.dart';
 import 'HKO/hko_warnings.dart';
 import 'common.dart';
-import 'counter.dart';
 
 final List<NavRoute> routes = [
   NavRoute(
@@ -37,11 +36,6 @@ final List<NavRoute> routes = [
     path: '/rss',
     label: "RSS Reader",
     buildFunction: (context) => const RSSReader(),
-  ),
-  NavRoute(
-    path: '/counter',
-    label: "Counter",
-    buildFunction: (context) => const MyHomePage(title: "demo"),
   ),
 ];
 

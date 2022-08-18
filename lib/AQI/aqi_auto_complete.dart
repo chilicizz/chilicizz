@@ -38,7 +38,8 @@ Autocomplete<AQILocation> buildAQILocationAutocomplete(
         autofocus: autofocus,
         focusNode: focusNode,
         controller: textEditingController,
-        decoration: const InputDecoration(hintText: "enter the name of a city"),
+        decoration: const InputDecoration(
+            hintText: "enter the name of a city to add a new tile"),
         onSubmitted: (value) {
           onFieldSubmitted();
         },

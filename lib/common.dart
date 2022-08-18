@@ -146,7 +146,7 @@ String dayMonthFormat(DateTime? dateTime) {
 
 Text buildLastUpdatedText(DateTime? lastUpdateTime) {
   if (lastUpdateTime != null) {
-    return Text("last updated ${simpleDateFormat(lastUpdateTime.toLocal())}");
+    return Text("last updated ${shortDateFormat(lastUpdateTime.toLocal())}");
   } else {
     return const Text("");
   }
@@ -157,7 +157,7 @@ Text buildLastTick(DateTime lastTickTime) {
 }
 
 Text buildIssued(DateTime lastTickTime) {
-  return Text("Issued ${shortDateFormat(lastTickTime.toLocal())}");
+  return Text("issued ${shortDateFormat(lastTickTime.toLocal())}");
 }
 
 bool isSmallScreen(BuildContext context) {
