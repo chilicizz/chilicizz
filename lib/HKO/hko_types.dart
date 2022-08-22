@@ -288,7 +288,7 @@ class TyphoonPosition {
       }
     }
     for (var referenceClass in typhoonClasses) {
-      double speed = maximumWind ?? 0;
+      double speed = maximumWind ?? -1;
       if (referenceClass.within(speed)) {
         typhoonClass = referenceClass;
       }
@@ -323,7 +323,7 @@ TyphoonClass unknownClass = TyphoonClass("unknown", -1, -1, Colors.grey);
 List<TyphoonClass> typhoonClasses = [
   TyphoonClass("Extratropical Low", 0, 41, Colors.blue),
   TyphoonClass("Tropical Depression", 41, 62, Colors.lightGreen),
-  TyphoonClass("Tropical Storm", 62, 87, Colors.yellow),
+  TyphoonClass("Tropical Storm", 62, 87, Colors.amber),
   TyphoonClass("Severe Tropical Storm", 87, 117, Colors.orange),
   TyphoonClass("Typhoon", 117, 149, Colors.red),
   TyphoonClass("Severe Typhoon", 149, 184, Colors.deepPurple),

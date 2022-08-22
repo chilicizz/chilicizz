@@ -76,7 +76,7 @@ class TyphoonTile extends StatelessWidget {
                             label: Text(
                                 "${typhoonClass.name} > ${typhoonClass.minWind} km/h"),
                             avatar: CircleAvatar(
-                              backgroundColor: Colors.grey,
+                              backgroundColor: Theme.of(context).canvasColor,
                               child:
                                   Icon(Icons.storm, color: typhoonClass.color),
                             ),
