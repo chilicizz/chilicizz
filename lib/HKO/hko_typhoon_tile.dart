@@ -47,9 +47,9 @@ class TyphoonTile extends StatelessWidget {
                 final double distKm = haversineCalc.as(
                     LengthUnit.Kilometer, hkLatLng, track.current.getLatLng());
                 final String currentDistance =
-                    !distKm.isNaN ? '($distKm km)' : "";
+                    !distKm.isNaN ? '| distance $distKm km' : "";
                 final String maxWindSpeed = !track.current.maximumWind!.isNaN
-                    ? 'max wind <${track.current.maximumWind} km/h'
+                    ? '| max winds up to ${track.current.maximumWind} km/h'
                     : "";
                 return ExpansionTile(
                   leading: CircleAvatar(
@@ -83,7 +83,7 @@ class TyphoonTile extends StatelessWidget {
                           return Chip(
                             label: Tooltip(
                               message:
-                                  "Maximum wind speed greater than ${typhoonClass.minWind} km/h",
+                                  "Maximum wind ${typhoonClass.minWind}-${typhoonClass.maxWind} km/h",
                               child: !isSmallDevice()
                                   ? Text(
                                       "${typhoonClass.name} > ${typhoonClass.minWind} km/h")
