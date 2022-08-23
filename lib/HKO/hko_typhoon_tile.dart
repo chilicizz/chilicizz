@@ -11,8 +11,13 @@ const Distance haversineCalc = Distance(calculator: Haversine());
 class TyphoonTile extends StatelessWidget {
   final Typhoon typhoon;
   final DateTime lastTick;
+  final bool expanded;
 
-  const TyphoonTile({Key? key, required this.typhoon, required this.lastTick})
+  const TyphoonTile(
+      {Key? key,
+      required this.typhoon,
+      required this.lastTick,
+      this.expanded = false})
       : super(key: key);
 
   @override
@@ -44,7 +49,7 @@ class TyphoonTile extends StatelessWidget {
                 final String currentDistance =
                     !distKm.isNaN ? '($distKm km)' : "";
                 final String maxWindSpeed = !track.current.maximumWind!.isNaN
-                    ? '<${track.current.maximumWind} km/h'
+                    ? 'max wind <${track.current.maximumWind} km/h'
                     : "";
                 return ExpansionTile(
                   leading: CircleAvatar(
@@ -56,25 +61,34 @@ class TyphoonTile extends StatelessWidget {
                     fit: BoxFit.scaleDown,
                     child: Text(
                         "${track.current.intensity} ${typhoon.englishName} (${typhoon.chineseName})",
-                        style: Theme.of(context).textTheme.headlineMedium),
+                        style: Theme.of(context).textTheme.headlineLarge),
                   ),
                   subtitle: Text(
                       "${shortDateFormat(track.bulletin.time)} $currentDistance $maxWindSpeed"),
-                  initiallyExpanded: !isSmallDevice(),
+                  initiallyExpanded: expanded,
                   children: [
                     SizedBox(
                       height: 500,
                       child: HKOTyphoonTrackWidget(snapshot.data!),
                     ),
                     ListTile(
-                      subtitle: Wrap(
+                      subtitle: Center(
+                          child: Text(
+                              "${snapshot.data!.bulletin.provider} - ${snapshot.data!.bulletin.name}")),
+                      title: Wrap(
                         alignment: WrapAlignment.spaceEvenly,
                         runSpacing: 1,
-                        crossAxisAlignment: WrapCrossAlignment.center,
+                        crossAxisAlignment: WrapCrossAlignment.start,
                         children: typhoonClasses.map((typhoonClass) {
                           return Chip(
-                            label: Text(
-                                "${typhoonClass.name} > ${typhoonClass.minWind} km/h"),
+                            label: Tooltip(
+                              message:
+                                  "Maximum wind speed greater than ${typhoonClass.minWind} km/h",
+                              child: !isSmallDevice()
+                                  ? Text(
+                                      "${typhoonClass.name} > ${typhoonClass.minWind} km/h")
+                                  : Text(typhoonClass.name),
+                            ),
                             avatar: CircleAvatar(
                               backgroundColor: Theme.of(context).canvasColor,
                               child:
@@ -83,7 +97,7 @@ class TyphoonTile extends StatelessWidget {
                           );
                         }).toList(),
                       ),
-                    )
+                    ),
                   ],
                 );
               } else {
@@ -235,7 +249,7 @@ class HKOTyphoonTrackWidget extends StatelessWidget {
         ),
         nonRotatedChildren: [
           AttributionWidget.defaultWidget(
-            source: "OpenStreetMap / ${track.bulletin.provider}",
+            source: "Open Street Map",
           )
         ],
         layers: [
@@ -271,7 +285,7 @@ class HKOTyphoonTrackWidget extends StatelessWidget {
                 Marker(
                   point: position.getLatLng(longitudeOffset: 0.2),
                   builder: (ctx) => Text(
-                    dayMonthFormat(position.time),
+                    mapLabelFormat(position.time),
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ),

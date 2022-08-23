@@ -47,20 +47,6 @@ class _HKOTyphoonTabState extends State<HKOTyphoonTab> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButton: Column(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          ElevatedButton(
-            onPressed: _tick,
-            child: buildLastTick(lastTick),
-            onLongPress: () {
-              setState(() {
-                futureTyphoons = dummyTyphoonList();
-              });
-            },
-          ),
-        ],
-      ),
       body: Center(
         child: RefreshIndicator(
           onRefresh: _tick,
@@ -86,6 +72,7 @@ class _HKOTyphoonTabState extends State<HKOTyphoonTab> {
                             return TyphoonTile(
                               typhoon: typhoons[index],
                               lastTick: lastTick,
+                              expanded: typhoons.length == 1,
                             );
                           },
                         )

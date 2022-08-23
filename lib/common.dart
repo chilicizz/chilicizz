@@ -129,11 +129,13 @@ String shortDateFormat(DateTime? dateTime) {
   }
 }
 
-String dayMonthFormat(DateTime? dateTime) {
+String mapLabelFormat(DateTime? dateTime) {
   if (dateTime != null) {
     return formatDate(
       dateTime.toLocal(),
       [
+        H,
+        'h ',
         d,
         "/",
         m,
