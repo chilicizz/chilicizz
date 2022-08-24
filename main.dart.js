@@ -46973,10 +46973,10 @@ else{s=b.b
 if(s!=null){r=$.a0M()
 q=s.d
 p=B.FQ.agW(0,B.i8,r,q.mf())
-o=!isNaN(p)?"("+A.d(p)+" km)":""
+o=!isNaN(p)?"| distance "+A.d(p)+" km":""
 r=q.c
 r.toString
-n=!isNaN(r)?"max wind <"+A.d(r)+" km/h":""
+n=!isNaN(r)?"| max winds up to "+A.d(r)+" km/h":""
 r=A.Lf(q.r.d,B.H9,h)
 m=this.a
 l=m.c
@@ -46995,10 +46995,10 @@ q=A.un(B.d6,A.bN(q.b+" ("+q.c+")",h,h,h,h,A.ad(a).R8.e,h,h),B.el)
 return A.fQ(h,s,h,A.bN("last refresh "+A.th(r.d.kP()),h,h,h,h,h,h,h),q,h)}}}},
 $S:219}
 A.alj.prototype={
-$1(a){var s=null,r=""+a.b,q=A.azR(),p=a.a
-q=!q?A.bN(p+" > "+r+" km/h",s,s,s,s,s,s,s):A.bN(p,s,s,s,s,s,s,s)
-r=A.rq(q,s,"Maximum wind speed greater than "+r+" km/h",s,s)
-return A.aCk(A.Lf(A.ad(this.a).cy,A.a9_(B.eO,a.d),s),r)},
+$1(a){var s=null,r=""+a.b,q=a.c,p=A.azR(),o=a.a
+p=!p?A.bN(o+" > "+r+" km/h",s,s,s,s,s,s,s):A.bN(o,s,s,s,s,s,s,s)
+q=A.rq(p,s,"Maximum wind "+r+"-"+q+" km/h",s,s)
+return A.aCk(A.Lf(A.ad(this.a).cy,A.a9_(B.eO,a.d),s),q)},
 $S:218}
 A.Nf.prototype={
 I(a5,a6){var s,r,q,p,o,n,m,l,k,j,i,h,g,f,e,d,c,b,a,a0,a1,a2,a3=null,a4={}
