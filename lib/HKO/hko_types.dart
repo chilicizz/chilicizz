@@ -112,27 +112,27 @@ const Map<String, CircleAvatar> warningIconMap = {
       backgroundColor: Colors.amberAccent,
       child: Icon(Icons.alarm, color: Colors.black)),
   "TC8NE": CircleAvatar(
-      backgroundColor: Colors.amberAccent,
+      backgroundColor: Colors.amber,
       child: Text("T8",
           style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black))),
   "TC8SE": CircleAvatar(
-      backgroundColor: Colors.amberAccent,
+      backgroundColor: Colors.amber,
       child: Text("T8",
           style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black))),
   "TC8SW": CircleAvatar(
-      backgroundColor: Colors.amberAccent,
+      backgroundColor: Colors.amber,
       child: Text("T8",
           style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black))),
   "TC8NW": CircleAvatar(
-      backgroundColor: Colors.amberAccent,
+      backgroundColor: Colors.amber,
       child: Text("T8",
           style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black))),
   "TC9": CircleAvatar(
-      backgroundColor: Colors.amberAccent,
+      backgroundColor: Colors.orange,
       child: Text("T9",
           style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black))),
   "TC10": CircleAvatar(
-      backgroundColor: Colors.amberAccent,
+      backgroundColor: Colors.redAccent,
       child: Text("T10",
           style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black))),
   "WFROST": CircleAvatar(
