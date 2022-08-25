@@ -83,10 +83,10 @@ class TyphoonTile extends StatelessWidget {
                           return Chip(
                             label: Tooltip(
                               message:
-                                  "Maximum wind ${typhoonClass.minWind}-${typhoonClass.maxWind} km/h",
+                                  "Maximum winds ${typhoonClass.minWind}${typhoonClass.maxWind != double.maxFinite ? "-${typhoonClass.maxWind}" : "+"} km/h",
                               child: !isSmallDevice()
                                   ? Text(
-                                      "${typhoonClass.name} > ${typhoonClass.minWind} km/h")
+                                      "${typhoonClass.name} ${typhoonClass.minWind}${typhoonClass.maxWind != double.maxFinite ? "-${typhoonClass.maxWind}" : "+"} km/h")
                                   : Text(typhoonClass.name),
                             ),
                             avatar: CircleAvatar(

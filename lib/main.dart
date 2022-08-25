@@ -93,7 +93,24 @@ class _DashboardState extends State<Dashboard> {
               Tab(icon: Text("TYPHOON")),
             ],
           ),
-          actions: const [],
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.share),
+              onPressed: () => showDialog<String>(
+                context: context,
+                builder: (BuildContext context) => AlertDialog(
+                  title: const Text('Under construction'),
+                  content: const Text('...'),
+                  actions: <Widget>[
+                    TextButton(
+                      onPressed: () => Navigator.pop(context, 'OK'),
+                      child: const Text('OK'),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          ],
         ),
         body: const TabBarView(
           children: [
