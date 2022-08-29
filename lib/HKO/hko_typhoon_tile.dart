@@ -209,6 +209,14 @@ class HKOTyphoonTrackWidget extends StatelessWidget {
         lastClass = currentIteration;
       }
     }
+    // make sure we add the last section
+    trackLines.add(
+      Polyline(
+        points: currentSection,
+        color: lastClass.color,
+        strokeWidth: 3,
+      ),
+    );
     // centre the map at the middle of the typhoon and hk
     final LatLng mid = LatLng(
         (hkLatLng.latitude + track.current.getLatLng().latitude) / 2,
