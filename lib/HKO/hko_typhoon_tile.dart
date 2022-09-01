@@ -53,8 +53,9 @@ class TyphoonTile extends StatelessWidget {
                     : "";
                 return ExpansionTile(
                   leading: CircleAvatar(
-                    backgroundColor: track.current.typhoonClass.color,
-                    child: const Icon(Icons.storm, color: Colors.black),
+                    backgroundColor: Theme.of(context).focusColor,
+                    child: Icon(Icons.storm,
+                        color: track.current.typhoonClass.color),
                   ),
                   title: FittedBox(
                     alignment: Alignment.centerLeft,
@@ -90,7 +91,8 @@ class TyphoonTile extends StatelessWidget {
                                   : Text(typhoonClass.name),
                             ),
                             avatar: CircleAvatar(
-                              backgroundColor: Theme.of(context).canvasColor,
+                              backgroundColor:
+                                  Theme.of(context).scaffoldBackgroundColor,
                               child:
                                   Icon(Icons.storm, color: typhoonClass.color),
                             ),
