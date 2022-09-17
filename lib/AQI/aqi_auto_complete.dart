@@ -16,50 +16,41 @@ class AQILocationAutocomplete extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AQILocationAutocomplete(
-        selectionCallback: selectionCallback,
-        initialValue: initialValue,
-        autofocus: autofocus);
+    return Autocomplete<AQILocation>(
+      fieldViewBuilder: (BuildContext context,
+          TextEditingController textEditingController,
+          FocusNode focusNode,
+          VoidCallback onFieldSubmitted) {
+        if (initialValue != null) {
+          textEditingController.text = initialValue!;
+        }
+        textEditingController.selection = TextSelection(
+            baseOffset: 0, extentOffset: textEditingController.text.length);
+        return TextField(
+          autofocus: autofocus,
+          focusNode: focusNode,
+          controller: textEditingController,
+          decoration: const InputDecoration(
+              border: OutlineInputBorder(),
+              hintText: "enter the name of a city to add a new tile"),
+          onSubmitted: (value) {
+            onFieldSubmitted();
+          },
+        );
+      },
+      displayStringForOption: (location) {
+        return "${location.name}\n(${location.url})";
+      },
+      optionsBuilder: (TextEditingValue textEditingValue) {
+        if (textEditingValue.text.isNotEmpty &&
+            textEditingValue.text.length > 3) {
+          return locationQuery(textEditingValue.text.trim());
+        }
+        return const Iterable<AQILocation>.empty();
+      },
+      onSelected: (AQILocation selection) {
+        selectionCallback(selection.url);
+      },
+    );
   }
-}
-
-Autocomplete<AQILocation> buildAQILocationAutocomplete(
-    BuildContext context, Function(String value) selectionCallback,
-    {String? initial, bool autofocus = false}) {
-  return Autocomplete<AQILocation>(
-    fieldViewBuilder: (BuildContext context,
-        TextEditingController textEditingController,
-        FocusNode focusNode,
-        VoidCallback onFieldSubmitted) {
-      if (initial != null) {
-        textEditingController.text = initial;
-      }
-      textEditingController.selection = TextSelection(
-          baseOffset: 0, extentOffset: textEditingController.text.length);
-      return TextField(
-        autofocus: autofocus,
-        focusNode: focusNode,
-        controller: textEditingController,
-        decoration: const InputDecoration(
-            border: OutlineInputBorder(),
-            hintText: "enter the name of a city to add a new tile"),
-        onSubmitted: (value) {
-          onFieldSubmitted();
-        },
-      );
-    },
-    displayStringForOption: (location) {
-      return "${location.name}\n(${location.url})";
-    },
-    optionsBuilder: (TextEditingValue textEditingValue) {
-      if (textEditingValue.text.isNotEmpty &&
-          textEditingValue.text.length > 3) {
-        return locationQuery(textEditingValue.text.trim());
-      }
-      return const Iterable<AQILocation>.empty();
-    },
-    onSelected: (AQILocation selection) {
-      selectionCallback(selection.url);
-    },
-  );
 }

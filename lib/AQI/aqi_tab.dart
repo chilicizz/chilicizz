@@ -87,9 +87,8 @@ class _AQITabState extends State<AQITab> {
 
   ListTile buildAutocompleteTile(BuildContext context) {
     return ListTile(
-      //want to use AQILocationAutocomplete,
-      title:
-          buildAQILocationAutocomplete(context, addLocation, autofocus: true),
+      title: AQILocationAutocomplete(
+          selectionCallback: addLocation, autofocus: true),
       trailing: Row(mainAxisSize: MainAxisSize.min, children: [
         OutlinedButton(
           child: const Icon(Icons.cancel_outlined),
