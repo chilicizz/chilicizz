@@ -16,8 +16,10 @@ class AQILocationAutocomplete extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return buildAQILocationAutocomplete(context, selectionCallback,
-        initial: initialValue, autofocus: autofocus);
+    return AQILocationAutocomplete(
+        selectionCallback: selectionCallback,
+        initialValue: initialValue,
+        autofocus: autofocus);
   }
 }
 
@@ -39,6 +41,7 @@ Autocomplete<AQILocation> buildAQILocationAutocomplete(
         focusNode: focusNode,
         controller: textEditingController,
         decoration: const InputDecoration(
+            border: OutlineInputBorder(),
             hintText: "enter the name of a city to add a new tile"),
         onSubmitted: (value) {
           onFieldSubmitted();

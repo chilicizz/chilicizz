@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
+import '../app_config.dart';
 import '../common.dart';
 import 'hko_types.dart';
 
@@ -43,7 +44,7 @@ class _HKOWarningsState extends State<HKOWarnings> {
 
   Future<List<WarningInformation>> getWarnings() async {
     try {
-      var response = await http.get(Uri.parse(infoUrl));
+      var response = await http.get(Uri.parse(AppConfig().hkoWarningsUrl));
       if (response.statusCode == 200) {
         var hkoFeed = jsonDecode(response.body);
         return extractWarnings(hkoFeed);

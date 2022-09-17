@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:chilicizz/app_config.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
@@ -18,8 +19,8 @@ class AQILocation {
 }
 
 Future<http.Response> locationQueryHttp(location) {
-  return http.get(Uri.parse(
-      'https://api.waqi.info/search/?keyword=$location&token=$token'));
+  var locationSearchUrl = AppConfig().aqiLocationSearchUrl(location, token);
+  return http.get(Uri.parse(locationSearchUrl));
 }
 
 Map<String, List<AQILocation>> cache = {};
@@ -63,8 +64,8 @@ Future<List<AQILocation>> locationQuery(String location) async {
 
 Future<AQIData?> fetchAQIData(String location) async {
   try {
-    var response = await http
-        .get(Uri.parse('https://api.waqi.info/feed/$location/?token=$token'));
+    var aqiFeedUrl = AppConfig().aqiFeedUrl(location, token);
+    var response = await http.get(Uri.parse(aqiFeedUrl));
     if (response.statusCode == 200) {
       var aqiFeed = jsonDecode(response.body);
       if (aqiFeed?["status"]?.contains("ok")) {

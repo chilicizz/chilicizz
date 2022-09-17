@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:chilicizz/app_config.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart';
@@ -8,13 +9,6 @@ import 'package:xml/xml.dart';
 
 // https://www.hko.gov.hk/en/abouthko/opendata_intro.htm
 // https://data.weather.gov.hk/weatherAPI/doc/HKO_Open_Data_API_Documentation.pdf
-const String infoUrl =
-    "https://data.weather.gov.hk/weatherAPI/opendata/weather.php?dataType=warningInfo&lang=en";
-const String typhoonUrl =
-    "https://www.weather.gov.hk/wxinfo/currwx/tc_list.xml";
-const String corsProxyPrefix =
-    "https://proxy.chilicizz.workers.dev/corsproxy/?apiurl=";
-
 class WarningInformation {
   final String warningStatementCode;
   final String? subType;
@@ -161,7 +155,7 @@ const Map<String, CircleAvatar> warningIconMap = {
 
 Future<List<Typhoon>> fetchTyphoonFeed() async {
   try {
-    var path = Uri.parse(corsProxyPrefix + typhoonUrl);
+    var path = Uri.parse(AppConfig().hkoTyphoonUrl);
     var response = await http.get(path, headers: {
       HttpHeaders.contentTypeHeader: 'application/xml',
       HttpHeaders.accessControlAllowOriginHeader: '*',
@@ -195,7 +189,7 @@ class Typhoon {
 
   Future<TyphoonTrack?> getTyphoonTrack() async {
     try {
-      Uri uri = Uri.parse(corsProxyPrefix + url);
+      Uri uri = Uri.parse(AppConfig().corsProxy + url);
       var response = await http.get(uri, headers: {
         HttpHeaders.contentTypeHeader: 'application/xml',
         HttpHeaders.accessControlAllowOriginHeader: '*',

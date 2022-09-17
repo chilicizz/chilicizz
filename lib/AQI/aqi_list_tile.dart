@@ -58,14 +58,6 @@ class _AQIListTileState extends State<AQIListTile> {
     } else {
       return editingLocation
           ? ListTile(
-              leading: IconButton(
-                icon: const Icon(Icons.cancel),
-                onPressed: () {
-                  setState(() {
-                    editingLocation = false;
-                  });
-                },
-              ),
               title: AQILocationAutocomplete(
                   selectionCallback: (value) => {
                         widget.updateLocation(value),
@@ -73,14 +65,27 @@ class _AQIListTileState extends State<AQIListTile> {
                       },
                   initialValue: textController.value.text,
                   autofocus: editingLocation),
-              trailing: ElevatedButton(
-                onPressed: () {
-                  setState(() {
-                    widget.updateLocation(textController.value.text);
-                    editingLocation = false;
-                  });
-                },
-                child: const Icon(Icons.check),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  OutlinedButton(
+                    child: const Icon(Icons.cancel_outlined),
+                    onPressed: () {
+                      setState(() {
+                        editingLocation = false;
+                      });
+                    },
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      setState(() {
+                        widget.updateLocation(textController.value.text);
+                        editingLocation = false;
+                      });
+                    },
+                    child: const Icon(Icons.check),
+                  ),
+                ],
               ),
             )
           : Dismissible(
@@ -199,59 +204,6 @@ class _AQIListTileState extends State<AQIListTile> {
             "${value.toStringAsFixed(value > 50 ? 0 : 1)} ${record.unit ?? ''}"),
       ),
     );
-  }
-
-  Widget buildTitleTile(
-      BuildContext context, String? title, DateTime? lastUpdate) {
-    if (editingLocation || title == null) {
-      textController.selection = TextSelection(
-          baseOffset: 0, extentOffset: textController.text.length);
-      return ListTile(
-        leading: IconButton(
-          icon: const Icon(Icons.cancel),
-          onPressed: () {
-            setState(() {
-              editingLocation = false;
-            });
-          },
-        ),
-        title: AQILocationAutocomplete(
-          selectionCallback: (value) => {
-            widget.updateLocation(value),
-            editingLocation = false,
-          },
-          initialValue: textController.value.text,
-          autofocus: editingLocation,
-        ),
-        trailing: ElevatedButton(
-          onPressed: () {
-            setState(() {
-              editingLocation = false;
-              widget.updateLocation(textController.value.text);
-            });
-          },
-          child: const Icon(Icons.check),
-        ),
-      );
-    } else {
-      return Tooltip(
-        message: "Click to update the location",
-        child: ListTile(
-          title: FittedBox(
-            alignment: Alignment.centerLeft,
-            fit: BoxFit.scaleDown,
-            child:
-                Text(title, style: Theme.of(context).textTheme.headlineSmall),
-          ),
-          subtitle: buildLastUpdatedText(lastUpdate),
-          onTap: () => {
-            setState(() {
-              editingLocation = true;
-            })
-          },
-        ),
-      );
-    }
   }
 
   @override

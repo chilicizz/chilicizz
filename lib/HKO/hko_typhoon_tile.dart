@@ -1,3 +1,4 @@
+import 'package:chilicizz/app_config.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -7,6 +8,7 @@ import 'hko_types.dart';
 
 final LatLng hkLatLng = LatLng(22.3453, 114.1372);
 const Distance haversineCalc = Distance(calculator: Haversine());
+const mapUserAgent = "com.chilicizz.chilicizz.github.io";
 
 class TyphoonTile extends StatelessWidget {
   final Typhoon typhoon;
@@ -47,7 +49,7 @@ class TyphoonTile extends StatelessWidget {
                 final double distKm = haversineCalc.as(
                     LengthUnit.Kilometer, hkLatLng, track.current.getLatLng());
                 final String currentDistance =
-                    !distKm.isNaN ? '| distance $distKm km' : "";
+                !distKm.isNaN ? '| distance $distKm km' : "";
                 final String maxWindSpeed = !track.current.maximumWind!.isNaN
                     ? '| max winds up to ${track.current.maximumWind} km/h'
                     : "";
@@ -84,17 +86,17 @@ class TyphoonTile extends StatelessWidget {
                           return Chip(
                             label: Tooltip(
                               message:
-                                  "Maximum winds ${typhoonClass.minWind}${typhoonClass.maxWind != double.maxFinite ? "-${typhoonClass.maxWind}" : "+"} km/h",
+                              "Maximum winds ${typhoonClass.minWind}${typhoonClass.maxWind != double.maxFinite ? "-${typhoonClass.maxWind}" : "+"} km/h",
                               child: !isSmallDevice()
                                   ? Text(
-                                      "${typhoonClass.name} ${typhoonClass.minWind}${typhoonClass.maxWind != double.maxFinite ? "-${typhoonClass.maxWind}" : "+"} km/h")
+                                  "${typhoonClass.name} ${typhoonClass.minWind}${typhoonClass.maxWind != double.maxFinite ? "-${typhoonClass.maxWind}" : "+"} km/h")
                                   : Text(typhoonClass.name),
                             ),
                             avatar: CircleAvatar(
                               backgroundColor:
-                                  Theme.of(context).scaffoldBackgroundColor,
+                              Theme.of(context).scaffoldBackgroundColor,
                               child:
-                                  Icon(Icons.storm, color: typhoonClass.color),
+                              Icon(Icons.storm, color: typhoonClass.color),
                             ),
                           );
                         }).toList(),
@@ -107,7 +109,7 @@ class TyphoonTile extends StatelessWidget {
                 return ListTile(
                   leading: Tooltip(
                     message:
-                        "Failed to load typhoon track data: ${snapshot.error?.toString()}",
+                    "Failed to load typhoon track data: ${snapshot.error?.toString()}",
                     child: const CircleAvatar(
                       child: Icon(Icons.error_outline),
                     ),
@@ -254,8 +256,8 @@ class HKOTyphoonTrackWidget extends StatelessWidget {
           minZoom: 5.0,
           maxZoom: 10.0,
           interactiveFlags: InteractiveFlag.drag |
-              InteractiveFlag.pinchZoom |
-              InteractiveFlag.doubleTapZoom,
+          InteractiveFlag.pinchZoom |
+          InteractiveFlag.doubleTapZoom,
         ),
         nonRotatedChildren: [
           AttributionWidget.defaultWidget(
@@ -265,11 +267,9 @@ class HKOTyphoonTrackWidget extends StatelessWidget {
         layers: [
           TileLayerOptions(
               //https://wiki.openstreetmap.org/wiki/Tiles
-              urlTemplate:
-                  //"https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-                  "https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png",
-              subdomains: ['a', 'b'],
-              userAgentPackageName: "com.chilicizz.chilicizz.github.io"),
+              urlTemplate: AppConfig().mapTileUrl,
+              subdomains: AppConfig().mapTileSubDomains,
+              userAgentPackageName: mapUserAgent),
           PolylineLayerOptions(
             polylineCulling: true,
             polylines: trackLines,
@@ -281,7 +281,7 @@ class HKOTyphoonTrackWidget extends StatelessWidget {
                 height: 30.0,
                 point: hkLatLng,
                 builder: (ctx) =>
-                    const Icon(Icons.location_pin, color: Colors.red),
+                const Icon(Icons.location_pin, color: Colors.red),
               ),
               Marker(
                 width: 50.0,

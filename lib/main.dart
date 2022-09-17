@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 
 import 'AQI/aqi_tab.dart';
 import 'HKO/hko_warnings.dart';
+import 'app_config.dart';
 import 'common.dart';
 
 final List<NavRoute> routes = [
@@ -55,14 +56,20 @@ class MyApp extends StatelessWidget {
     for (var e in routes) {
       appRoutes.addAll(e.getRoutes());
     }
-    return MaterialApp(
-      title: 'chilicizz.github.io',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSwatch(
-            primarySwatch: Colors.deepPurple, brightness: Brightness.light),
-      ),
-      initialRoute: '/dashboard',
-      routes: appRoutes,
+    AppConfig config = AppConfig();
+    return FutureBuilder(
+      future: config.init(),
+      builder: (context, snapshot) {
+        return MaterialApp(
+          title: 'chilicizz.github.io',
+          theme: ThemeData(
+            colorScheme: ColorScheme.fromSwatch(
+                primarySwatch: Colors.deepPurple, brightness: Brightness.light),
+          ),
+          initialRoute: '/dashboard',
+          routes: appRoutes,
+        );
+      },
     );
   }
 }
