@@ -3,19 +3,21 @@ const MANIFEST = 'flutter-app-manifest';
 const TEMP = 'flutter-temp-cache';
 const CACHE_NAME = 'flutter-app-cache';
 const RESOURCES = {
-  "canvaskit/canvaskit.js": "c2b4e5f3d7a3d82aed024e7249a78487",
-"canvaskit/profiling/canvaskit.js": "ae2949af4efc61d28a4a80fffa1db900",
-"canvaskit/profiling/canvaskit.wasm": "95e736ab31147d1b2c7b25f11d4c32cd",
-"canvaskit/canvaskit.wasm": "4b83d89d9fecbea8ca46f2f760c5a9ba",
-"main.dart.js": "56dfba73b2aec132eccdc55965a166c0",
-"assets/AssetManifest.json": "5c54310d84c86b620c8e83062f56d74a",
+  "canvaskit/canvaskit.js": "2bc454a691c631b07a9307ac4ca47797",
+"canvaskit/profiling/canvaskit.js": "38164e5a72bdad0faa4ce740c9b8e564",
+"canvaskit/profiling/canvaskit.wasm": "95a45378b69e77af5ed2bc72b2209b94",
+"canvaskit/canvaskit.wasm": "bf50631470eb967688cca13ee181af62",
+"main.dart.js": "e18df138897b8949e33df25e78950218",
+"assets/AssetManifest.json": "b63fac307190da77c3cfcc0d9cdaaafe",
 "assets/assets/cn.png": "6bfed25e53937c2d9934f3575f94358f",
+"assets/assets/config/config.json": "2672743318639be6fe080bce2336cc18",
 "assets/fonts/MaterialIcons-Regular.otf": "95db9098c58fd6db106f1116bae85a0b",
+"assets/shaders/ink_sparkle.frag": "2e20de64bc8fe44f4ba31b8dc3a825bc",
 "assets/FontManifest.json": "7b2a36307916a9721811788013e65289",
-"assets/NOTICES": "f29a431ae9eb4257609e4ba0289d8090",
-"flutter.js": "eb2682e33f25cd8f1fc59011497c35f8",
-"index.html": "85a61447305fe03f80b1ab9da7d90f4a",
-"/": "85a61447305fe03f80b1ab9da7d90f4a",
+"assets/NOTICES": "cbbd53d3d0c27823c587c3e03172f475",
+"flutter.js": "f85e6fb278b0fd20c349186fb46ae36d",
+"index.html": "0b60a336b303e43bcb593f1bc401b175",
+"/": "0b60a336b303e43bcb593f1bc401b175",
 "favicon.png": "df3a3e8cdf9949975787a25d8ff64e54",
 "version.json": "cf761f0e318c1ff0f0ec644f8fb8dd3d",
 "manifest.json": "962953c123e2a80e676027c5e8fa98cb",
@@ -32,7 +34,6 @@ const RESOURCES = {
 const CORE = [
   "main.dart.js",
 "index.html",
-"assets/NOTICES",
 "assets/AssetManifest.json",
 "assets/FontManifest.json"];
 // During install, the TEMP cache is populated with the application shell files.
@@ -131,9 +132,11 @@ self.addEventListener("fetch", (event) => {
     .then((cache) =>  {
       return cache.match(event.request).then((response) => {
         // Either respond with the cached resource, or perform a fetch and
-        // lazily populate the cache.
+        // lazily populate the cache only if the resource was successfully fetched.
         return response || fetch(event.request).then((response) => {
-          cache.put(event.request, response.clone());
+          if (response && Boolean(response.ok)) {
+            cache.put(event.request, response.clone());
+          }
           return response;
         });
       })
