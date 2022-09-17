@@ -52,14 +52,13 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Map<String, Widget Function(BuildContext)> appRoutes = {};
-    for (var e in routes) {
-      appRoutes.addAll(e.getRoutes());
-    }
-    AppConfig config = AppConfig();
     return FutureBuilder(
-      future: config.init(),
+      future: AppConfig().init(),
       builder: (context, snapshot) {
+        final Map<String, Widget Function(BuildContext)> appRoutes = {};
+        for (var route in routes) {
+          appRoutes.addAll(route.getRoutes());
+        }
         return MaterialApp(
           title: 'chilicizz.github.io',
           theme: ThemeData(

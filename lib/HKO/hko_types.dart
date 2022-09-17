@@ -153,28 +153,6 @@ const Map<String, CircleAvatar> warningIconMap = {
       child: Icon(Icons.bolt, color: Colors.yellow)),
 };
 
-Future<List<Typhoon>> fetchTyphoonFeed() async {
-  try {
-    var path = Uri.parse(AppConfig().hkoTyphoonUrl);
-    var response = await http.get(path, headers: {
-      HttpHeaders.contentTypeHeader: 'application/xml',
-      HttpHeaders.accessControlAllowOriginHeader: '*',
-      HttpHeaders.accessControlAllowMethodsHeader: 'GET,HEAD,POST,OPTIONS',
-      HttpHeaders.accessControlAllowHeadersHeader: '*',
-    });
-    if (response.statusCode == 200) {
-      String xmlString = const Utf8Decoder().convert(response.bodyBytes);
-      var typhoonFeed = parseTyphoonFeed(xmlString);
-      return typhoonFeed;
-    } else {
-      throw Exception('Feed returned ${response.body}');
-    }
-  } catch (e) {
-    debugPrint("Failed to fetch typhoon data $e");
-    rethrow;
-  }
-}
-
 class Typhoon {
   final int id;
   final String englishName;

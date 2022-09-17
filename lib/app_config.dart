@@ -2,6 +2,8 @@ import 'dart:convert';
 
 import 'package:flutter/services.dart' show rootBundle;
 
+const String env = String.fromEnvironment('ENV', defaultValue: "prod");
+
 class AppConfig {
   static final AppConfig _singleton = AppConfig._internal();
   late final String corsProxy;
@@ -11,6 +13,7 @@ class AppConfig {
   late final List<String> mapTileSubDomains = [];
   late final String _aqiFeedTemplate;
   late final String _aqiLocationSearchTemplate;
+  bool initialised = false;
 
   factory AppConfig() {
     return _singleton;
@@ -18,9 +21,15 @@ class AppConfig {
 
   AppConfig._internal();
 
-  Future<void> init() async {
+  Future<AppConfig> init() async {
+    if (initialised) {
+      return this;
+    }
     // load the json file
-    final contents = await rootBundle.loadString('assets/config/config.json');
+    final contents = env == "dev"
+        ? await rootBundle.loadString('assets/config/dev.json')
+        : await rootBundle.loadString('assets/config/config.json');
+
     // decode our json
     dynamic json = jsonDecode(contents);
     corsProxy = json["corsProxy"];
@@ -32,7 +41,8 @@ class AppConfig {
     }
     _aqiLocationSearchTemplate = json["aqiLocationSearchTemplate"];
     _aqiFeedTemplate = json["aqiFeedTemplate"];
-    return;
+    initialised = true;
+    return this;
   }
 
   String aqiFeedUrl(String location, String token) {

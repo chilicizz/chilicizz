@@ -1,7 +1,11 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
+import '../app_config.dart';
 import '../common.dart';
 import 'dummy_typhoon.dart';
 import 'hko_types.dart';
@@ -39,7 +43,7 @@ class _HKOTyphoonTabState extends State<HKOTyphoonTab> {
 
   Future<void> _tick({Timer? t}) async {
     setState(() {
-      futureTyphoons = fetchTyphoonFeed();
+      futureTyphoons = fetchTyphoonFeed(AppConfig().hkoTyphoonUrl);
       lastTick = DateTime.now();
     });
   }
@@ -106,5 +110,27 @@ class _HKOTyphoonTabState extends State<HKOTyphoonTab> {
         ),
       ],
     );
+  }
+
+  Future<List<Typhoon>> fetchTyphoonFeed(String hkoTyphoonUrl) async {
+    try {
+      var path = Uri.parse(hkoTyphoonUrl);
+      var response = await http.get(path, headers: {
+        HttpHeaders.contentTypeHeader: 'application/xml',
+        HttpHeaders.accessControlAllowOriginHeader: '*',
+        HttpHeaders.accessControlAllowMethodsHeader: 'GET,HEAD,POST,OPTIONS',
+        HttpHeaders.accessControlAllowHeadersHeader: '*',
+      });
+      if (response.statusCode == 200) {
+        String xmlString = const Utf8Decoder().convert(response.bodyBytes);
+        var typhoonFeed = parseTyphoonFeed(xmlString);
+        return typhoonFeed;
+      } else {
+        throw Exception('Feed returned ${response.body}');
+      }
+    } catch (e) {
+      debugPrint("Failed to fetch typhoon data $e");
+      rethrow;
+    }
   }
 }
