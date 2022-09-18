@@ -43,7 +43,7 @@ final List<NavRoute> routes = [
 ];
 
 Future<void> main() async {
-  await dotenv.load(fileName: "config/$appEnv.properties");
+  await dotenv.load(fileName: "assets/config/$appEnv.properties");
   runApp(ChangeNotifierProvider(
     child: const MyApp(),
     create: (BuildContext context) {},
