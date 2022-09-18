@@ -10166,7 +10166,7 @@ this.c=c},
 a16(){var s=0,r=A.Y(t.H),q
 var $async$a16=A.Z(function(a,b){if(a===1)return A.V(b,r)
 while(true)switch(s){case 0:s=2
-return A.a1($.ng().yI(0,"config/pdn.properties"),$async$a16)
+return A.a1($.ng().yI(0,"assets/config/pdn.properties"),$async$a16)
 case 2:if($.M==null)A.aGS()
 q=$.M
 q.Wc(new A.zE(new A.xn(new A.ayp(),null,null,null,A.aWD(),A.aVl(),t.ww),null,null,B.Ot,null,t.kG))
