@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:chilicizz/app_config.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart';
 import 'package:xml/xml.dart';
@@ -167,7 +167,7 @@ class Typhoon {
 
   Future<TyphoonTrack?> getTyphoonTrack() async {
     try {
-      Uri uri = Uri.parse(AppConfig().corsProxy + url);
+      Uri uri = Uri.parse(dotenv.env["corsProxy"]! + url);
       var response = await http.get(uri, headers: {
         HttpHeaders.contentTypeHeader: 'application/xml',
         HttpHeaders.accessControlAllowOriginHeader: '*',

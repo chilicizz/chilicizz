@@ -3,9 +3,9 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 
-import '../app_config.dart';
 import '../common.dart';
 import 'dummy_typhoon.dart';
 import 'hko_types.dart';
@@ -43,7 +43,7 @@ class _HKOTyphoonTabState extends State<HKOTyphoonTab> {
 
   Future<void> _tick({Timer? t}) async {
     setState(() {
-      futureTyphoons = fetchTyphoonFeed(AppConfig().hkoTyphoonUrl);
+      futureTyphoons = fetchTyphoonFeed(dotenv.env['hkoTyphoonUrl']!);
       lastTick = DateTime.now();
     });
   }

@@ -1,10 +1,6 @@
-import 'dart:convert';
-
-import 'package:chilicizz/app_config.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 
-const String token = String.fromEnvironment('AQI_TOKEN');
+const String aqiToken = String.fromEnvironment('AQI_TOKEN');
 
 class AQILocation {
   final String name;
@@ -16,68 +12,6 @@ class AQILocation {
   String toString() {
     return name;
   }
-}
-
-Future<http.Response> locationQueryHttp(location) {
-  var locationSearchUrl = AppConfig().aqiLocationSearchUrl(location, token);
-  return http.get(Uri.parse(locationSearchUrl));
-}
-
-Map<String, List<AQILocation>> cache = {};
-
-Future<List<AQILocation>> locationQuery(String location) async {
-  location = location.toLowerCase().replaceAll('/', '');
-  String additional = location.contains(" ")
-      ? location.substring(location.indexOf(" ") + 1, location.length)
-      : "";
-  if (cache.containsKey(location)) {
-    return cache[location]!;
-  }
-  var response = await locationQueryHttp(location);
-  if (response.statusCode == 200) {
-    var aqiFeed = jsonDecode(response.body);
-    if (aqiFeed?["status"]?.contains("ok")) {
-      List<AQILocation> list = [];
-      dynamic jsonResult = aqiFeed?["data"];
-      for (dynamic entry in jsonResult) {
-        // entry["aqi"];
-        list.add(
-            AQILocation(entry["station"]?["name"], entry["station"]?["url"]));
-      }
-      list.sort((a, b) => a.url.compareTo(b.url));
-      if (additional.isNotEmpty) {
-        list = list
-            .where((element) => element.name.toLowerCase().contains(additional))
-            .toList();
-      }
-      cache[location] = list;
-      return list;
-    } else {
-      debugPrint("Failed to fetch data $location");
-      return [];
-    }
-  } else {
-    debugPrint("Failed to fetch data $location");
-    return [];
-  }
-}
-
-Future<AQIData?> fetchAQIData(String location) async {
-  try {
-    var aqiFeedUrl = AppConfig().aqiFeedUrl(location, token);
-    var response = await http.get(Uri.parse(aqiFeedUrl));
-    if (response.statusCode == 200) {
-      var aqiFeed = jsonDecode(response.body);
-      if (aqiFeed?["status"]?.contains("ok")) {
-        return AQIData.fromJSON(aqiFeed?["data"]);
-      } else {
-        debugPrint("AQI Feed returned error $location ${response.body}");
-      }
-    }
-  } catch (e) {
-    debugPrint("Failed to fetch data $location $e");
-  }
-  return null;
 }
 
 class AQIData {

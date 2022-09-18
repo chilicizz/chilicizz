@@ -1,5 +1,5 @@
-import 'package:chilicizz/app_config.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 
@@ -267,8 +267,8 @@ class HKOTyphoonTrackWidget extends StatelessWidget {
         layers: [
           TileLayerOptions(
               //https://wiki.openstreetmap.org/wiki/Tiles
-              urlTemplate: AppConfig().mapTileUrl,
-              subdomains: AppConfig().mapTileSubDomains,
+              urlTemplate: dotenv.env['mapTileUrl'],
+              subdomains: dotenv.env['mapTileSubDomains']!.split(","),
               userAgentPackageName: mapUserAgent),
           PolylineLayerOptions(
             polylineCulling: true,

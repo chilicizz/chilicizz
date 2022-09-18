@@ -2,12 +2,14 @@ import 'package:chilicizz/HKO/hko_typhoon_tab.dart';
 import 'package:chilicizz/rss_reader.dart';
 import 'package:chilicizz/signin_form.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
 
 import 'AQI/aqi_tab.dart';
 import 'HKO/hko_warnings.dart';
-import 'app_config.dart';
 import 'common.dart';
+
+const String appEnv = String.fromEnvironment('ENV', defaultValue: "pdn");
 
 final List<NavRoute> routes = [
   NavRoute(
@@ -40,7 +42,8 @@ final List<NavRoute> routes = [
   ),
 ];
 
-void main() {
+Future<void> main() async {
+  await dotenv.load(fileName: "config/$appEnv.properties");
   runApp(ChangeNotifierProvider(
     child: const MyApp(),
     create: (BuildContext context) {},
@@ -52,23 +55,18 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: AppConfig().init(),
-      builder: (context, snapshot) {
-        final Map<String, Widget Function(BuildContext)> appRoutes = {};
-        for (var route in routes) {
-          appRoutes.addAll(route.getRoutes());
-        }
-        return MaterialApp(
-          title: 'chilicizz.github.io',
-          theme: ThemeData(
-            colorScheme: ColorScheme.fromSwatch(
-                primarySwatch: Colors.deepPurple, brightness: Brightness.light),
-          ),
-          initialRoute: '/dashboard',
-          routes: appRoutes,
-        );
-      },
+    final Map<String, Widget Function(BuildContext)> appRoutes = {};
+    for (var route in routes) {
+      appRoutes.addAll(route.getRoutes());
+    }
+    return MaterialApp(
+      title: 'chilicizz.github.io',
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSwatch(
+            primarySwatch: Colors.deepPurple, brightness: Brightness.light),
+      ),
+      initialRoute: '/dashboard',
+      routes: appRoutes,
     );
   }
 }

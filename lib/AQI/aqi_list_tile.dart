@@ -1,6 +1,9 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:http/http.dart' as http;
 
 import '../common.dart';
 import 'aqi_auto_complete.dart';
@@ -11,12 +14,14 @@ class AQIListTile extends StatefulWidget {
   final String location;
   final Function(String) removeLocationCallback;
   final Function(String, String) updateLocationCallback;
+  final String aqiFeedTemplate;
 
   const AQIListTile(
       {Key? key,
       required this.location,
       required this.removeLocationCallback,
-      required this.updateLocationCallback})
+      required this.updateLocationCallback,
+      required this.aqiFeedTemplate})
       : super(key: key);
 
   @override
@@ -59,6 +64,8 @@ class _AQIListTileState extends State<AQIListTile> {
       return editingLocation
           ? ListTile(
               title: AQILocationAutocomplete(
+                  aqiLocationSearchTemplate:
+                      dotenv.env['aqiLocationSearchTemplate']!,
                   selectionCallback: (value) => {
                         widget.updateLocation(value),
                         editingLocation = false,
@@ -226,5 +233,29 @@ class _AQIListTileState extends State<AQIListTile> {
     setState(() {
       data = fetchedData;
     });
+  }
+
+  String getAqiFeedUrl(String location, String token) {
+    return widget.aqiFeedTemplate
+        .replaceAll("_LOCATION_", location)
+        .replaceAll("_TOKEN_", token);
+  }
+
+  Future<AQIData?> fetchAQIData(String location) async {
+    try {
+      var aqiFeedUrl = getAqiFeedUrl(location, aqiToken);
+      var response = await http.get(Uri.parse(aqiFeedUrl));
+      if (response.statusCode == 200) {
+        var aqiFeed = jsonDecode(response.body);
+        if (aqiFeed?["status"]?.contains("ok")) {
+          return AQIData.fromJSON(aqiFeed?["data"]);
+        } else {
+          debugPrint("AQI Feed returned error $location ${response.body}");
+        }
+      }
+    } catch (e) {
+      debugPrint("Failed to fetch data $location $e");
+    }
+    return null;
   }
 }

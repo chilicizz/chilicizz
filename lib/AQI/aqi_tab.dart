@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:chilicizz/AQI/aqi_list_tile.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'aqi_auto_complete.dart';
@@ -70,6 +71,8 @@ class _AQITabState extends State<AQITab> {
                                     location: locations[index],
                                     removeLocationCallback: removeLocation,
                                     updateLocationCallback: updateLocation,
+                                    aqiFeedTemplate:
+                                        dotenv.env['aqiFeedTemplate']!,
                                   );
                                 })
                             : buildAutoCompleteListView(context);
@@ -88,7 +91,10 @@ class _AQITabState extends State<AQITab> {
   ListTile buildAutocompleteTile(BuildContext context) {
     return ListTile(
       title: AQILocationAutocomplete(
-          selectionCallback: addLocation, autofocus: true),
+        selectionCallback: addLocation,
+        autofocus: true,
+        aqiLocationSearchTemplate: dotenv.env['aqiLocationSearchTemplate']!,
+      ),
       trailing: Row(mainAxisSize: MainAxisSize.min, children: [
         OutlinedButton(
           child: const Icon(Icons.cancel_outlined),
