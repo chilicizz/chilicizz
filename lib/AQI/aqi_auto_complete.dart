@@ -89,7 +89,8 @@ class AQILocationAutocomplete extends StatelessWidget {
         for (dynamic entry in jsonResult) {
           // entry["aqi"];
           list.add(
-              AQILocation(entry["station"]?["name"], entry["station"]?["url"]));
+            AQILocation(entry["station"]?["name"], entry["station"]?["url"]),
+          );
         }
         list.sort((a, b) => a.url.compareTo(b.url));
         if (additional.isNotEmpty) {

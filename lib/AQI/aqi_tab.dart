@@ -25,17 +25,17 @@ class _AQITabState extends State<AQITab> {
   @override
   void initState() {
     super.initState();
-    _locations = _prefs.then((SharedPreferences prefs) {
-      return prefs.getStringList(aqiLocationsPreferenceLabel) ?? <String>[];
-    });
+    _locations = _prefs.then(
+      (SharedPreferences prefs) {
+        return prefs.getStringList(aqiLocationsPreferenceLabel) ?? <String>[];
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return RefreshIndicator(
-      onRefresh: () {
-        return refresh();
-      },
+      onRefresh: refresh,
       child: Scaffold(
         floatingActionButton: FloatingActionButton(
           onPressed: () {
@@ -46,7 +46,7 @@ class _AQITabState extends State<AQITab> {
           child: const Icon(Icons.add),
         ),
         body: _displayInput
-            ? buildAutoCompleteListView(context)
+            ? _buildAutoCompleteListView(context)
             : Center(
                 child: FutureBuilder(
                   future: _locations,
@@ -69,13 +69,13 @@ class _AQITabState extends State<AQITab> {
                                 itemBuilder: (context, index) {
                                   return AQIListTile(
                                     location: locations[index],
-                                    removeLocationCallback: removeLocation,
-                                    updateLocationCallback: updateLocation,
+                                    removeLocationCallback: _removeLocation,
+                                    updateLocationCallback: _updateLocation,
                                     aqiFeedTemplate:
                                         dotenv.env['aqiFeedTemplate']!,
                                   );
                                 })
-                            : buildAutoCompleteListView(context);
+                            : _buildAutoCompleteListView(context);
                     }
                   },
                 ),
@@ -84,14 +84,14 @@ class _AQITabState extends State<AQITab> {
     );
   }
 
-  ListView buildAutoCompleteListView(BuildContext context) {
-    return ListView(children: [buildAutocompleteTile(context)]);
+  ListView _buildAutoCompleteListView(BuildContext context) {
+    return ListView(children: [_buildAutocompleteTile(context)]);
   }
 
-  ListTile buildAutocompleteTile(BuildContext context) {
+  ListTile _buildAutocompleteTile(BuildContext context) {
     return ListTile(
       title: AQILocationAutocomplete(
-        selectionCallback: addLocation,
+        selectionCallback: _addLocation,
         autofocus: true,
         aqiLocationSearchTemplate: dotenv.env['aqiLocationSearchTemplate']!,
       ),
@@ -100,13 +100,13 @@ class _AQITabState extends State<AQITab> {
           child: const Icon(Icons.cancel_outlined),
           onPressed: () {
             setState(() {
-              addLocation("");
+              _addLocation("");
             });
           },
         ),
         ElevatedButton(
           onPressed: () {
-            addLocation('here');
+            _addLocation('here');
           },
           child: const Tooltip(
             message: "Current Location",
@@ -117,11 +117,12 @@ class _AQITabState extends State<AQITab> {
     );
   }
 
-  Future<void> addLocation(String location) async {
+  Future<void> _addLocation(String location) async {
     final SharedPreferences prefs = await _prefs;
     if (locations.contains(location)) {
       ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Location $location already exists')));
+        SnackBar(content: Text('Location $location already exists')),
+      );
       return;
     }
     setState(() {
@@ -130,35 +131,38 @@ class _AQITabState extends State<AQITab> {
         return;
       }
       locations.add(location);
-      prefs
-          .setStringList(aqiLocationsPreferenceLabel, locations)
-          .then((bool success) => {
-                ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Added new tile for $location')))
-              });
+      prefs.setStringList(aqiLocationsPreferenceLabel, locations).then(
+            (bool success) => {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Added new tile for $location')),
+              )
+            },
+          );
     });
   }
 
-  Future<void> removeLocation(String location) async {
+  Future<void> _removeLocation(String location) async {
     final SharedPreferences prefs = await _prefs;
     if (!locations.contains(location)) {
       return;
     }
     setState(() {
       locations.remove(location);
-      prefs
-          .setStringList(aqiLocationsPreferenceLabel, locations)
-          .then((bool success) => {
-                ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Removed tile for $location')))
-              });
-      _locations = _prefs.then((SharedPreferences prefs) {
-        return prefs.getStringList(aqiLocationsPreferenceLabel) ?? <String>[];
-      });
+      prefs.setStringList(aqiLocationsPreferenceLabel, locations).then(
+            (bool success) => {
+              ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Removed tile for $location')))
+            },
+          );
+      _locations = _prefs.then(
+        (SharedPreferences prefs) {
+          return prefs.getStringList(aqiLocationsPreferenceLabel) ?? <String>[];
+        },
+      );
     });
   }
 
-  Future<void> updateLocation(String original, String newLocation) async {
+  Future<void> _updateLocation(String original, String newLocation) async {
     final SharedPreferences prefs = await _prefs;
     if (!locations.contains(original)) {
       return;
@@ -166,23 +170,27 @@ class _AQITabState extends State<AQITab> {
     setState(() {
       int index = locations.indexOf(original);
       locations[index] = newLocation;
-      prefs
-          .setStringList(aqiLocationsPreferenceLabel, locations)
-          .then((bool success) => {
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                    content: Text('Updated tile $original to $newLocation')))
-              });
-      _locations = _prefs.then((SharedPreferences prefs) {
-        return prefs.getStringList(aqiLocationsPreferenceLabel) ?? <String>[];
-      });
+      prefs.setStringList(aqiLocationsPreferenceLabel, locations).then(
+            (bool success) => {
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  content: Text('Updated tile $original to $newLocation')))
+            },
+          );
+      _locations = _prefs.then(
+        (SharedPreferences prefs) {
+          return prefs.getStringList(aqiLocationsPreferenceLabel) ?? <String>[];
+        },
+      );
     });
   }
 
   Future<void> refresh() async {
     setState(() {
-      _locations = _prefs.then((SharedPreferences prefs) {
-        return prefs.getStringList(aqiLocationsPreferenceLabel) ?? <String>[];
-      });
+      _locations = _prefs.then(
+        (SharedPreferences prefs) {
+          return prefs.getStringList(aqiLocationsPreferenceLabel) ?? <String>[];
+        },
+      );
     });
   }
 }

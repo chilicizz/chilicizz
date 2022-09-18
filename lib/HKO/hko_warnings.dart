@@ -16,18 +16,13 @@ class HKOWarnings extends StatefulWidget {
 }
 
 class _HKOWarningsState extends State<HKOWarnings> {
-  static const Duration tickInterval = Duration(minutes: 10);
-
-  late Timer timer;
   late Future<List<WarningInformation>> futureWarnings;
-
   DateTime lastTick = DateTime.now();
 
   @override
   void initState() {
     super.initState();
-    timer = Timer.periodic(tickInterval, (Timer t) => _tick(t: t));
-    _tick();
+    refresh();
   }
 
   @override
@@ -35,7 +30,7 @@ class _HKOWarningsState extends State<HKOWarnings> {
     super.dispose();
   }
 
-  Future<void> _tick({Timer? t}) async {
+  Future<void> refresh({Timer? t}) async {
     setState(() {
       futureWarnings = getWarnings();
       lastTick = DateTime.now();
@@ -72,7 +67,7 @@ class _HKOWarningsState extends State<HKOWarnings> {
         children: [
           GestureDetector(
             child: ElevatedButton(
-              onPressed: _tick,
+              onPressed: refresh,
               child: buildLastTick(lastTick),
             ),
             onLongPress: () async {
@@ -80,14 +75,14 @@ class _HKOWarningsState extends State<HKOWarnings> {
                 futureWarnings = dummyWarnings();
               });
               await Future.delayed(const Duration(seconds: 30));
-              _tick();
+              refresh();
             },
           ),
         ],
       ),
       body: Center(
         child: RefreshIndicator(
-          onRefresh: _tick,
+          onRefresh: refresh,
           child: FutureBuilder<List<WarningInformation>>(
             future: futureWarnings,
             initialData: const [],

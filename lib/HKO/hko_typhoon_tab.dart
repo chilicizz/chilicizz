@@ -19,9 +19,6 @@ class HKOTyphoonTab extends StatefulWidget {
 }
 
 class _HKOTyphoonTabState extends State<HKOTyphoonTab> {
-  static const Duration tickInterval = Duration(minutes: 30);
-
-  late Timer timer;
   late Future<List<Typhoon>> futureTyphoons;
   DateTime lastTick = DateTime.now();
 
@@ -32,8 +29,7 @@ class _HKOTyphoonTabState extends State<HKOTyphoonTab> {
   @override
   void initState() {
     super.initState();
-    timer = Timer.periodic(tickInterval, (Timer t) => _tick(t: t));
-    _tick();
+    refresh();
   }
 
   @override
@@ -41,9 +37,9 @@ class _HKOTyphoonTabState extends State<HKOTyphoonTab> {
     super.dispose();
   }
 
-  Future<void> _tick({Timer? t}) async {
+  Future<void> refresh({Timer? t}) async {
     setState(() {
-      futureTyphoons = fetchTyphoonFeed(dotenv.env['hkoTyphoonUrl']!);
+      futureTyphoons = _fetchTyphoonFeed(dotenv.env['hkoTyphoonUrl']!);
       lastTick = DateTime.now();
     });
   }
@@ -53,7 +49,7 @@ class _HKOTyphoonTabState extends State<HKOTyphoonTab> {
     return Scaffold(
       body: Center(
         child: RefreshIndicator(
-          onRefresh: _tick,
+          onRefresh: refresh,
           child: FutureBuilder(
             future: futureTyphoons,
             builder:
@@ -80,7 +76,7 @@ class _HKOTyphoonTabState extends State<HKOTyphoonTab> {
                             );
                           },
                         )
-                      : buildNoCurrentTyphoons();
+                      : _noCurrentTyphoonsListView();
               }
             },
           ),
@@ -89,7 +85,7 @@ class _HKOTyphoonTabState extends State<HKOTyphoonTab> {
     );
   }
 
-  ListView buildNoCurrentTyphoons() {
+  ListView _noCurrentTyphoonsListView() {
     return ListView(
       physics: const AlwaysScrollableScrollPhysics(),
       children: [
@@ -112,7 +108,7 @@ class _HKOTyphoonTabState extends State<HKOTyphoonTab> {
     );
   }
 
-  Future<List<Typhoon>> fetchTyphoonFeed(String hkoTyphoonUrl) async {
+  Future<List<Typhoon>> _fetchTyphoonFeed(String hkoTyphoonUrl) async {
     try {
       var path = Uri.parse(hkoTyphoonUrl);
       var response = await http.get(path, headers: {

@@ -39,9 +39,6 @@ class AQIListTile extends StatefulWidget {
 }
 
 class _AQIListTileState extends State<AQIListTile> {
-  static const Duration tickTime = Duration(minutes: 10);
-  late Timer timer;
-
   late TextEditingController textController;
   bool editingLocation = false;
 
@@ -217,9 +214,8 @@ class _AQIListTileState extends State<AQIListTile> {
   void initState() {
     super.initState();
     textController = TextEditingController();
-    timer = Timer.periodic(tickTime, (Timer t) => _tick(t));
     textController.text = widget.location;
-    _tick(null);
+    refresh();
   }
 
   @override
@@ -228,22 +224,22 @@ class _AQIListTileState extends State<AQIListTile> {
     super.dispose();
   }
 
-  Future<void> _tick(Timer? t) async {
-    var fetchedData = await fetchAQIData(widget.location);
+  Future<void> refresh({Timer? t}) async {
+    var fetchedData = await _fetchAQIData(widget.location);
     setState(() {
       data = fetchedData;
     });
   }
 
-  String getAqiFeedUrl(String location, String token) {
+  String _getAqiFeedUrl(String location, String token) {
     return widget.aqiFeedTemplate
         .replaceAll("_LOCATION_", location)
         .replaceAll("_TOKEN_", token);
   }
 
-  Future<AQIData?> fetchAQIData(String location) async {
+  Future<AQIData?> _fetchAQIData(String location) async {
     try {
-      var aqiFeedUrl = getAqiFeedUrl(location, aqiToken);
+      var aqiFeedUrl = _getAqiFeedUrl(location, aqiToken);
       var response = await http.get(Uri.parse(aqiFeedUrl));
       if (response.statusCode == 200) {
         var aqiFeed = jsonDecode(response.body);
