@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 
 import 'aqi_common.dart';
 
-const Map<String, List<AQILocation>> cache = {};
+Map<String, List<AQILocation>> cache = {};
 
 class AQILocationAutocomplete extends StatelessWidget {
   final Function(String value) selectionCallback;
