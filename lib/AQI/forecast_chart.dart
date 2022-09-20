@@ -8,11 +8,11 @@ class ForecastChart extends StatelessWidget {
   final bool animate;
 
   const ForecastChart(series, List<ForecastEntry> forecast,
-      {Key? key, this.animate = true, required this.seriesList})
+      {Key? key, this.animate = false, required this.seriesList})
       : super(key: key);
 
   ForecastChart.fromMap(Map<IAQIRecord, List<ForecastEntry>>? data,
-      {Key? key, this.animate = true})
+      {Key? key, this.animate = false})
       : seriesList =
             data != null ? data.entries.map(generateFromEntry).toList() : [],
         super(key: key);
