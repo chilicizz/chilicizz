@@ -165,9 +165,19 @@ class Typhoon {
       required this.englishName,
       required this.url});
 
+  Uri getTrackUrl() {
+    Uri uri = Uri.parse(dotenv.env["corsProxy"]! + url);
+    return uri;
+  }
+
+  Uri getTrackUrlId() {
+    Uri uri = Uri.parse(dotenv.env["hkoTyphoonTrack"]! + id.toString());
+    return uri;
+  }
+
   Future<TyphoonTrack?> getTyphoonTrack() async {
     try {
-      Uri uri = Uri.parse(dotenv.env["corsProxy"]! + url);
+      Uri uri = getTrackUrlId();
       var response = await http.get(uri, headers: {
         HttpHeaders.contentTypeHeader: 'application/xml',
         HttpHeaders.accessControlAllowOriginHeader: '*',
@@ -180,6 +190,19 @@ class Typhoon {
         return typhoonTrack;
       }
     } catch (e) {
+      debugPrint("Error $e falling back to proxy");
+      Uri uri = getTrackUrl();
+      var response = await http.get(uri, headers: {
+        HttpHeaders.contentTypeHeader: 'application/xml',
+        HttpHeaders.accessControlAllowOriginHeader: '*',
+        HttpHeaders.accessControlAllowMethodsHeader: 'GET,HEAD,POST,OPTIONS',
+        HttpHeaders.accessControlAllowHeadersHeader: '*',
+      });
+      if (response.statusCode == 200) {
+        String xmlDoc = const Utf8Decoder().convert(response.bodyBytes);
+        var typhoonTrack = parseTyphoonTrack(xmlDoc);
+        return typhoonTrack;
+      }
       debugPrint("Failed to fetch typhoon data $e");
     }
     return null;
