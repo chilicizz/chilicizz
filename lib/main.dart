@@ -1,6 +1,6 @@
+import 'package:chilicizz/Chat/chat.dart';
 import 'package:chilicizz/HKO/hko_typhoon_tab.dart';
 import 'package:chilicizz/rss_reader.dart';
-import 'package:chilicizz/signin_form.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
@@ -31,9 +31,9 @@ final List<NavRoute> routes = [
             buildFunction: (context) => const Dashboard(initial: 2)),
       ]),
   NavRoute(
-    path: '/login',
-    label: "Login",
-    buildFunction: (context) => const SignInHttpDemo(),
+    path: '/chat',
+    label: "Chat",
+    buildFunction: (context) => const ChatExample(title: "Chat"),
   ),
   NavRoute(
     path: '/rss',
