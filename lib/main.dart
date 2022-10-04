@@ -33,7 +33,7 @@ final List<NavRoute> routes = [
   NavRoute(
     path: '/chat',
     label: "Chat",
-    buildFunction: (context) => const ChatExample(title: "Chat"),
+    buildFunction: (context) => const ChatExample(title: "WebSocket Chat"),
   ),
   NavRoute(
     path: '/rss',

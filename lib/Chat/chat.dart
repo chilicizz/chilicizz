@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 import '../common.dart';
@@ -22,15 +23,18 @@ class _ChatExampleState extends State<ChatExample> {
   final FocusNode _focusNode = FocusNode();
   bool _isComposing = false;
 
-  final _channel = WebSocketChannel.connect(
-    Uri.parse('wss://echo.websocket.events'),
-  );
+  final _channel = WebSocketChannel.connect(Uri.parse(dotenv.env['chatUrl']!));
+
   final List<ChatMessage> _messages = [];
 
+  // register the listener
   _ChatExampleState() {
     _channel.stream.listen((event) {
       setState(() {
-        _messages.insert(0, ChatMessage(text: event, name: "."));
+        _messages.insert(0, ChatMessage(text: event, name: ""));
+        if (_messages.length > 20) {
+          _messages.removeLast();
+        }
       });
     });
   }
@@ -65,48 +69,44 @@ class _ChatExampleState extends State<ChatExample> {
         onPressed: _sendMessage,
         tooltip: 'Send message',
         child: const Icon(Icons.send),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+      ),
     );
   }
 
   Widget _buildTextComposer() {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 8.0),
-      child: Row(
-        children: [
-          Flexible(
-            child: TextField(
-              controller: _textController,
-              onChanged: (String text) {
-                setState(() {
-                  _isComposing = text.isNotEmpty;
-                });
-              },
-              onSubmitted: (String text) {
-                _isComposing ? _sendMessage : null;
-              },
-              decoration:
-                  const InputDecoration.collapsed(hintText: 'Send a message'),
-              focusNode: _focusNode,
-            ),
+    return Row(
+      children: [
+        Flexible(
+          child: TextFormField(
+            controller: _textController,
+            onChanged: (String text) {
+              setState(() {
+                _isComposing = text.isNotEmpty;
+              });
+            },
+            onEditingComplete: () {
+              _isComposing ? _sendMessage : null;
+            },
+            decoration:
+                const InputDecoration.collapsed(hintText: 'Send a message'),
+            focusNode: _focusNode,
           ),
-          IconTheme(
-            data: IconThemeData(color: Theme.of(context).colorScheme.secondary),
-            child: Container(
-                margin: const EdgeInsets.symmetric(horizontal: 4.0),
-                child: Theme.of(context).platform == TargetPlatform.iOS
-                    ? CupertinoButton(
-                        onPressed: _isComposing ? () => _sendMessage() : null,
-                        child: const Text('Send'),
-                      )
-                    : IconButton(
-                        // MODIFIED
-                        icon: const Icon(Icons.send),
-                        onPressed: _isComposing ? () => _sendMessage() : null,
-                      )),
-          )
-        ],
-      ),
+        ),
+        IconTheme(
+          data: IconThemeData(color: Theme.of(context).colorScheme.secondary),
+          child: Container(
+            child: Theme.of(context).platform == TargetPlatform.iOS
+                ? CupertinoButton(
+                    onPressed: _isComposing ? () => _sendMessage() : null,
+                    child: const Text('Send'),
+                  )
+                : IconButton(
+                    icon: const Icon(Icons.send),
+                    onPressed: _isComposing ? () => _sendMessage() : null,
+                  ),
+          ),
+        )
+      ],
     );
   }
 
@@ -136,6 +136,6 @@ class ChatMessage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(title: Text(text), subtitle: Text(name));
+    return ListTile(title: Text(text));
   }
 }
