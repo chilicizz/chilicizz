@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -9,10 +11,10 @@ import '../main.dart';
 class ChatExample extends StatefulWidget {
   const ChatExample({
     super.key,
-    required this.title,
+    required this.name,
   });
 
-  final String title;
+  final String name;
 
   @override
   State<ChatExample> createState() => _ChatExampleState();
@@ -22,21 +24,24 @@ class _ChatExampleState extends State<ChatExample> {
   final _textController = TextEditingController();
   final FocusNode _focusNode = FocusNode();
   bool _isComposing = false;
-
-  final _channel = WebSocketChannel.connect(Uri.parse(dotenv.env['chatUrl']!));
+  final WebSocketChannel _channel;
 
   final List<ChatMessage> _messages = [];
 
   // register the listener
-  _ChatExampleState() {
+  _ChatExampleState()
+      : _channel = WebSocketChannel.connect(Uri.parse(dotenv.env['chatUrl']!)) {
     _channel.stream.listen((event) {
       setState(() {
-        _messages.insert(0, ChatMessage(text: event, name: ""));
+        _messages.insert(0, ChatMessage(body: event));
         if (_messages.length > 20) {
           _messages.removeLast();
         }
       });
     });
+    _channel.sink.add(
+      jsonEncode(ChatMessage(body: widget.name, type: ActionType.login)),
+    );
   }
 
   @override
@@ -44,31 +49,21 @@ class _ChatExampleState extends State<ChatExample> {
     return Scaffold(
       drawer: NavigationDrawer(routes: routes),
       appBar: AppBar(
-        title: Text(widget.title),
+        title: const Text("WebSocket Chat Room"),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          children: [
-            Flexible(
-              child: ListView.builder(
-                reverse: true,
-                itemBuilder: (_, int index) => _messages[index],
-                itemCount: _messages.length,
-              ),
+      body: Column(
+        children: [
+          Flexible(
+            child: ListView.builder(
+              reverse: true,
+              itemBuilder: (_, int index) => _messages[index],
+              itemCount: _messages.length,
             ),
-            const Divider(height: 1.0),
-            Container(
-              decoration: BoxDecoration(color: Theme.of(context).cardColor),
-              child: _buildTextComposer(),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _sendMessage,
-        tooltip: 'Send message',
-        child: const Icon(Icons.send),
+      bottomNavigationBar: BottomAppBar(
+        child: _buildTextComposer(),
       ),
     );
   }
@@ -77,34 +72,36 @@ class _ChatExampleState extends State<ChatExample> {
     return Row(
       children: [
         Flexible(
-          child: TextFormField(
-            controller: _textController,
-            onChanged: (String text) {
-              setState(() {
-                _isComposing = text.isNotEmpty;
-              });
-            },
-            onEditingComplete: () {
-              _isComposing ? _sendMessage : null;
-            },
-            decoration:
-                const InputDecoration.collapsed(hintText: 'Send a message'),
-            focusNode: _focusNode,
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: TextFormField(
+              controller: _textController,
+              onChanged: (String text) {
+                setState(() {
+                  _isComposing = text.isNotEmpty;
+                });
+              },
+              onEditingComplete: () {
+                _isComposing ? _sendMessage : null;
+              },
+              decoration:
+                  const InputDecoration.collapsed(hintText: 'Send a message'),
+              focusNode: _focusNode,
+              autofocus: true,
+            ),
           ),
         ),
         IconTheme(
           data: IconThemeData(color: Theme.of(context).colorScheme.secondary),
-          child: Container(
-            child: Theme.of(context).platform == TargetPlatform.iOS
-                ? CupertinoButton(
-                    onPressed: _isComposing ? () => _sendMessage() : null,
-                    child: const Text('Send'),
-                  )
-                : IconButton(
-                    icon: const Icon(Icons.send),
-                    onPressed: _isComposing ? () => _sendMessage() : null,
-                  ),
-          ),
+          child: Theme.of(context).platform == TargetPlatform.iOS
+              ? CupertinoButton(
+                  onPressed: _isComposing ? () => _sendMessage() : null,
+                  child: const Text('Send'),
+                )
+              : IconButton(
+                  icon: const Icon(Icons.send),
+                  onPressed: _isComposing ? () => _sendMessage() : null,
+                ),
         )
       ],
     );
@@ -112,7 +109,9 @@ class _ChatExampleState extends State<ChatExample> {
 
   void _sendMessage() {
     if (_textController.text.isNotEmpty) {
-      _channel.sink.add(_textController.text);
+      ChatMessage message =
+          ChatMessage(body: _textController.text, type: ActionType.message);
+      _channel.sink.add(jsonEncode(message));
       _isComposing = false;
     }
     _textController.clear();
@@ -128,14 +127,28 @@ class _ChatExampleState extends State<ChatExample> {
 }
 
 class ChatMessage extends StatelessWidget {
-  final String text;
-  final String name;
+  final ActionType type;
+  final String body;
 
-  const ChatMessage({Key? key, required this.text, required this.name})
+  const ChatMessage(
+      {Key? key, required this.body, this.type = ActionType.unknown})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(title: Text(text));
+    return ListTile(title: Text(body));
   }
+
+  ChatMessage.fromJson(Map<String, dynamic> json, {Key? key})
+      : body = json['body'],
+        type = ActionType.values.byName(json['type']),
+        super(key: key);
+
+  Map<String, dynamic> toJson() => {'body': body, 'type': type};
+}
+
+enum ActionType {
+  message,
+  login,
+  unknown;
 }
