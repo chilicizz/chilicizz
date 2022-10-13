@@ -4,6 +4,7 @@ import 'package:chilicizz/rss_reader.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
 import 'AQI/aqi_tab.dart';
 import 'HKO/hko_warnings.dart';
@@ -103,12 +104,18 @@ class _DashboardState extends State<Dashboard> {
               onPressed: () => showDialog<String>(
                 context: context,
                 builder: (BuildContext context) => AlertDialog(
-                  title: const Text('Under construction'),
-                  content: const Text('...'),
+                  content: SizedBox(
+                    height: 300,
+                    width: 300,
+                    child: QrImage(
+                      data: 'https://chilicizz.github.io/#/',
+                      version: QrVersions.auto,
+                    ),
+                  ),
                   actions: <Widget>[
                     TextButton(
-                      onPressed: () => Navigator.pop(context, 'OK'),
-                      child: const Text('OK'),
+                      onPressed: () => Navigator.pop(context, 'Close'),
+                      child: const Text('Close'),
                     ),
                   ],
                 ),
