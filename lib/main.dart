@@ -1,5 +1,6 @@
 import 'package:chilicizz/Chat/chat.dart';
 import 'package:chilicizz/HKO/hko_typhoon_tab.dart';
+import 'package:chilicizz/qr_generator.dart';
 import 'package:chilicizz/rss_reader.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -103,22 +104,43 @@ class _DashboardState extends State<Dashboard> {
               icon: const Icon(Icons.share),
               onPressed: () => showDialog<String>(
                 context: context,
-                builder: (BuildContext context) => AlertDialog(
-                  content: SizedBox(
-                    height: 300,
-                    width: 300,
-                    child: QrImage(
-                      data: 'https://chilicizz.github.io/#/',
-                      version: QrVersions.auto,
+                builder: (BuildContext context) {
+                  final qrController = TextEditingController();
+                  qrController.text = 'https://chilicizz.github.io/';
+                  final ValueNotifier<String> textValue = ValueNotifier<String>(qrController.text);
+                  return AlertDialog(
+                    title: TextField(
+                      decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
+                      ),
+                      textAlign: TextAlign.center,
+                      controller: qrController,
+                      onChanged: (value) => {
+                        textValue.notifyListeners()
+                      },
                     ),
-                  ),
-                  actions: <Widget>[
-                    TextButton(
-                      onPressed: () => Navigator.pop(context, 'Close'),
-                      child: const Text('Close'),
+                    content: ValueListenableBuilder(
+                      valueListenable: textValue,
+                      builder: (BuildContext context, String value, Widget? child) {
+                        return SizedBox(
+                          height: 300,
+                          width: 300,
+                          child: QrImage(
+                            data: qrController.value.text,
+                            version: QrVersions.auto,
+                            //embeddedImage: const AssetImage('assets/cn.png'),
+                          ),
+                        );
+                      },
                     ),
-                  ],
-                ),
+                    actions: <Widget>[
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, 'Close'),
+                        child: const Text('Close'),
+                      ),
+                    ],
+                  );
+                },
               ),
             )
           ],
