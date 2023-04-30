@@ -17,6 +17,8 @@ jobs:
           fetch-depth: 0
 
       - uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable' # or: 'beta', 'dev' or 'master'
 
       - name: Init scripts
         run: dart pub get
