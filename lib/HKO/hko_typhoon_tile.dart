@@ -49,7 +49,7 @@ class TyphoonTile extends StatelessWidget {
                 final double distKm = haversineCalc.as(
                     LengthUnit.Kilometer, hkLatLng, track.current.getLatLng());
                 final String currentDistance =
-                !distKm.isNaN ? '| distance $distKm km' : "";
+                    !distKm.isNaN ? '| distance $distKm km' : "";
                 final String maxWindSpeed = !track.current.maximumWind!.isNaN
                     ? '| max winds up to ${track.current.maximumWind} km/h'
                     : "";
@@ -86,17 +86,17 @@ class TyphoonTile extends StatelessWidget {
                           return Chip(
                             label: Tooltip(
                               message:
-                              "Maximum winds ${typhoonClass.minWind}${typhoonClass.maxWind != double.maxFinite ? "-${typhoonClass.maxWind}" : "+"} km/h",
+                                  "Maximum winds ${typhoonClass.minWind}${typhoonClass.maxWind != double.maxFinite ? "-${typhoonClass.maxWind}" : "+"} km/h",
                               child: !isSmallDevice()
                                   ? Text(
-                                  "${typhoonClass.name} ${typhoonClass.minWind}${typhoonClass.maxWind != double.maxFinite ? "-${typhoonClass.maxWind}" : "+"} km/h")
+                                      "${typhoonClass.name} ${typhoonClass.minWind}${typhoonClass.maxWind != double.maxFinite ? "-${typhoonClass.maxWind}" : "+"} km/h")
                                   : Text(typhoonClass.name),
                             ),
                             avatar: CircleAvatar(
                               backgroundColor:
-                              Theme.of(context).scaffoldBackgroundColor,
+                                  Theme.of(context).scaffoldBackgroundColor,
                               child:
-                              Icon(Icons.storm, color: typhoonClass.color),
+                                  Icon(Icons.storm, color: typhoonClass.color),
                             ),
                           );
                         }).toList(),
@@ -109,7 +109,7 @@ class TyphoonTile extends StatelessWidget {
                 return ListTile(
                   leading: Tooltip(
                     message:
-                    "Failed to load typhoon track data: ${snapshot.error?.toString()}",
+                        "Failed to load typhoon track data: ${snapshot.error?.toString()}",
                     child: const CircleAvatar(
                       child: Icon(Icons.error_outline),
                     ),
@@ -256,32 +256,32 @@ class HKOTyphoonTrackWidget extends StatelessWidget {
           minZoom: 5.0,
           maxZoom: 10.0,
           interactiveFlags: InteractiveFlag.drag |
-          InteractiveFlag.pinchZoom |
-          InteractiveFlag.doubleTapZoom,
+              InteractiveFlag.pinchZoom |
+              InteractiveFlag.doubleTapZoom,
         ),
         nonRotatedChildren: [
           AttributionWidget.defaultWidget(
             source: "Open Street Map",
           )
         ],
-        layers: [
-          TileLayerOptions(
+        children: [
+          TileLayer(
               //https://wiki.openstreetmap.org/wiki/Tiles
               urlTemplate: dotenv.env['mapTileUrl'],
               subdomains: dotenv.env['mapTileSubDomains']!.split(","),
               userAgentPackageName: mapUserAgent),
-          PolylineLayerOptions(
+          PolylineLayer(
             polylineCulling: true,
             polylines: trackLines,
           ),
-          MarkerLayerOptions(
+          MarkerLayer(
             markers: [
               Marker(
                 width: 30.0,
                 height: 30.0,
                 point: hkLatLng,
                 builder: (ctx) =>
-                const Icon(Icons.location_pin, color: Colors.red),
+                    const Icon(Icons.location_pin, color: Colors.red),
               ),
               Marker(
                 width: 50.0,
@@ -301,7 +301,7 @@ class HKOTyphoonTrackWidget extends StatelessWidget {
                 ),
               closestDistance,
             ],
-          ),
+          )
         ],
       ),
     );
