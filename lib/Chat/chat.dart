@@ -42,7 +42,7 @@ class _ChatExampleState extends State<ChatExample> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: NavigationDrawer(routes: routes),
+      drawer: NavDrawer(routes: routes),
       appBar: AppBar(
         title: Text(widget.title),
       ),

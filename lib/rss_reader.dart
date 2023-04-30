@@ -35,7 +35,7 @@ class _RSSReaderState extends State<RSSReader> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: NavigationDrawer(routes: routes),
+      drawer: NavDrawer(routes: routes),
       appBar: AppBar(
         title: const Text('RSS Reader'),
         actions: const [],

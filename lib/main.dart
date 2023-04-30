@@ -89,7 +89,7 @@ class _DashboardState extends State<Dashboard> {
       initialIndex: widget.initial,
       length: 3,
       child: Scaffold(
-        drawer: NavigationDrawer(routes: routes),
+        drawer: NavDrawer(routes: routes),
         appBar: AppBar(
           title: const Text('Dashboard'),
           bottom: const TabBar(

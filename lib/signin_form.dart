@@ -43,7 +43,7 @@ class _SignInHttpDemoState extends State<SignInHttpDemo> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: NavigationDrawer(routes: routes),
+      drawer: NavDrawer(routes: routes),
       appBar: AppBar(
         title: const Text('Sign in Form'),
       ),

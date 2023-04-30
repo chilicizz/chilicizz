@@ -23,10 +23,10 @@ class NavRoute {
   }
 }
 
-class NavigationDrawer extends StatelessWidget {
+class NavDrawer extends StatelessWidget {
   final List<NavRoute> routes;
 
-  const NavigationDrawer({
+  const NavDrawer({
     Key? key,
     required this.routes,
   }) : super(key: key);
