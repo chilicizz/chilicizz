@@ -259,9 +259,9 @@ class HKOTyphoonTrackWidget extends StatelessWidget {
               InteractiveFlag.pinchZoom |
               InteractiveFlag.doubleTapZoom,
         ),
-        nonRotatedChildren: [
-          AttributionWidget.defaultWidget(
-            source: "Open Street Map",
+        nonRotatedChildren: const [
+          SimpleAttributionWidget(
+            source: Text("Open Street Map"),
           )
         ],
         children: [

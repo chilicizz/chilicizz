@@ -125,10 +125,10 @@ class _DashboardState extends State<Dashboard> {
                         return SizedBox(
                           height: 300,
                           width: 300,
-                          child: QrImage(
+                          child: QrImageView(
                             data: qrController.value.text,
                             version: QrVersions.auto,
-                            //embeddedImage: const AssetImage('assets/cn.png'),
+                            embeddedImage: const AssetImage('assets/cn.png'),
                           ),
                         );
                       },
