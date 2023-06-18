@@ -46,6 +46,7 @@ final List<NavRoute> routes = [
 
 Future<void> main() async {
   await dotenv.load(fileName: "assets/config/$appEnv.properties");
+  debugPrint("Starting environment: $appEnv");
   runApp(ChangeNotifierProvider(
     child: const MyApp(),
     create: (BuildContext context) {},
@@ -107,7 +108,8 @@ class _DashboardState extends State<Dashboard> {
                 builder: (BuildContext context) {
                   final qrController = TextEditingController();
                   qrController.text = 'https://chilicizz.github.io/';
-                  final ValueNotifier<String> textValue = ValueNotifier<String>(qrController.text);
+                  final ValueNotifier<String> textValue =
+                      ValueNotifier<String>(qrController.text);
                   return AlertDialog(
                     title: TextField(
                       decoration: const InputDecoration(
@@ -115,13 +117,12 @@ class _DashboardState extends State<Dashboard> {
                       ),
                       textAlign: TextAlign.center,
                       controller: qrController,
-                      onChanged: (value) => {
-                        textValue.notifyListeners()
-                      },
+                      onChanged: (value) => {textValue.notifyListeners()},
                     ),
                     content: ValueListenableBuilder(
                       valueListenable: textValue,
-                      builder: (BuildContext context, String value, Widget? child) {
+                      builder:
+                          (BuildContext context, String value, Widget? child) {
                         return SizedBox(
                           height: 300,
                           width: 300,
