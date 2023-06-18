@@ -111,7 +111,7 @@ class _ChatExampleState extends State<ChatExample> {
   }
 
   void _sendMessage() {
-    if (_textController.text.isNotEmpty) {
+    if (_textController.value.text.isNotEmpty) {
       _channel.sink.add(_textController.text);
       _isComposing = false;
     }

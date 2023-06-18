@@ -6,7 +6,7 @@ import 'package:latlong2/latlong.dart';
 import '../common.dart';
 import 'hko_types.dart';
 
-final LatLng hkLatLng = LatLng(22.3453, 114.1372);
+const LatLng hkLatLng = LatLng(22.3453, 114.1372);
 const Distance haversineCalc = Distance(calculator: Haversine());
 const mapUserAgent = "com.chilicizz.chilicizz.github.io";
 

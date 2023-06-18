@@ -38,13 +38,13 @@ class NavDrawer extends StatelessWidget {
         // Important: Remove any padding from the ListView.
         padding: EdgeInsets.zero,
         children: [
-          DrawerHeader(
-            decoration: const BoxDecoration(
+          const DrawerHeader(
+            decoration: BoxDecoration(
               color: Colors.deepPurple,
             ),
             child: Center(
               child: Column(
-                children: const <Widget>[
+                children: <Widget>[
                   Padding(
                     padding: EdgeInsets.all(5.0),
                     child: SizedBox(
@@ -172,7 +172,7 @@ bool isSmallScreen(BuildContext context) {
 }
 
 bool isSmallDevice() {
-  final data = MediaQueryData.fromWindow(WidgetsBinding.instance.window);
+  final data = MediaQueryData.fromView(WidgetsBinding.instance.window);
   return data.size.shortestSide < 600;
 }
 

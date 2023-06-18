@@ -271,19 +271,25 @@ class TyphoonPosition {
     double longitude = double.nan; // E
     TyphoonClass typhoonClass = unknownClass;
     for (var child in element.childElements) {
-      if (child.name.local == 'Intensity') {
-        intensity = child.text;
-      } else if (child.name.local == 'Latitude') {
-        latitude = double.tryParse(removeNonNumeric(child.text)) ?? double.nan;
-      } else if (child.name.local == 'Longitude') {
-        longitude = double.tryParse(removeNonNumeric(child.text)) ?? double.nan;
-      } else if (child.name.local == 'Time') {
-        time = DateTime.parse(child.text);
-      } else if (child.name.local == 'MaximumWind') {
-        maximumWind =
-            double.tryParse(removeNonNumeric(child.text)) ?? double.nan;
-      } else if (child.name.local == 'Index') {
-        index = int.tryParse(removeNonNumeric(child.text)) ?? 0;
+      try {
+        if (child.name.local == 'Intensity') {
+          intensity = child.value;
+        } else if (child.name.local == 'Latitude') {
+          latitude =
+              double.tryParse(removeNonNumeric(child.value!)) ?? double.nan;
+        } else if (child.name.local == 'Longitude') {
+          longitude =
+              double.tryParse(removeNonNumeric(child.value!)) ?? double.nan;
+        } else if (child.name.local == 'Time') {
+          time = DateTime.parse(child.value!);
+        } else if (child.name.local == 'MaximumWind') {
+          maximumWind =
+              double.tryParse(removeNonNumeric(child.value!)) ?? double.nan;
+        } else if (child.name.local == 'Index') {
+          index = int.tryParse(removeNonNumeric(child.value!)) ?? 0;
+        }
+      } catch (e) {
+        debugPrint("Error parsing $child");
       }
     }
     for (var referenceClass in typhoonClasses) {
@@ -292,8 +298,8 @@ class TyphoonPosition {
         typhoonClass = referenceClass;
       }
     }
-    if (latitude == double.nan || longitude == double.nan) {
-      throw Exception("Failed to parse");
+    if (latitude.isNaN || longitude.isNaN) {
+      throw Exception("Failed to parse position $element");
     }
     return TyphoonPosition(
         index, intensity, maximumWind, time, latitude, longitude, typhoonClass);
@@ -337,19 +343,19 @@ class TyphoonBulletin {
   TyphoonBulletin(this.name, this.provider, this.time);
 
   factory TyphoonBulletin.fromXmlElement(XmlElement bulletinElement) {
-    String name = "";
-    String provider = "";
+    String? name = "";
+    String? provider = "";
     DateTime time = DateTime.now();
     for (var element in bulletinElement.childElements) {
       if (element.name.local == 'BulletinName') {
-        name = element.text;
+        name = element.value;
       } else if (element.name.local == 'BulletinProvider') {
-        provider = element.text;
+        provider = element.value;
       } else if (element.name.local == 'BulletinTime') {
-        time = DateTime.parse(element.text);
+        time = DateTime.parse(element.value != null ? element.value! : "");
       }
     }
-    return TyphoonBulletin(name, provider, time);
+    return TyphoonBulletin(name!, provider!, time);
   }
 }
 
@@ -359,15 +365,16 @@ List<Typhoon> parseTyphoonFeed(String xmlString) {
     final titles = document.findAllElements('TropicalCyclone');
     return titles.map((element) {
       return Typhoon(
-        id: int.parse(element.findElements("TropicalCycloneID").single.text),
+        id: int.parse(element.findElements("TropicalCycloneID").single.value!),
         chineseName:
-            element.findElements("TropicalCycloneChineseName").single.text,
+            element.findElements("TropicalCycloneChineseName").single.value!,
         englishName:
-            element.findElements("TropicalCycloneEnglishName").single.text,
+            element.findElements("TropicalCycloneEnglishName").single.value!,
         url: element
             .findElements("TropicalCycloneURL")
             .single
-            .text
+            .value
+            .toString()
             .replaceAll("http://", "https://"),
       );
     }).toList();

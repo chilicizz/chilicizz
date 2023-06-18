@@ -1,6 +1,5 @@
 import 'package:chilicizz/Chat/chat.dart';
 import 'package:chilicizz/HKO/hko_typhoon_tab.dart';
-import 'package:chilicizz/qr_generator.dart';
 import 'package:chilicizz/rss_reader.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -11,7 +10,7 @@ import 'AQI/aqi_tab.dart';
 import 'HKO/hko_warnings.dart';
 import 'common.dart';
 
-const String appEnv = String.fromEnvironment('ENV', defaultValue: "pdn");
+const String appEnv = String.fromEnvironment('ENV', defaultValue: "dev");
 
 final List<NavRoute> routes = [
   NavRoute(
@@ -107,7 +106,7 @@ class _DashboardState extends State<Dashboard> {
                 context: context,
                 builder: (BuildContext context) {
                   final qrController = TextEditingController();
-                  qrController.text = 'https://chilicizz.github.io/';
+                  qrController.text  = 'https://chilicizz.github.io/';
                   final ValueNotifier<String> textValue =
                       ValueNotifier<String>(qrController.text);
                   return AlertDialog(
