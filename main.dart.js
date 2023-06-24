@@ -10640,8 +10640,8 @@ this.c=c},
 aDd(){var s=0,r=A.V(t.H),q,p
 var $async$aDd=A.W(function(a,b){if(a===1)return A.S(b,r)
 while(true)switch(s){case 0:s=2
-return A.a_($.ky().C9(0,"assets/config/dev.properties"),$async$aDd)
-case 2:A.d3().$1("Starting environment: dev")
+return A.a_($.ky().C9(0,"assets/config/pdn.properties"),$async$aDd)
+case 2:A.d3().$1("Starting environment: pdn")
 if($.ay==null)A.aMW()
 q=$.ay
 q.toString
