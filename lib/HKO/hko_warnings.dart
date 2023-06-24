@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:chilicizz/HKO/live_hko_warnings.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
@@ -97,26 +98,7 @@ class _HKOWarningsState extends State<HKOWarnings> {
                   } else {
                     var warnings = snapshot.data ?? [];
                     return warnings.isNotEmpty
-                        ? ListView.builder(
-                            physics: const AlwaysScrollableScrollPhysics(),
-                            itemCount: warnings.length,
-                            itemBuilder: (BuildContext context, int index) {
-                              var warning = warnings[index];
-                              CircleAvatar icon = warning.getCircleAvatar();
-                              return ExpansionTile(
-                                leading: icon,
-                                title: Text(warning.getDescription()),
-                                subtitle: buildIssued(warning.updateTime),
-                                initiallyExpanded: !isSmallDevice(),
-                                children: [
-                                  for (var s in warning.contents)
-                                    ListTile(
-                                      title: Text(s),
-                                    )
-                                ],
-                              );
-                            },
-                          )
+                        ? HKOWarningsList(warnings: warnings)
                         : ListView(
                             children: [
                               ListTile(

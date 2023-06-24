@@ -144,7 +144,7 @@ class _AQIListTileState extends State<AQIListTile> {
                         runSpacing: 1,
                         crossAxisAlignment: WrapCrossAlignment.center,
                         children: data!.iaqiData.entries.map((entry) {
-                          return _buildAQIChip(entry.key, entry.value);
+                          return AQIChip(record: entry.key, value: entry.value);
                         }).toList(),
                       ),
                     ),
@@ -192,24 +192,6 @@ class _AQIListTileState extends State<AQIListTile> {
     );
   }
 
-  Widget _buildAQIChip(final IAQIRecord record, double value) {
-    return Tooltip(
-      message: record.label,
-      child: Chip(
-        avatar: CircleAvatar(
-          backgroundColor: record.getColour(value),
-          foregroundColor: Colors.white.withAlpha(200),
-          child: Padding(
-            padding: const EdgeInsets.all(1.0),
-            child: FittedBox(child: record.getIcon()),
-          ),
-        ),
-        label: Text(
-            "${value.toStringAsFixed(value > 50 ? 0 : 1)} ${record.unit ?? ''}"),
-      ),
-    );
-  }
-
   @override
   void initState() {
     super.initState();
@@ -253,5 +235,35 @@ class _AQIListTileState extends State<AQIListTile> {
       debugPrint("Failed to fetch data $location $e");
     }
     return null;
+  }
+}
+
+class AQIChip extends StatelessWidget {
+  const AQIChip({
+    super.key,
+    required this.record,
+    required this.value,
+  });
+
+  final IAQIRecord record;
+  final double value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: record.label,
+      child: Chip(
+        avatar: CircleAvatar(
+          backgroundColor: record.getColour(value),
+          foregroundColor: Colors.white.withAlpha(200),
+          child: Padding(
+            padding: const EdgeInsets.all(1.0),
+            child: FittedBox(child: record.getIcon()),
+          ),
+        ),
+        label: Text(
+            "${value.toStringAsFixed(value > 50 ? 0 : 1)} ${record.unit ?? ''}"),
+      ),
+    );
   }
 }

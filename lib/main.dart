@@ -1,5 +1,6 @@
 import 'package:chilicizz/Chat/chat.dart';
 import 'package:chilicizz/HKO/hko_typhoon_tab.dart';
+import 'package:chilicizz/HKO/live_hko_warnings.dart';
 import 'package:chilicizz/rss_reader.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -94,7 +95,7 @@ class _DashboardState extends State<Dashboard> {
           title: const Text('Dashboard'),
           bottom: const TabBar(
             tabs: [
-              Tab(icon: Text("AQI")),
+              Tab(icon: Text("AIR QUALITY")),
               Tab(icon: Text("WARNINGS")),
               Tab(icon: Text("TYPHOON")),
             ],
@@ -148,7 +149,7 @@ class _DashboardState extends State<Dashboard> {
         body: const TabBarView(
           children: [
             AQITab(),
-            HKOWarnings(),
+            LiveHKOWarnings(), // HKOWarnings(),
             HKOTyphoonTab(),
           ],
         ),
