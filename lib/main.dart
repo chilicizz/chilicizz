@@ -8,10 +8,9 @@ import 'package:provider/provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 import 'AQI/aqi_tab.dart';
-import 'HKO/hko_warnings.dart';
 import 'common.dart';
 
-const String appEnv = String.fromEnvironment('ENV', defaultValue: "dev");
+const String appEnv = String.fromEnvironment('ENV', defaultValue: "pdn");
 
 final List<NavRoute> routes = [
   NavRoute(
