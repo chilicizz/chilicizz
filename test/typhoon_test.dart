@@ -5,6 +5,7 @@
 // gestures. You can also use WidgetTester to find child widgets in the widget
 // tree, read text, and verify that the values of widget properties are correct.
 
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:chilicizz/HKO/hko_types.dart';
@@ -14,7 +15,7 @@ void main() {
   group('Typhoon unit tests', () {
     test('testParseTyphoonData', () async {
       String fileContents =
-          await File('test/resources/typhoonExample.xml').readAsString();
+          await File('test/resources/typhoonExample.xml').readAsString(encoding: utf8);
       expect(fileContents.isNotEmpty, true,
           reason: "Test file should not be empty");
       List<Typhoon> typhoons = parseTyphoonFeed(fileContents);
@@ -31,7 +32,7 @@ void main() {
 
     test('testParseTyphoonTrack', () async {
       String fileContents =
-          await File('test/resources/typhoonTrackExample.xml').readAsString();
+          await File('test/resources/typhoonTrackExample.xml').readAsString(encoding: utf8);
       expect(fileContents.isNotEmpty, true,
           reason: "Test file should not be empty");
       TyphoonTrack? typhoonTrack = parseTyphoonTrack(fileContents);
@@ -46,7 +47,7 @@ void main() {
 
     test('testParseTyphoonTrack2', () async {
       String fileContents =
-          await File('test/resources/typhoonTrackExample2.xml').readAsString();
+          await File('test/resources/typhoonTrackExample2.xml').readAsString(encoding: utf8);
       expect(fileContents.isNotEmpty, true,
           reason: "Test file should not be empty");
       TyphoonTrack? typhoonTrack = parseTyphoonTrack(fileContents);

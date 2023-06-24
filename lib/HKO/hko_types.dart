@@ -273,20 +273,20 @@ class TyphoonPosition {
     for (var child in element.childElements) {
       try {
         if (child.name.local == 'Intensity') {
-          intensity = child.value;
+          intensity = child.innerText;
         } else if (child.name.local == 'Latitude') {
           latitude =
-              double.tryParse(removeNonNumeric(child.value!)) ?? double.nan;
+              double.tryParse(removeNonNumeric(child.innerText)) ?? double.nan;
         } else if (child.name.local == 'Longitude') {
           longitude =
-              double.tryParse(removeNonNumeric(child.value!)) ?? double.nan;
+              double.tryParse(removeNonNumeric(child.innerText)) ?? double.nan;
         } else if (child.name.local == 'Time') {
-          time = DateTime.parse(child.value!);
+          time = DateTime.parse(child.innerText);
         } else if (child.name.local == 'MaximumWind') {
           maximumWind =
-              double.tryParse(removeNonNumeric(child.value!)) ?? double.nan;
+              double.tryParse(removeNonNumeric(child.innerText)) ?? double.nan;
         } else if (child.name.local == 'Index') {
-          index = int.tryParse(removeNonNumeric(child.value!)) ?? 0;
+          index = int.tryParse(removeNonNumeric(child.innerText)) ?? 0;
         }
       } catch (e) {
         debugPrint("Error parsing $child");
@@ -348,11 +348,11 @@ class TyphoonBulletin {
     DateTime time = DateTime.now();
     for (var element in bulletinElement.childElements) {
       if (element.name.local == 'BulletinName') {
-        name = element.value;
+        name = element.innerText;
       } else if (element.name.local == 'BulletinProvider') {
-        provider = element.value;
+        provider = element.innerText;
       } else if (element.name.local == 'BulletinTime') {
-        time = DateTime.parse(element.value != null ? element.value! : "");
+        time = DateTime.parse(element.innerText);
       }
     }
     return TyphoonBulletin(name!, provider!, time);
@@ -365,17 +365,13 @@ List<Typhoon> parseTyphoonFeed(String xmlString) {
     final titles = document.findAllElements('TropicalCyclone');
     return titles.map((element) {
       return Typhoon(
-        id: int.parse(element.findElements("TropicalCycloneID").single.value!),
+        id: int.parse(
+            element.findElements("TropicalCycloneID").first.innerText),
         chineseName:
-            element.findElements("TropicalCycloneChineseName").single.value!,
+            element.findElements("TropicalCycloneChineseName").first.innerText,
         englishName:
-            element.findElements("TropicalCycloneEnglishName").single.value!,
-        url: element
-            .findElements("TropicalCycloneURL")
-            .single
-            .value
-            .toString()
-            .replaceAll("http://", "https://"),
+            element.findElements("TropicalCycloneEnglishName").first.innerText,
+        url: element.findElements("TropicalCycloneURL").first.innerText.replaceAll("http://", "https://"),
       );
     }).toList();
   } catch (e) {
