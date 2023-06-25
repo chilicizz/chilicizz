@@ -3,8 +3,8 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 
-import '../common.dart';
-import 'hko_types.dart';
+import '../../common.dart';
+import '../hko_types.dart';
 
 const LatLng hkLatLng = LatLng(22.3453, 114.1372);
 const Distance haversineCalc = Distance(calculator: Haversine());
@@ -42,7 +42,7 @@ class TyphoonTile extends StatelessWidget {
             );
           default:
             if (snapshot.hasError) {
-              return hasErrorListView(snapshot);
+              return ErrorListView(message: "${snapshot.error}");
             } else {
               if (snapshot.data != null) {
                 final TyphoonTrack track = snapshot.data!;

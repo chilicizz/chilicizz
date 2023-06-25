@@ -1,4 +1,4 @@
-import 'hko_types.dart';
+import '../hko_types.dart';
 
 class DummyTyphoon extends Typhoon {
   DummyTyphoon(

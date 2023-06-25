@@ -1,14 +1,15 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:chilicizz/HKO/live_hko_warnings.dart';
+import 'package:chilicizz/HKO/warnings/live_hko_warnings.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 
-import '../common.dart';
-import 'hko_types.dart';
+import '../../common.dart';
+import '../hko_types.dart';
 
+@Deprecated("Use LiveHKOWarnings instead")
 class HKOWarnings extends StatefulWidget {
   const HKOWarnings({Key? key}) : super(key: key);
 
@@ -91,10 +92,10 @@ class _HKOWarningsState extends State<HKOWarnings> {
                 AsyncSnapshot<List<WarningInformation>> snapshot) {
               switch (snapshot.connectionState) {
                 case ConnectionState.waiting:
-                  return loadingListView();
+                  return const LoadingListView();
                 default:
                   if (snapshot.hasError) {
-                    return hasErrorListView(snapshot);
+                    return ErrorListView(message: "${snapshot.error}");
                   } else {
                     var warnings = snapshot.data ?? [];
                     return warnings.isNotEmpty

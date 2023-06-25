@@ -5,8 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
-import '../common.dart';
-import 'hko_types.dart';
+import '../../common.dart';
+import '../hko_types.dart';
 
 class LiveHKOWarnings extends StatefulWidget {
   const LiveHKOWarnings({Key? key}) : super(key: key);

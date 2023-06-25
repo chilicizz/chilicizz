@@ -6,9 +6,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 
-import '../common.dart';
+import '../../common.dart';
 import 'dummy_typhoon.dart';
-import 'hko_types.dart';
+import '../hko_types.dart';
 import 'hko_typhoon_tile.dart';
 
 class HKOTyphoonTab extends StatefulWidget {
@@ -56,55 +56,22 @@ class _HKOTyphoonTabState extends State<HKOTyphoonTab> {
                 (BuildContext context, AsyncSnapshot<List<Typhoon>> snapshot) {
               switch (snapshot.connectionState) {
                 case ConnectionState.waiting:
-                  return loadingListView();
+                  return const LoadingListView();
                 default:
                   List<Typhoon> typhoons;
                   if (snapshot.hasError) {
-                    return hasErrorListView(snapshot);
+                    return ErrorListView(message: "${snapshot.error}");
                   } else {
                     typhoons = snapshot.data ?? [];
                   }
                   return typhoons.isNotEmpty
-                      ? ListView.builder(
-                          physics: const AlwaysScrollableScrollPhysics(),
-                          itemCount: typhoons.length,
-                          itemBuilder: (BuildContext context, int index) {
-                            return TyphoonTile(
-                              typhoon: typhoons[index],
-                              lastTick: lastTick,
-                              expanded: typhoons.length == 1,
-                            );
-                          },
-                        )
-                      : _noCurrentTyphoonsListView();
+                      ? TyphoonsListView(typhoons: typhoons, lastTick: lastTick)
+                      : NoTyphoonsListView(lastTick: lastTick);
               }
             },
           ),
         ),
       ),
-    );
-  }
-
-  ListView _noCurrentTyphoonsListView() {
-    return ListView(
-      physics: const AlwaysScrollableScrollPhysics(),
-      children: [
-        ExpansionTile(
-          leading: const CircleAvatar(
-            child: Icon(Icons.done),
-          ),
-          title: const Text("No active typhoon warnings"),
-          subtitle: buildLastTick(lastTick),
-          children: const [
-            ListTile(
-              title: Text(
-                  "Tropical cyclone track information data provided by Hong Kong Observatory and "
-                  "is expected to be updated when a tropical cyclone forms within or enters the area bounded by 7-36N and 100-140E"),
-              subtitle: Text(""),
-            ),
-          ],
-        ),
-      ],
     );
   }
 
@@ -128,5 +95,64 @@ class _HKOTyphoonTabState extends State<HKOTyphoonTab> {
       debugPrint("Failed to fetch typhoon data $e");
       rethrow;
     }
+  }
+}
+
+class TyphoonsListView extends StatelessWidget {
+  const TyphoonsListView({
+    super.key,
+    required this.typhoons,
+    required this.lastTick,
+  });
+
+  final List<Typhoon> typhoons;
+  final DateTime lastTick;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.builder(
+        physics: const AlwaysScrollableScrollPhysics(),
+        itemCount: typhoons.length,
+        itemBuilder: (BuildContext context, int index) {
+          return TyphoonTile(
+            typhoon: typhoons[index],
+            lastTick: lastTick,
+            expanded: typhoons.length == 1,
+          );
+        },
+      );
+  }
+}
+
+class NoTyphoonsListView extends StatelessWidget {
+  const NoTyphoonsListView({
+    super.key,
+    required this.lastTick,
+  });
+
+  final DateTime lastTick;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      children: [
+        ExpansionTile(
+          leading: const CircleAvatar(
+            child: Icon(Icons.done),
+          ),
+          title: const Text("No active typhoon warnings"),
+          subtitle: buildLastTick(lastTick),
+          children: const [
+            ListTile(
+              title: Text(
+                  "Tropical cyclone track information data provided by Hong Kong Observatory and "
+                  "is expected to be updated when a tropical cyclone forms within or enters the area bounded by 7-36N and 100-140E"),
+              subtitle: Text(""),
+            ),
+          ],
+        ),
+      ],
+    );
   }
 }

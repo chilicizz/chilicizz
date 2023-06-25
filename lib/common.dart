@@ -176,27 +176,44 @@ bool isSmallDevice() {
   return data.size.shortestSide < 600;
 }
 
-ListView loadingListView() {
-  return ListView(
-    children: const [
-      ListTile(
-        leading: CircularProgressIndicator(),
-        title: Text("Loading..."),
-      ),
-    ],
-  );
+class LoadingListView extends StatelessWidget {
+  const LoadingListView({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      children: const [
+        ListTile(
+          leading: CircularProgressIndicator(),
+          title: Text("Loading..."),
+        ),
+      ],
+    );
+  }
 }
 
-ListView hasErrorListView(AsyncSnapshot snapshot) {
-  return ListView(
-    children: [
-      ListTile(
-        leading: const CircleAvatar(
-          child: Icon(Icons.error),
+class ErrorListView extends StatelessWidget {
+  final String message;
+
+  const ErrorListView({
+    super.key,
+    required this.message
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      children: [
+        ListTile(
+          leading: const CircleAvatar(
+            child: Icon(Icons.error),
+          ),
+          title: const Text("Error loading data"),
+          subtitle: Text("${message}"),
         ),
-        title: const Text("Error loading data"),
-        subtitle: Text("${snapshot.error}"),
-      ),
-    ],
-  );
+      ],
+    );
+  }
 }

@@ -1,6 +1,6 @@
 import 'package:chilicizz/Chat/chat.dart';
-import 'package:chilicizz/HKO/hko_typhoon_tab.dart';
-import 'package:chilicizz/HKO/live_hko_warnings.dart';
+import 'package:chilicizz/HKO/typhoon/hko_typhoon_tab.dart';
+import 'package:chilicizz/HKO/warnings/live_hko_warnings.dart';
 import 'package:chilicizz/rss_reader.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
