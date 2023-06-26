@@ -16,7 +16,7 @@ class LiveHKOWarnings extends StatefulWidget {
 }
 
 class _LiveHKOWarningsState extends State<LiveHKOWarnings> {
-  List<WarningInformation> weatherWarnings = [];
+  List<WarningInformation>? weatherWarnings;
   final socketURL = Uri.parse(dotenv.env['warningsUrl']!);
 
   late WebSocketChannel _channel;
@@ -91,19 +91,11 @@ class _LiveHKOWarningsState extends State<LiveHKOWarnings> {
           onRefresh: () {
             return Future(() => triggerRefresh());
           },
-          child: weatherWarnings.isNotEmpty
-              ? HKOWarningsList(warnings: weatherWarnings)
-              : ListView(
-                  children: [
-                    ListTile(
-                      leading: const CircleAvatar(
-                        child: Icon(Icons.done),
-                      ),
-                      title: const Text("No weather warnings in force"),
-                      subtitle: buildLastTick(lastTick),
-                    ),
-                  ],
-                ),
+          child: weatherWarnings == null
+              ? const LoadingListView()
+              : weatherWarnings!.isNotEmpty
+                  ? HKOWarningsList(warnings: weatherWarnings!)
+                  : NoWarningsList(lastTick: lastTick),
         ),
       ),
     );
@@ -111,6 +103,30 @@ class _LiveHKOWarningsState extends State<LiveHKOWarnings> {
 
   void triggerRefresh() {
     _channel.sink.add("Refresh");
+  }
+}
+
+class NoWarningsList extends StatelessWidget {
+  const NoWarningsList({
+    super.key,
+    required this.lastTick,
+  });
+
+  final DateTime lastTick;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+        children: [
+          ListTile(
+            leading: const CircleAvatar(
+              child: Icon(Icons.done),
+            ),
+            title: const Text("No weather warnings in force"),
+            subtitle: buildLastTick(lastTick),
+          ),
+        ],
+      );
   }
 }
 
