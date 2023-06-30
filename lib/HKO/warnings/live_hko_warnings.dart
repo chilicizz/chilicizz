@@ -29,19 +29,32 @@ class _LiveHKOWarningsState extends State<LiveHKOWarnings> {
   void _connect() {
     _channel = WebSocketChannel.connect(socketURL);
     _channel.stream.listen((event) {
-      var hkoFeed = jsonDecode(event);
-      setState(() {
-        lastTick = DateTime.now();
-        debugPrint("Updated HKO Warnings: $lastTick");
-        weatherWarnings = extractWarnings(hkoFeed);
-      });
+      if (mounted) {
+        var hkoFeed = jsonDecode(event);
+        setState(() {
+          lastTick = DateTime.now();
+          debugPrint("Updated HKO Warnings: $lastTick");
+          weatherWarnings = extractWarnings(hkoFeed);
+        });
+      }
     }, onError: (e) {
-      debugPrint("HKO stream failed $e");
-      _connect();
+      if (mounted) {
+        debugPrint("HKO stream failed $e");
+        _connect();
+      }
     }, onDone: () {
-      debugPrint("HKO stream closed");
-      _connect();
+      if (mounted) {
+        debugPrint("HKO stream closed");
+        _connect();
+      }
     });
+  }
+
+
+  @override
+  void deactivate() {
+    super.deactivate();
+    debugPrint("Deactivate state");
   }
 
   @override
@@ -104,6 +117,13 @@ class _LiveHKOWarningsState extends State<LiveHKOWarnings> {
   void triggerRefresh() {
     _channel.sink.add("Refresh");
   }
+
+  @override
+  void activate() {
+    super.activate();
+    //_connect();
+    debugPrint("Activate state");
+  }
 }
 
 class NoWarningsList extends StatelessWidget {
@@ -117,16 +137,16 @@ class NoWarningsList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView(
-        children: [
-          ListTile(
-            leading: const CircleAvatar(
-              child: Icon(Icons.done),
-            ),
-            title: const Text("No weather warnings in force"),
-            subtitle: buildLastTick(lastTick),
+      children: [
+        ListTile(
+          leading: const CircleAvatar(
+            child: Icon(Icons.done),
           ),
-        ],
-      );
+          title: const Text("No weather warnings in force"),
+          subtitle: buildLastTick(lastTick),
+        ),
+      ],
+    );
   }
 }
 
@@ -150,7 +170,7 @@ class HKOWarningsList extends StatelessWidget {
           leading: icon,
           title: Text(warning.getDescription()),
           subtitle: buildIssued(warning.updateTime),
-          initiallyExpanded: !isSmallDevice(),
+          initiallyExpanded: !isSmallDevice() || warnings.length == 1,
           children: [
             for (var s in warning.contents)
               ListTile(

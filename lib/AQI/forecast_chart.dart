@@ -1,68 +1,103 @@
-import 'package:charts_flutter/flutter.dart' as charts;
 import 'package:flutter/material.dart';
+import 'package:fl_chart/fl_chart.dart';
 
+import '../common.dart';
 import 'aqi_common.dart';
 
+// https://pub.dev/packages/fl_chart
 class ForecastChart extends StatelessWidget {
-  final List<charts.Series<ForecastEntry, DateTime>> seriesList;
-  final bool animate;
+  final Map<IAQIRecord, List<ForecastEntry>> data;
 
-  const ForecastChart(series, List<ForecastEntry> forecast,
-      {Key? key, this.animate = false, required this.seriesList})
-      : super(key: key);
+  const ForecastChart({Key? key, required this.data}) : super(key: key);
 
-  ForecastChart.fromMap(Map<IAQIRecord, List<ForecastEntry>>? data,
-      {Key? key, this.animate = false})
-      : seriesList =
-            data != null ? data.entries.map(generateFromEntry).toList() : [],
-        super(key: key);
-
-  static charts.Series<ForecastEntry, DateTime> generateFromEntry(
-      MapEntry<IAQIRecord, List<ForecastEntry>> entry) {
-    var chartSeries = charts.Series<ForecastEntry, DateTime>(
-      id: entry.key.code,
-      //colorFn: (_, __) => charts.MaterialPalette.blue.shadeDefault,
-      domainFn: (ForecastEntry entry, _) => entry.date,
-      measureFn: (ForecastEntry entry, _) => entry.average,
-      measureLowerBoundFn: (entry, _) => entry.min,
-      measureUpperBoundFn: (entry, _) => entry.max,
-      data: entry.value,
-      displayName: entry.key.label,
-    );
-    if (entry.key.code == "uvi") {
-      return chartSeries..setAttribute(charts.measureAxisIdKey, 'uvi');
-    }
-    return chartSeries;
+  int daysBetween(DateTime from, DateTime to) {
+    from = DateTime(from.year, from.month, from.day);
+    to = DateTime(to.year, to.month, to.day);
+    return (to.difference(from).inHours / 24).round();
   }
 
   @override
   Widget build(BuildContext context) {
-    return charts.TimeSeriesChart(
-      seriesList,
-      animate: animate,
-      // Optionally pass in a [DateTimeFactory] used by the chart. The factory
-      // should create the same type of [DateTime] as the data provided. If none
-      // specified, the default creates local date time.
-      dateTimeFactory: const charts.LocalDateTimeFactory(),
-      defaultRenderer: charts.LineRendererConfig(includePoints: true),
-
-      behaviors: [
-        charts.SeriesLegend(
-          position: charts.BehaviorPosition.end,
-          showMeasures: true,
-          cellPadding: const EdgeInsets.only(right: 4.0, bottom: 4.0),
+    Map<String, Color> colorMap = {};
+    int i = 0;
+    double maxValue = 0;
+    List<LineChartBarData> barData = data.entries.map((dataSeries) {
+      Color seriesColor = Colors.primaries[i++];
+      colorMap[dataSeries.key.label] = seriesColor;
+      return LineChartBarData(
+        spots: dataSeries.value.map((entry) {
+          var dateDifference = daysBetween(DateTime.now(), entry.date);
+          var value = entry.average.toDouble();
+          maxValue = value > maxValue ? value : maxValue;
+          return FlSpot(
+            dateDifference.toDouble(),
+            value,
+          );
+        }).toList(),
+        isCurved: true,
+        dotData: const FlDotData(show: true),
+        belowBarData: BarAreaData(show: false),
+        color: seriesColor,
+      );
+    }).toList();
+    return Row(children: [
+      Expanded(
+        flex: 1,
+        child: LineChart(
+          LineChartData(
+            lineTouchData: const LineTouchData(enabled: false),
+            gridData: const FlGridData(
+              show: true,
+              drawVerticalLine: false,
+            ),
+            titlesData: FlTitlesData(
+              show: true,
+              rightTitles: const AxisTitles(
+                sideTitles: SideTitles(
+                  showTitles: true,
+                  reservedSize: 40,
+                ),
+              ),
+              bottomTitles: AxisTitles(
+                axisNameWidget: const Text("Date"),
+                sideTitles: SideTitles(
+                    showTitles: true,
+                    interval: 1,
+                    getTitlesWidget: (value, meta) {
+                      String text = graphFormat(DateTime.now()
+                          .add(Duration(days: value.toInt()))
+                          .toLocal());
+                      return Text(text, textAlign: TextAlign.center);
+                    }),
+              ),
+              leftTitles: const AxisTitles(
+                sideTitles: SideTitles(showTitles: false),
+              ),
+              topTitles: const AxisTitles(
+                sideTitles: SideTitles(showTitles: false),
+              ),
+            ),
+            borderData: FlBorderData(
+                show: true,
+                border: const Border(
+                    right: BorderSide(width: 1), bottom: BorderSide(width: 1))),
+            lineBarsData: barData,
+          ),
         ),
+      ),
+      buildLegend(context, colorMap),
+    ]);
+  }
+
+  Widget buildLegend(BuildContext context, Map<String, Color> colorMap) {
+    return Wrap(
+      direction: Axis.vertical,
+      children: [
+        for (var e in data.entries)
+          Chip(
+              avatar: CircleAvatar(backgroundColor: colorMap[e.key.label]),
+              label: Text(e.key.label))
       ],
-      primaryMeasureAxis: const charts.NumericAxisSpec(
-        viewport: charts.NumericExtents(0, 300),
-        tickProviderSpec:
-            charts.BasicNumericTickProviderSpec(desiredTickCount: 5),
-      ),
-      secondaryMeasureAxis: const charts.NumericAxisSpec(
-        viewport: charts.NumericExtents(0, 11),
-        tickProviderSpec:
-            charts.BasicNumericTickProviderSpec(desiredTickCount: 5),
-      ),
     );
   }
 }

@@ -146,6 +146,21 @@ String mapLabelFormat(DateTime? dateTime) {
   }
 }
 
+String graphFormat(DateTime? dateTime) {
+  if (dateTime != null) {
+    return formatDate(
+      dateTime.toLocal(),
+      [
+        d,
+        "/",
+        m,
+      ],
+    );
+  } else {
+    return "";
+  }
+}
+
 Text buildLastUpdatedText(DateTime? lastUpdateTime) {
   if (lastUpdateTime != null) {
     return Text("last updated ${shortDateFormat(lastUpdateTime.toLocal())}");

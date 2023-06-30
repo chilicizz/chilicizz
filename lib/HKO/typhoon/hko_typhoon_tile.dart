@@ -8,7 +8,7 @@ import '../hko_types.dart';
 
 const LatLng hkLatLng = LatLng(22.3453, 114.1372);
 const Distance haversineCalc = Distance(calculator: Haversine());
-const mapUserAgent = "com.chilicizz.chilicizz.github.io";
+const mapUserAgent = "app.cyrilng.com";
 
 class TyphoonTile extends StatelessWidget {
   final Typhoon typhoon;

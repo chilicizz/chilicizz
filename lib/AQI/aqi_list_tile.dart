@@ -151,7 +151,7 @@ class _AQIListTileState extends State<AQIListTile> {
                     ListTile(
                       title: SizedBox(
                         height: 200,
-                        child: ForecastChart.fromMap(data?.iaqiForecast),
+                        child: ForecastChart(data: data!.iaqiForecast),
                       ),
                     ),
                     ListTile(

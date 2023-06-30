@@ -145,6 +145,11 @@ class ForecastEntry {
         max: forecastData["max"],
         date: day);
   }
+
+  @override
+  String toString() {
+    return 'ForecastEntry{average: $average, min: $min, max: $max, date: $date}';
+  }
 }
 
 const aqiThresholds = [

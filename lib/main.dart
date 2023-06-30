@@ -106,7 +106,7 @@ class _DashboardState extends State<Dashboard> {
                 context: context,
                 builder: (BuildContext context) {
                   final qrController = TextEditingController();
-                  qrController.text  = 'https://chilicizz.github.io/';
+                  qrController.text  = 'https://app.cyrilng.com/';
                   final ValueNotifier<String> textValue =
                       ValueNotifier<String>(qrController.text);
                   return AlertDialog(
