@@ -52,7 +52,7 @@ class ForecastChart extends StatelessWidget {
             ),
             titlesData: FlTitlesData(
               show: true,
-              rightTitles: const AxisTitles(
+              leftTitles: const AxisTitles(
                 sideTitles: SideTitles(
                   showTitles: true,
                   reservedSize: 40,
@@ -70,7 +70,7 @@ class ForecastChart extends StatelessWidget {
                       return Text(text, textAlign: TextAlign.center);
                     }),
               ),
-              leftTitles: const AxisTitles(
+              rightTitles: const AxisTitles(
                 sideTitles: SideTitles(showTitles: false),
               ),
               topTitles: const AxisTitles(
