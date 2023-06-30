@@ -80,7 +80,7 @@ class ForecastChart extends StatelessWidget {
             borderData: FlBorderData(
                 show: true,
                 border: const Border(
-                    right: BorderSide(width: 1), bottom: BorderSide(width: 1))),
+                    left: BorderSide(width: 1), bottom: BorderSide(width: 1))),
             lineBarsData: barData,
           ),
         ),
