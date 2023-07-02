@@ -54,11 +54,11 @@ class NavDrawer extends StatelessWidget {
                             image: AssetImage('assets/cn.png'))),
                   ),
                   Text(
-                    'ChiliCizz',
+                    'Cyril Ng Lung Kit',
                     style:
                         TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
                   ),
-                  Text('a demo app made by\nCyril Ng Lung Kit 2022'),
+                  Text('ToyBox 2023'),
                 ],
               ),
             ),
@@ -226,7 +226,7 @@ class ErrorListView extends StatelessWidget {
             child: Icon(Icons.error),
           ),
           title: const Text("Error loading data"),
-          subtitle: Text("${message}"),
+          subtitle: Text(message),
         ),
       ],
     );

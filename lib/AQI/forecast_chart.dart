@@ -20,15 +20,14 @@ class ForecastChart extends StatelessWidget {
   Widget build(BuildContext context) {
     Map<String, Color> colorMap = {};
     int i = 0;
-    double maxValue = 0;
+    int interval = (Colors.primaries.length - 1) ~/ data.length;
     List<LineChartBarData> barData = data.entries.map((dataSeries) {
-      Color seriesColor = Colors.primaries[i++];
+      Color seriesColor = Colors.primaries[i+=interval];
       colorMap[dataSeries.key.label] = seriesColor;
       return LineChartBarData(
         spots: dataSeries.value.map((entry) {
           var dateDifference = daysBetween(DateTime.now(), entry.date);
           var value = entry.average.toDouble();
-          maxValue = value > maxValue ? value : maxValue;
           return FlSpot(
             dateDifference.toDouble(),
             value,
@@ -55,7 +54,7 @@ class ForecastChart extends StatelessWidget {
               leftTitles: const AxisTitles(
                 sideTitles: SideTitles(
                   showTitles: true,
-                  reservedSize: 40,
+                  reservedSize: 35,
                 ),
               ),
               bottomTitles: AxisTitles(

@@ -20,7 +20,7 @@ final List<NavRoute> routes = [
       subRoutes: [
         NavRoute(
             path: '/aqi',
-            label: "AQI",
+            label: "Air Quality",
             buildFunction: (context) => const Dashboard(initial: 0)),
         NavRoute(
             path: '/hko',
@@ -62,7 +62,7 @@ class MyApp extends StatelessWidget {
       appRoutes.addAll(route.getRoutes());
     }
     return MaterialApp(
-      title: 'chilicizz.github.io',
+      title: 'app.cyrilng.com',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSwatch(
             primarySwatch: Colors.deepPurple, brightness: Brightness.light),
