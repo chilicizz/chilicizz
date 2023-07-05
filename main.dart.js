@@ -9459,8 +9459,8 @@ this.a=b},
 azM(){var s=0,r=A.W(t.H),q,p
 var $async$azM=A.X(function(a,b){if(a===1)return A.T(b,r)
 while(true)switch(s){case 0:s=2
-return A.a_($.ke().Bo(0,"assets/config/ext.properties"),$async$azM)
-case 2:A.cK().$1("Starting environment: ext")
+return A.a_($.ke().Bo(0,"assets/config/pdn.properties"),$async$azM)
+case 2:A.cK().$1("Starting environment: pdn")
 if($.ay==null)A.aJu()
 q=$.ay
 q.toString
