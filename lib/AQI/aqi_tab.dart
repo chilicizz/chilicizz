@@ -65,7 +65,6 @@ class _AQITabState extends State<AQITab> {
                             ? ListView.builder(
                                 scrollDirection: Axis.vertical,
                                 itemCount: locations.length,
-                                // add one for autocomplete
                                 itemBuilder: (context, index) {
                                   return AQIListTile(
                                     location: locations[index],

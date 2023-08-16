@@ -22,7 +22,9 @@ class _LiveHKOWarningsState extends State<LiveHKOWarnings> {
   late WebSocketChannel _channel;
   DateTime lastTick = DateTime.now();
 
-  _LiveHKOWarningsState() {
+  @override
+  void initState() {
+    super.initState();
     _connect();
   }
 
@@ -55,11 +57,6 @@ class _LiveHKOWarningsState extends State<LiveHKOWarnings> {
   void deactivate() {
     super.deactivate();
     debugPrint("Deactivate state");
-  }
-
-  @override
-  void initState() {
-    super.initState();
   }
 
   @override

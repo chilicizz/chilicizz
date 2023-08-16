@@ -1,3 +1,4 @@
+import 'package:chilicizz/AQI/live_aqi_tab.dart';
 import 'package:chilicizz/Chat/chat.dart';
 import 'package:chilicizz/HKO/typhoon/hko_typhoon_tab.dart';
 import 'package:chilicizz/HKO/warnings/live_hko_warnings.dart';
@@ -87,7 +88,7 @@ class _DashboardState extends State<Dashboard> {
   Widget build(BuildContext context) {
     return DefaultTabController(
       initialIndex: widget.initial,
-      length: 3,
+      length: 4,
       child: Scaffold(
         drawer: NavDrawer(routes: routes),
         appBar: AppBar(
@@ -95,6 +96,7 @@ class _DashboardState extends State<Dashboard> {
           bottom: const TabBar(
             tabs: [
               Tab(icon: Text("AIR QUALITY")),
+              Tab(icon: Text("AQI(🚧)")),
               Tab(icon: Text("WARNINGS")),
               Tab(icon: Text("TYPHOON")),
             ],
@@ -148,6 +150,7 @@ class _DashboardState extends State<Dashboard> {
         body: const TabBarView(
           children: [
             AQITab(),
+            AQIPreferenceLoader(),
             LiveHKOWarnings(), // HKOWarnings(),
             HKOTyphoonTab(),
           ],
