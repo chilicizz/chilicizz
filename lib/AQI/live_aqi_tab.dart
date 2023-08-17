@@ -43,11 +43,15 @@ class _AQIPreferenceLoaderState extends State<AQIPreferenceLoader> {
       builder: (context, snapshot) {
         switch (snapshot.connectionState) {
           case ConnectionState.waiting:
-            return const CircularProgressIndicator();
+            return const LoadingListView();
           default:
             locationsLoaded =
                 snapshot.hasError ? [] : snapshot.data as List<String>;
-            return LiveAQITab(locations: locationsLoaded.toSet());
+            return LiveAQITab(
+              locations: locationsLoaded.toSet(),
+              removeLocationCallback: _removeLocation,
+              updateLocationCallback: _updateLocation,
+            );
         }
       },
     );
@@ -99,17 +103,25 @@ class _AQIPreferenceLoaderState extends State<AQIPreferenceLoader> {
 
 class LiveAQITab extends StatefulWidget {
   final Set<String> locations;
+  final Function(String) removeLocationCallback;
+  final Function(String, String) updateLocationCallback;
 
-  const LiveAQITab({Key? key, required this.locations}) : super(key: key);
+  const LiveAQITab(
+      {Key? key,
+      required this.locations,
+      required this.removeLocationCallback,
+      required this.updateLocationCallback})
+      : super(key: key);
 
   @override
   State<LiveAQITab> createState() => _AQITabState();
 }
 
 class _AQITabState extends State<LiveAQITab> {
-  bool _displayInput = false;
   final WebSocketChannel _channel = WebSocketChannel.connect(socketURL);
   final Map<String, AQIData?> locationDataMap = {};
+
+  bool _displayInput = false;
 
   @override
   void initState() {
@@ -117,92 +129,119 @@ class _AQITabState extends State<LiveAQITab> {
     for (var element in widget.locations) {
       locationDataMap[element] = null;
     }
-    _channel.ready.whenComplete(() {
-      // for (var element in widget.locations) {
-      //   debugPrint("Requesting location $element");
-      //   _channel.sink.add(jsonEncode(
-      //       {"id": element, "type": "AQI_FEED_REQUEST", "payload": element}));
-      // }
-      debugPrint("Connected to AQI websocket ${widget.locations}");
-    });
+  }
+
+  void locationSearch(String searchString) {
+    _channel.sink.add(
+      jsonEncode({
+        "id": searchString,
+        "type": "AQI_SEARCH_REQUEST",
+        "payload": searchString
+      }),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-
-    return RefreshIndicator(
-      onRefresh: () async {
-        for (var element in widget.locations) {
-          debugPrint("Requesting location $element");
-          _channel.sink.add(jsonEncode(
-              {"id": element, "type": "AQI_FEED_REQUEST", "payload": element}));
+    return FutureBuilder(
+      future: _channel.ready,
+      builder: (context, snapshot) {
+        switch (snapshot.connectionState) {
+          case ConnectionState.waiting:
+            return const LoadingListView();
+          default:
+            if (snapshot.hasError) {
+              debugPrint("Error: ${snapshot.error}");
+            }
         }
-      },
-      child: Scaffold(
-        floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            setState(() {
-              _displayInput = true;
-            });
+        return RefreshIndicator(
+          onRefresh: () async {
+            for (var element in widget.locations) {
+              debugPrint("Requesting location $element");
+              _channel.sink.add(
+                jsonEncode({
+                  "id": element,
+                  "type": "AQI_FEED_REQUEST",
+                  "payload": element
+                }),
+              );
+            }
           },
-          child: const Icon(Icons.add),
-        ),
-        body: _displayInput
-            ? Text("Autocomplete")
-            : StreamBuilder<dynamic>(
-                stream: _channel.stream,
-                builder: (context, snapshot) {
-                  switch (snapshot.connectionState) {
-                    case ConnectionState.waiting:
-                      return const CircularProgressIndicator();
-                    case ConnectionState.done:
-                      return Text("Connection closed ${_channel.closeReason}");
-                    case ConnectionState.none:
-                      return Text("No connection ${_channel.closeReason}");
-                    default:
-                      if (snapshot.hasError) {
-                        debugPrint("Error: ${snapshot.error}");
+          child: Scaffold(
+            floatingActionButton: FloatingActionButton(
+              onPressed: () {
+                setState(() {
+                  _displayInput = true;
+                });
+              },
+              child: const Icon(Icons.add),
+            ),
+            body: _displayInput
+                ? const Text("Autocomplete")
+                : StreamBuilder<dynamic>(
+                    stream: _channel.stream,
+                    builder: (context, snapshot) {
+                      switch (snapshot.connectionState) {
+                        case ConnectionState.waiting:
+                          return const LoadingListView();
+                        case ConnectionState.done:
+                          return ErrorListView(
+                              message:
+                                  "Connection closed ${_channel.closeReason}");
+                        case ConnectionState.none:
+                          return ErrorListView(
+                              message: "No connection ${_channel.closeReason}");
+                        default:
+                          if (snapshot.hasError) {
+                            debugPrint("Error: ${snapshot.error}");
+                          }
                       }
-                  }
-                  if (snapshot.hasData) {
-                    var event = snapshot.data;
-                    var message = jsonDecode(event);
-                    var type = message["type"];
-                    var payload = message["payload"];
-                    var location = message["id"];
-                    if (type == "AQI_FEED_RESPONSE") {
-                      debugPrint("Received message for location $location");
-                      AQIData data =
-                          AQIData.fromJSON(jsonDecode(payload)["data"]);
-                      locationDataMap[location] = data;
-                    } else {
-                      debugPrint("Received unknown message $event");
-                    }
-                  }
-                  return ListView.builder(
-                    scrollDirection: Axis.vertical,
-                    itemCount: locationDataMap.length,
-                    itemBuilder: (context, index) {
-                      var entry = locationDataMap.entries.elementAt(index);
-                      var location = entry.key;
-                      var aqiData = entry.value;
-                      if (aqiData == null) {
-                        debugPrint("Requesting location $location");
-                        _channel.sink.add(jsonEncode({
+                      if (snapshot.hasData) {
+                        var event = snapshot.data;
+                        var message = jsonDecode(event);
+                        var type = message["type"];
+                        var payload = message["payload"];
+                        var location = message["id"];
+                        if (type == "AQI_FEED_RESPONSE") {
+                          debugPrint("Received message for location $location");
+                          AQIData data =
+                              AQIData.fromJSON(jsonDecode(payload)["data"]);
+                          locationDataMap[location] = data;
+                        } else if (type == "AQI_SEARCH_RESPONSE") {
+                          debugPrint("Received search response $payload");
+                        } else {
+                          debugPrint("Received unknown message $event");
+                        }
+                      }
+                      return ListView.builder(
+                        scrollDirection: Axis.vertical,
+                        itemCount: locationDataMap.length,
+                        itemBuilder: (context, index) {
+                          var entry = locationDataMap.entries.elementAt(index);
+                          var location = entry.key;
+                          var aqiData = entry.value;
+                          if (aqiData == null) {
+                            debugPrint("Requesting location $location");
+                            _channel.sink.add(jsonEncode({
                               "id": location,
                               "type": "AQI_FEED_REQUEST",
                               "payload": location
                             }));
-                      }
-                      return AQIStatelessListTile(
-                          location: location,
-                          data: aqiData,
-                          removeLocationCallback: (p0) {},
-                          updateLocationCallback: (p0, p1) {});
-                    },
-                  );
-                }),
-      ),
+                          }
+                          return AQIStatelessListTile(
+                            location: location,
+                            data: aqiData,
+                            removeLocationCallback:
+                                widget.removeLocationCallback,
+                            updateLocationCallback:
+                                widget.updateLocationCallback,
+                          );
+                        },
+                      );
+                    }),
+          ),
+        );
+      },
     );
   }
 

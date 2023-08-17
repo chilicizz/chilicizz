@@ -96,9 +96,9 @@ class _DashboardState extends State<Dashboard> {
           bottom: const TabBar(
             tabs: [
               Tab(icon: Text("AIR QUALITY")),
-              Tab(icon: Text("AQI(🚧)")),
               Tab(icon: Text("WARNINGS")),
               Tab(icon: Text("TYPHOON")),
+              Tab(icon: Text("(🚧)")),
             ],
           ),
           actions: [
@@ -150,9 +150,9 @@ class _DashboardState extends State<Dashboard> {
         body: const TabBarView(
           children: [
             AQITab(),
-            AQIPreferenceLoader(),
-            LiveHKOWarnings(), // HKOWarnings(),
+            LiveHKOWarnings(),
             HKOTyphoonTab(),
+            AQIPreferenceLoader(),
           ],
         ),
       ),
