@@ -16,47 +16,31 @@ class LiveHKOWarnings extends StatefulWidget {
 }
 
 class _LiveHKOWarningsState extends State<LiveHKOWarnings> {
-  List<WarningInformation>? weatherWarnings;
   final socketURL = Uri.parse(dotenv.env['warningsUrl']!);
-
+  List<WarningInformation>? weatherWarnings;
   late WebSocketChannel _channel;
   DateTime lastTick = DateTime.now();
+  int _failures = 0;
+  bool displayDummy = false;
+
+  void _reconnect() {
+    if (_failures < 10) {
+      Future.delayed(Duration(milliseconds: 100 * _failures), () {
+        setState(() {
+          debugPrint("Reconnecting websocket times $_failures");
+          _channel = WebSocketChannel.connect(socketURL);
+        });
+      });
+      _failures++;
+    } else {
+      debugPrint("Too many failures, not reconnecting");
+    }
+  }
 
   @override
   void initState() {
     super.initState();
-    _connect();
-  }
-
-  void _connect() {
     _channel = WebSocketChannel.connect(socketURL);
-    _channel.stream.listen((event) {
-      if (mounted) {
-        var hkoFeed = jsonDecode(event);
-        setState(() {
-          lastTick = DateTime.now();
-          debugPrint("Updated HKO Warnings: $lastTick");
-          weatherWarnings = extractWarnings(hkoFeed);
-        });
-      }
-    }, onError: (e) {
-      if (mounted) {
-        debugPrint("HKO stream failed $e");
-        _connect();
-      }
-    }, onDone: () {
-      if (mounted) {
-        debugPrint("HKO stream closed");
-        _connect();
-      }
-    });
-  }
-
-
-  @override
-  void deactivate() {
-    super.deactivate();
-    debugPrint("Deactivate state");
   }
 
   @override
@@ -77,6 +61,12 @@ class _LiveHKOWarningsState extends State<LiveHKOWarnings> {
 
   @override
   Widget build(BuildContext context) {
+    if (displayDummy) {
+      return Scaffold(
+        body: Center(child: HKOWarningsList(warnings: dummyWarnings())),
+      );
+    }
+
     return Scaffold(
       floatingActionButton: Column(
         mainAxisAlignment: MainAxisAlignment.end,
@@ -90,22 +80,58 @@ class _LiveHKOWarningsState extends State<LiveHKOWarnings> {
             ),
             onLongPress: () async {
               setState(() {
-                weatherWarnings = dummyWarnings();
+                displayDummy = true;
               });
             },
           ),
         ],
       ),
       body: Center(
-        child: RefreshIndicator(
-          onRefresh: () {
-            return Future(() => triggerRefresh());
+        child: FutureBuilder(
+          future: _channel.ready,
+          builder: (context, snapshot) {
+            switch (snapshot.connectionState) {
+              case ConnectionState.waiting:
+                return const LoadingListView();
+              default:
+                if (snapshot.hasError) {
+                  debugPrint("Error: ${snapshot.error}");
+                }
+            }
+            return StreamBuilder<dynamic>(
+              stream: _channel.stream,
+              builder: (context, snapshot) {
+                switch (snapshot.connectionState) {
+                  case ConnectionState.waiting:
+                    return const LoadingListView();
+                  case ConnectionState.done:
+                    debugPrint("Websocket closed: ${snapshot.error}");
+                    _reconnect();
+                    return ErrorListView(
+                        message: "Connection closed ${_channel.closeReason}");
+                  case ConnectionState.none:
+                    _reconnect();
+                    return ErrorListView(
+                        message: "No connection ${_channel.closeReason}");
+                  default:
+                    if (snapshot.hasError) {
+                      debugPrint("Error: ${snapshot.error}");
+                    }
+                }
+                if (snapshot.hasData) {
+                  var hkoFeed = jsonDecode(snapshot.data);
+                  lastTick = DateTime.now();
+                  debugPrint("Updated HKO Warnings: $lastTick");
+                  weatherWarnings = extractWarnings(hkoFeed);
+                  return weatherWarnings!.isNotEmpty
+                      ? HKOWarningsList(warnings: weatherWarnings!)
+                      : NoWarningsList(lastTick: lastTick);
+                } else {
+                  return const LoadingListView();
+                }
+              },
+            );
           },
-          child: weatherWarnings == null
-              ? const LoadingListView()
-              : weatherWarnings!.isNotEmpty
-                  ? HKOWarningsList(warnings: weatherWarnings!)
-                  : NoWarningsList(lastTick: lastTick),
         ),
       ),
     );
@@ -113,13 +139,6 @@ class _LiveHKOWarningsState extends State<LiveHKOWarnings> {
 
   void triggerRefresh() {
     _channel.sink.add("Refresh");
-  }
-
-  @override
-  void activate() {
-    super.activate();
-    //_connect();
-    debugPrint("Activate state");
   }
 }
 

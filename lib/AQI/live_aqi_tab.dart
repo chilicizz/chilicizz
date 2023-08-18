@@ -47,6 +47,7 @@ class _AQIPreferenceLoaderState extends State<AQIPreferenceLoader> {
             locationsLoaded =
                 snapshot.hasError ? [] : snapshot.data as List<String>;
             return LiveAQITab(
+                socketURL: Uri.parse(dotenv.env['aqiUrl']!),
                 locations: locationsLoaded.toSet(),
                 removeLocationCallback: _removeLocation,
                 updateLocationCallback: _updateLocation);
@@ -106,6 +107,7 @@ class _AQIPreferenceLoaderState extends State<AQIPreferenceLoader> {
 }
 
 class LiveAQITab extends StatefulWidget {
+  final Uri socketURL;
   final Set<String> locations;
   final Function(String) removeLocationCallback;
   final Function(String, String) updateLocationCallback;
@@ -114,7 +116,8 @@ class LiveAQITab extends StatefulWidget {
       {Key? key,
       required this.locations,
       required this.removeLocationCallback,
-      required this.updateLocationCallback})
+      required this.updateLocationCallback,
+      required this.socketURL})
       : super(key: key);
 
   @override
@@ -122,27 +125,33 @@ class LiveAQITab extends StatefulWidget {
 }
 
 class _AQITabState extends State<LiveAQITab> {
-  final socketURL = Uri.parse(dotenv.env['aqiUrl']!);
-  late WebSocketChannel _channel = WebSocketChannel.connect(socketURL);
+  late WebSocketChannel _channel;
   final Map<String, AQIData?> locationDataMap = {};
+  int _failures = 0;
 
   bool _displayInput = false;
 
   @override
   void initState() {
     super.initState();
+    _channel = WebSocketChannel.connect(widget.socketURL);
     for (var element in widget.locations) {
       locationDataMap[element] = null;
     }
   }
 
-  void _connect() {
-    Future.delayed(const Duration(milliseconds: 100), () {
-      setState(() {
-        debugPrint("Reconnecting websocket");
-        _channel = WebSocketChannel.connect(socketURL);
+  void _reconnect() {
+    if (_failures < 10) {
+      Future.delayed(Duration(milliseconds: 100 * _failures), () {
+        setState(() {
+          debugPrint("Reconnecting websocket times");
+          _channel = WebSocketChannel.connect(widget.socketURL);
+        });
       });
-    });
+      _failures++;
+    } else {
+      debugPrint("Too many failures, not reconnecting");
+    }
   }
 
   void locationSearch(String searchString) {
@@ -199,12 +208,12 @@ class _AQITabState extends State<LiveAQITab> {
                         case ConnectionState.waiting:
                           return const LoadingListView();
                         case ConnectionState.done:
-                          _connect();
+                          _reconnect();
                           return ErrorListView(
                               message:
                                   "Connection closed ${_channel.closeReason}");
                         case ConnectionState.none:
-                          _connect();
+                          _reconnect();
                           return ErrorListView(
                               message: "No connection ${_channel.closeReason}");
                         default:

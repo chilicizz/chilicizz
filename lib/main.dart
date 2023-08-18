@@ -98,7 +98,7 @@ class _DashboardState extends State<Dashboard> {
               Tab(icon: Text("AIR QUALITY")),
               Tab(icon: Text("WARNINGS")),
               Tab(icon: Text("TYPHOON")),
-              Tab(icon: Text("(🚧)")),
+              Tab(icon: Text("🚧")),
             ],
           ),
           actions: [
