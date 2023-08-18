@@ -11,7 +11,6 @@ import 'aqi_list_tile.dart';
 import 'forecast_chart.dart';
 
 const String aqiLocationsPreferenceLabel = 'aqi_locations';
-final socketURL = Uri.parse(dotenv.env['aqiUrl']!);
 
 /// Loads preferences and then loads the AQI tab
 class AQIPreferenceLoader extends StatefulWidget {
@@ -48,10 +47,9 @@ class _AQIPreferenceLoaderState extends State<AQIPreferenceLoader> {
             locationsLoaded =
                 snapshot.hasError ? [] : snapshot.data as List<String>;
             return LiveAQITab(
-              locations: locationsLoaded.toSet(),
-              removeLocationCallback: _removeLocation,
-              updateLocationCallback: _updateLocation,
-            );
+                locations: locationsLoaded.toSet(),
+                removeLocationCallback: _removeLocation,
+                updateLocationCallback: _updateLocation);
         }
       },
     );
@@ -62,20 +60,23 @@ class _AQIPreferenceLoaderState extends State<AQIPreferenceLoader> {
     if (!locationsLoaded.contains(location)) {
       return;
     }
-    setState(() {
-      locationsLoaded.remove(location);
-      prefs.setStringList(aqiLocationsPreferenceLabel, locationsLoaded).then(
-            (bool success) => {
-              ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Removed tile for $location')))
-            },
-          );
-      _loadingLocations = _prefs.then(
-        (SharedPreferences prefs) {
-          return prefs.getStringList(aqiLocationsPreferenceLabel) ?? <String>[];
-        },
-      );
-    });
+    setState(
+      () {
+        locationsLoaded.remove(location);
+        prefs.setStringList(aqiLocationsPreferenceLabel, locationsLoaded).then(
+              (bool success) => {
+                ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Removed tile for $location')))
+              },
+            );
+        _loadingLocations = _prefs.then(
+          (SharedPreferences prefs) {
+            return prefs.getStringList(aqiLocationsPreferenceLabel) ??
+                <String>[];
+          },
+        );
+      },
+    );
   }
 
   Future<void> _updateLocation(String original, String newLocation) async {
@@ -83,21 +84,24 @@ class _AQIPreferenceLoaderState extends State<AQIPreferenceLoader> {
     if (!locationsLoaded.contains(original)) {
       return;
     }
-    setState(() {
-      int index = locationsLoaded.indexOf(original);
-      locationsLoaded[index] = newLocation;
-      prefs.setStringList(aqiLocationsPreferenceLabel, locationsLoaded).then(
-            (bool success) => {
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                  content: Text('Updated tile $original to $newLocation')))
-            },
-          );
-      _loadingLocations = _prefs.then(
-        (SharedPreferences prefs) {
-          return prefs.getStringList(aqiLocationsPreferenceLabel) ?? <String>[];
-        },
-      );
-    });
+    setState(
+      () {
+        int index = locationsLoaded.indexOf(original);
+        locationsLoaded[index] = newLocation;
+        prefs.setStringList(aqiLocationsPreferenceLabel, locationsLoaded).then(
+              (bool success) => {
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Text('Updated tile $original to $newLocation')))
+              },
+            );
+        _loadingLocations = _prefs.then(
+          (SharedPreferences prefs) {
+            return prefs.getStringList(aqiLocationsPreferenceLabel) ??
+                <String>[];
+          },
+        );
+      },
+    );
   }
 }
 
@@ -118,7 +122,8 @@ class LiveAQITab extends StatefulWidget {
 }
 
 class _AQITabState extends State<LiveAQITab> {
-  final WebSocketChannel _channel = WebSocketChannel.connect(socketURL);
+  final socketURL = Uri.parse(dotenv.env['aqiUrl']!);
+  late WebSocketChannel _channel = WebSocketChannel.connect(socketURL);
   final Map<String, AQIData?> locationDataMap = {};
 
   bool _displayInput = false;
@@ -129,6 +134,15 @@ class _AQITabState extends State<LiveAQITab> {
     for (var element in widget.locations) {
       locationDataMap[element] = null;
     }
+  }
+
+  void _connect() {
+    Future.delayed(const Duration(milliseconds: 100), () {
+      setState(() {
+        debugPrint("Reconnecting websocket");
+        _channel = WebSocketChannel.connect(socketURL);
+      });
+    });
   }
 
   void locationSearch(String searchString) {
@@ -185,10 +199,12 @@ class _AQITabState extends State<LiveAQITab> {
                         case ConnectionState.waiting:
                           return const LoadingListView();
                         case ConnectionState.done:
+                          _connect();
                           return ErrorListView(
                               message:
                                   "Connection closed ${_channel.closeReason}");
                         case ConnectionState.none:
+                          _connect();
                           return ErrorListView(
                               message: "No connection ${_channel.closeReason}");
                         default:
@@ -222,11 +238,13 @@ class _AQITabState extends State<LiveAQITab> {
                           var aqiData = entry.value;
                           if (aqiData == null) {
                             debugPrint("Requesting location $location");
-                            _channel.sink.add(jsonEncode({
-                              "id": location,
-                              "type": "AQI_FEED_REQUEST",
-                              "payload": location
-                            }));
+                            _channel.sink.add(
+                              jsonEncode({
+                                "id": location,
+                                "type": "AQI_FEED_REQUEST",
+                                "payload": location
+                              }),
+                            );
                           }
                           return AQIStatelessListTile(
                             location: location,
@@ -238,7 +256,8 @@ class _AQITabState extends State<LiveAQITab> {
                           );
                         },
                       );
-                    }),
+                    },
+                  ),
           ),
         );
       },
