@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 
 import 'aqi_common.dart';
 
-Map<String, List<AQILocation>> cache = {};
-
 class AQILocationAutocomplete extends StatelessWidget {
   final Function(String value) selectionCallback;
   final String? initialValue;

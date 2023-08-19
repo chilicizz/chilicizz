@@ -118,6 +118,7 @@ class _LiveHKOWarningsState extends State<LiveHKOWarnings> {
                       debugPrint("Error: ${snapshot.error}");
                     }
                 }
+                _failures = 0; // reset failures
                 if (snapshot.hasData) {
                   var hkoFeed = jsonDecode(snapshot.data);
                   lastTick = DateTime.now();

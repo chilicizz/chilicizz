@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 import '../common.dart';
+import 'aqi_auto_complete.dart';
 import 'aqi_common.dart';
 import 'aqi_list_tile.dart';
 import 'forecast_chart.dart';
@@ -51,13 +52,38 @@ class _AQIPreferenceLoaderState extends State<AQIPreferenceLoader> {
             locationsLoaded =
                 snapshot.hasError ? [] : snapshot.data as List<String>;
             return LiveAQITab(
-                socketURL: Uri.parse(dotenv.env['aqiUrl']!),
-                locations: locationsLoaded.toSet(),
-                removeLocationCallback: _removeLocation,
-                updateLocationCallback: _updateLocation);
+              socketURL: Uri.parse(dotenv.env['aqiUrl']!),
+              locations: locationsLoaded.toSet(),
+              removeLocationCallback: _removeLocation,
+              updateLocationCallback: _updateLocation,
+              addLocationCallback: _addLocation,
+            );
         }
       },
     );
+  }
+
+  Future<void> _addLocation(String location) async {
+    final SharedPreferences prefs = await _prefs;
+    if (location.isEmpty) {
+      return;
+    }
+    if (locationsLoaded.contains(location)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Location $location already exists')),
+      );
+      return;
+    }
+    setState(() {
+      locationsLoaded.add(location);
+      prefs.setStringList(aqiLocationsPreferenceLabel, locationsLoaded).then(
+            (bool success) => {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Added new tile for $location')),
+              )
+            },
+          );
+    });
   }
 
   Future<void> _removeLocation(String location) async {
@@ -115,13 +141,15 @@ class LiveAQITab extends StatefulWidget {
   final Set<String> locations;
   final Function(String) removeLocationCallback;
   final Function(String, String) updateLocationCallback;
+  final Function(String) addLocationCallback;
 
   const LiveAQITab(
       {Key? key,
       required this.locations,
       required this.removeLocationCallback,
       required this.updateLocationCallback,
-      required this.socketURL})
+      required this.socketURL,
+      required this.addLocationCallback})
       : super(key: key);
 
   @override
@@ -191,6 +219,7 @@ class _AQITabState extends State<LiveAQITab> {
     if (cache.containsKey(searchString)) {
       return cache[searchString]!;
     }
+    debugPrint("Sending search request for $searchString");
     dynamic payload = await sendRequestOverSocket(searchString);
     List<AQILocation> list = parseLocationSearchResponse(payload);
     if (additionalQueryString.isNotEmpty) {
@@ -213,7 +242,7 @@ class _AQITabState extends State<LiveAQITab> {
       AQIData data = AQIData.fromJSON(jsonDecode(payload)["data"]);
       locationDataMap[location] = data;
     } else if (type == "AQI_SEARCH_RESPONSE") {
-      debugPrint("Received search response: $payload");
+      debugPrint("Received search response for: $location");
       if (waitingResponse.containsKey(location)) {
         waitingResponse[location]!.complete(payload);
         waitingResponse.remove(location);
@@ -238,6 +267,7 @@ class _AQITabState extends State<LiveAQITab> {
         }
         // request data from socket
         refreshAll();
+        AQILocationSearch locationSearch = FunctionalAQILocationSearch(queryLocation);
         return RefreshIndicator(
           onRefresh: () async {
             refreshAll();
@@ -251,33 +281,41 @@ class _AQITabState extends State<LiveAQITab> {
               },
               child: const Icon(Icons.add),
             ),
-            body: _displayInput
-                ? const Text("Autocomplete")
-                : StreamBuilder<dynamic>(
-                    stream: _channel.stream,
-                    builder: (context, snapshot) {
-                      switch (snapshot.connectionState) {
-                        case ConnectionState.waiting:
-                          return const LoadingListView();
-                        case ConnectionState.done:
-                          _reconnect();
-                          return ErrorListView(
-                              message:
-                                  "Connection closed ${_channel.closeReason}");
-                        case ConnectionState.none:
-                          _reconnect();
-                          return ErrorListView(
-                              message: "No connection ${_channel.closeReason}");
-                        default:
-                          if (snapshot.hasError) {
-                            debugPrint("Error: ${snapshot.error}");
-                          }
-                      }
-                      if (snapshot.hasData) {
-                        var event = snapshot.data;
-                        handleSocketMessages(event);
-                      }
-                      return ListView.builder(
+            body: StreamBuilder<dynamic>(
+              stream: _channel.stream,
+              builder: (context, snapshot) {
+                switch (snapshot.connectionState) {
+                  case ConnectionState.waiting:
+                    return const LoadingListView();
+                  case ConnectionState.done:
+                    _reconnect();
+                    return ErrorListView(
+                        message: "Connection closed ${_channel.closeReason}");
+                  case ConnectionState.none:
+                    _reconnect();
+                    return ErrorListView(
+                        message: "No connection ${_channel.closeReason}");
+                  default:
+                    if (snapshot.hasError) {
+                      debugPrint("Error: ${snapshot.error}");
+                    }
+                }
+                _failures = 0; // reset failures
+                if (snapshot.hasData) {
+                  var event = snapshot.data;
+                  handleSocketMessages(event);
+                }
+                return _displayInput
+                    ? AQILocationAutocomplete(
+                        autofocus: true,
+                        selectionCallback: (value) {
+                          setState(() {
+                            widget.addLocationCallback(value);
+                            _displayInput = false;
+                          });
+                        },
+                        aqiLocationSearch: locationSearch)
+                    : ListView.builder(
                         scrollDirection: Axis.vertical,
                         itemCount: locationDataMap.length,
                         itemBuilder: (context, index) {
@@ -294,8 +332,8 @@ class _AQITabState extends State<LiveAQITab> {
                           );
                         },
                       );
-                    },
-                  ),
+              },
+            ),
           ),
         );
       },

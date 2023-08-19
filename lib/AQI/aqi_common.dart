@@ -203,7 +203,7 @@ const aqiThresholds = [
 List<IAQIRecord> iqiEntries = [
   IAQIRecord("t", "Temperature", unit: "°C", iconData: Icons.thermostat,
       colourFunction: (value) {
-        Color? bgColour;
+    Color? bgColour;
     if (value < 27) {
       bgColour = Color.lerp(Colors.lightBlue, Colors.yellow, value / 27);
     } else if (value < 40) {
@@ -257,6 +257,18 @@ abstract class AQILocationSearch {
   Future<List<AQILocation>> locationQuery(String location);
 }
 
+class FunctionalAQILocationSearch extends AQILocationSearch {
+  final Future<List<AQILocation>> Function(String location)
+      locationQueryFunction;
+
+  FunctionalAQILocationSearch(this.locationQueryFunction);
+
+  @override
+  Future<List<AQILocation>> locationQuery(String location) {
+    return locationQueryFunction(location);
+  }
+}
+
 class HTTPAQILocationSearch extends AQILocationSearch {
   final Map<String, List<AQILocation>> cache = {};
   final String aqiLocationSearchTemplate;
@@ -288,13 +300,15 @@ class HTTPAQILocationSearch extends AQILocationSearch {
       List<AQILocation> list = parseLocationSearchResponse(response.body);
       if (additionalQueryString.isNotEmpty) {
         list = list
-            .where((element) => element.name.toLowerCase().contains(additionalQueryString))
+            .where((element) =>
+                element.name.toLowerCase().contains(additionalQueryString))
             .toList();
       }
       cache[location] = list;
       return list;
     } else {
-      debugPrint("Failed to fetch data for search: $location, ${response.statusCode}");
+      debugPrint(
+          "Failed to fetch data for search: $location, ${response.statusCode}");
       return [];
     }
   }
