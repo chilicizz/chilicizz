@@ -40,6 +40,7 @@ class AQIListTile extends StatefulWidget {
 
 class _AQIListTileState extends State<AQIListTile> {
   late TextEditingController textController;
+  late AQILocationSearch aqiLocationSearch;
   bool editingLocation = false;
 
   AQIData? data;
@@ -61,8 +62,7 @@ class _AQIListTileState extends State<AQIListTile> {
       return editingLocation
           ? ListTile(
               title: AQILocationAutocomplete(
-                  aqiLocationSearchTemplate:
-                      dotenv.env['aqiLocationSearchTemplate']!,
+                  aqiLocationSearch: aqiLocationSearch,
                   selectionCallback: (value) => {
                         widget.updateLocation(value),
                         editingLocation = false,
@@ -197,6 +197,7 @@ class _AQIListTileState extends State<AQIListTile> {
     super.initState();
     textController = TextEditingController();
     textController.text = widget.location;
+    aqiLocationSearch = HTTPAQILocationSearch(dotenv.env['aqiLocationSearchTemplate']!);
     refresh();
   }
 

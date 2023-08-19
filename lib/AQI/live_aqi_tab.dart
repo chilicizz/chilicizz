@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -11,6 +12,8 @@ import 'aqi_list_tile.dart';
 import 'forecast_chart.dart';
 
 const String aqiLocationsPreferenceLabel = 'aqi_locations';
+Map<String, List<AQILocation>> cache = {};
+Map<String, Completer> waitingResponse = {};
 
 /// Loads preferences and then loads the AQI tab
 class AQIPreferenceLoader extends StatefulWidget {
@@ -42,6 +45,7 @@ class _AQIPreferenceLoaderState extends State<AQIPreferenceLoader> {
       builder: (context, snapshot) {
         switch (snapshot.connectionState) {
           case ConnectionState.waiting:
+            debugPrint("Loading locations");
             return const LoadingListView();
           default:
             locationsLoaded =
@@ -144,7 +148,7 @@ class _AQITabState extends State<LiveAQITab> {
     if (_failures < 10) {
       Future.delayed(Duration(milliseconds: 100 * _failures), () {
         setState(() {
-          debugPrint("Reconnecting websocket times");
+          debugPrint("Reconnecting websocket. Times failed: $_failures");
           _channel = WebSocketChannel.connect(widget.socketURL);
         });
       });
@@ -154,7 +158,20 @@ class _AQITabState extends State<LiveAQITab> {
     }
   }
 
-  void locationSearch(String searchString) {
+  void refreshAll() {
+    for (var element in widget.locations) {
+      debugPrint("Requesting location $element");
+      _channel.sink.add(
+        jsonEncode(
+            {"id": element, "type": "AQI_FEED_REQUEST", "payload": element}),
+      );
+    }
+  }
+
+  Future<dynamic> sendRequestOverSocket(String searchString) {
+    Completer<dynamic> completer = Completer();
+    waitingResponse[searchString] = completer;
+    searchString = searchString.toLowerCase().replaceAll('/', '');
     _channel.sink.add(
       jsonEncode({
         "id": searchString,
@@ -162,6 +179,48 @@ class _AQITabState extends State<LiveAQITab> {
         "payload": searchString
       }),
     );
+    return completer.future;
+  }
+
+  Future<List<AQILocation>> queryLocation(String searchString) async {
+    searchString = searchString.toLowerCase().replaceAll('/', '');
+    String additionalQueryString = searchString.contains(" ")
+        ? searchString.substring(
+            searchString.indexOf(" ") + 1, searchString.length)
+        : "";
+    if (cache.containsKey(searchString)) {
+      return cache[searchString]!;
+    }
+    dynamic payload = await sendRequestOverSocket(searchString);
+    List<AQILocation> list = parseLocationSearchResponse(payload);
+    if (additionalQueryString.isNotEmpty) {
+      list = list
+          .where((element) =>
+              element.name.toLowerCase().contains(additionalQueryString))
+          .toList();
+    }
+    cache[searchString] = list;
+    return list;
+  }
+
+  void handleSocketMessages(dynamic event) {
+    var message = jsonDecode(event);
+    var type = message["type"];
+    var payload = message["payload"];
+    var location = message["id"];
+    if (type == "AQI_FEED_RESPONSE") {
+      debugPrint("Received message for location: $location");
+      AQIData data = AQIData.fromJSON(jsonDecode(payload)["data"]);
+      locationDataMap[location] = data;
+    } else if (type == "AQI_SEARCH_RESPONSE") {
+      debugPrint("Received search response: $payload");
+      if (waitingResponse.containsKey(location)) {
+        waitingResponse[location]!.complete(payload);
+        waitingResponse.remove(location);
+      }
+    } else {
+      debugPrint("Received unknown message: $message");
+    }
   }
 
   @override
@@ -177,18 +236,11 @@ class _AQITabState extends State<LiveAQITab> {
               debugPrint("Error: ${snapshot.error}");
             }
         }
+        // request data from socket
+        refreshAll();
         return RefreshIndicator(
           onRefresh: () async {
-            for (var element in widget.locations) {
-              debugPrint("Requesting location $element");
-              _channel.sink.add(
-                jsonEncode({
-                  "id": element,
-                  "type": "AQI_FEED_REQUEST",
-                  "payload": element
-                }),
-              );
-            }
+            refreshAll();
           },
           child: Scaffold(
             floatingActionButton: FloatingActionButton(
@@ -223,20 +275,7 @@ class _AQITabState extends State<LiveAQITab> {
                       }
                       if (snapshot.hasData) {
                         var event = snapshot.data;
-                        var message = jsonDecode(event);
-                        var type = message["type"];
-                        var payload = message["payload"];
-                        var location = message["id"];
-                        if (type == "AQI_FEED_RESPONSE") {
-                          debugPrint("Received message for location $location");
-                          AQIData data =
-                              AQIData.fromJSON(jsonDecode(payload)["data"]);
-                          locationDataMap[location] = data;
-                        } else if (type == "AQI_SEARCH_RESPONSE") {
-                          debugPrint("Received search response $payload");
-                        } else {
-                          debugPrint("Received unknown message $event");
-                        }
+                        handleSocketMessages(event);
                       }
                       return ListView.builder(
                         scrollDirection: Axis.vertical,
@@ -245,16 +284,6 @@ class _AQITabState extends State<LiveAQITab> {
                           var entry = locationDataMap.entries.elementAt(index);
                           var location = entry.key;
                           var aqiData = entry.value;
-                          if (aqiData == null) {
-                            debugPrint("Requesting location $location");
-                            _channel.sink.add(
-                              jsonEncode({
-                                "id": location,
-                                "type": "AQI_FEED_REQUEST",
-                                "payload": location
-                              }),
-                            );
-                          }
                           return AQIStatelessListTile(
                             location: location,
                             data: aqiData,

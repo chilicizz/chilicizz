@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 const String aqiToken = String.fromEnvironment('AQI_TOKEN');
 
@@ -231,3 +234,68 @@ List<IAQIRecord> iqiEntries = [
   IAQIRecord("o3", "Ozone"),
   IAQIRecord("so2", "Sulphur dioxide"),
 ];
+
+List<AQILocation> parseLocationSearchResponse(dynamic json) {
+  var aqiFeed = jsonDecode(json);
+  if (aqiFeed?["status"]?.contains("ok")) {
+    List<AQILocation> list = [];
+    dynamic jsonResult = aqiFeed?["data"];
+    for (dynamic entry in jsonResult) {
+      // entry["aqi"];
+      list.add(
+        AQILocation(entry["station"]?["name"], entry["station"]?["url"]),
+      );
+    }
+    list.sort((a, b) => a.url.compareTo(b.url));
+    return list;
+  }
+  debugPrint("Failed to fetch data");
+  return [];
+}
+
+abstract class AQILocationSearch {
+  Future<List<AQILocation>> locationQuery(String location);
+}
+
+class HTTPAQILocationSearch extends AQILocationSearch {
+  final Map<String, List<AQILocation>> cache = {};
+  final String aqiLocationSearchTemplate;
+
+  HTTPAQILocationSearch(this.aqiLocationSearchTemplate);
+
+  String aqiLocationSearchUrl(String location, String token) {
+    return aqiLocationSearchTemplate
+        .replaceAll("_LOCATION_", location)
+        .replaceAll("_TOKEN_", token);
+  }
+
+  Future<http.Response> locationQueryHttp(location) {
+    var locationSearchUrl = aqiLocationSearchUrl(location, aqiToken);
+    return http.get(Uri.parse(locationSearchUrl));
+  }
+
+  @override
+  Future<List<AQILocation>> locationQuery(String location) async {
+    location = location.toLowerCase().replaceAll('/', '');
+    String additionalQueryString = location.contains(" ")
+        ? location.substring(location.indexOf(" ") + 1, location.length)
+        : "";
+    if (cache.containsKey(location)) {
+      return cache[location]!;
+    }
+    var response = await locationQueryHttp(location);
+    if (response.statusCode == 200) {
+      List<AQILocation> list = parseLocationSearchResponse(response.body);
+      if (additionalQueryString.isNotEmpty) {
+        list = list
+            .where((element) => element.name.toLowerCase().contains(additionalQueryString))
+            .toList();
+      }
+      cache[location] = list;
+      return list;
+    } else {
+      debugPrint("Failed to fetch data for search: $location, ${response.statusCode}");
+      return [];
+    }
+  }
+}

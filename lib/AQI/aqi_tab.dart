@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:chilicizz/AQI/aqi_common.dart';
 import 'package:chilicizz/AQI/aqi_list_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -18,6 +19,7 @@ class AQITab extends StatefulWidget {
 
 class _AQITabState extends State<AQITab> {
   final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
+  late AQILocationSearch aqiLocationSearch;
   List<String> locations = [];
   late Future<List<String>> _locations;
   bool _displayInput = false;
@@ -30,6 +32,7 @@ class _AQITabState extends State<AQITab> {
         return prefs.getStringList(aqiLocationsPreferenceLabel) ?? <String>[];
       },
     );
+    aqiLocationSearch = HTTPAQILocationSearch(dotenv.env['aqiLocationSearchTemplate']!);
   }
 
   @override
@@ -92,7 +95,7 @@ class _AQITabState extends State<AQITab> {
       title: AQILocationAutocomplete(
         selectionCallback: _addLocation,
         autofocus: true,
-        aqiLocationSearchTemplate: dotenv.env['aqiLocationSearchTemplate']!,
+        aqiLocationSearch: aqiLocationSearch,
       ),
       trailing: Row(mainAxisSize: MainAxisSize.min, children: [
         OutlinedButton(
