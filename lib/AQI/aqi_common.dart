@@ -1,7 +1,9 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:web_socket_channel/web_socket_channel.dart';
 
 const String aqiToken = String.fromEnvironment('AQI_TOKEN');
 
@@ -255,6 +257,10 @@ List<AQILocation> parseLocationSearchResponse(dynamic json) {
 
 abstract class AQILocationSearch {
   Future<List<AQILocation>> locationQuery(String location);
+
+  void close() {
+    // do nothing
+  }
 }
 
 class FunctionalAQILocationSearch extends AQILocationSearch {
@@ -266,6 +272,76 @@ class FunctionalAQILocationSearch extends AQILocationSearch {
   @override
   Future<List<AQILocation>> locationQuery(String location) {
     return locationQueryFunction(location);
+  }
+}
+
+class SocketAQILocationSearch extends AQILocationSearch {
+  final Map<String, List<AQILocation>> cache = {};
+  final Map<String, Completer> waitingResponse = {};
+  late WebSocketChannel channel;
+
+  SocketAQILocationSearch(Uri socketURL) {
+    channel = WebSocketChannel.connect(socketURL);
+    channel.stream.listen((event) {
+      var response = jsonDecode(event);
+      if (response["type"] == "AQI_SEARCH_RESPONSE") {
+        var completer = waitingResponse.remove(response["id"]);
+        if (completer != null) {
+          completer.complete(response["payload"]);
+        }
+      }
+    }, onError: (error) {
+      debugPrint("Error on socket: $error");
+    }, onDone: () {
+      debugPrint("AQI socket closed");
+    });
+  }
+
+  @override
+  Future<List<AQILocation>> locationQuery(String location) {
+    return queryLocation(location);
+  }
+
+  Future<dynamic> sendRequestOverSocket(String searchString) {
+    Completer<dynamic> completer = Completer();
+    waitingResponse[searchString] = completer;
+    searchString = searchString.toLowerCase().replaceAll('/', '');
+    channel.sink.add(
+      jsonEncode({
+        "id": searchString,
+        "type": "AQI_SEARCH_REQUEST",
+        "payload": searchString
+      }),
+    );
+    return completer.future;
+  }
+
+  Future<List<AQILocation>> queryLocation(String searchString) async {
+    searchString = searchString.toLowerCase().replaceAll('/', '');
+    String additionalQueryString = searchString.contains(" ")
+        ? searchString.substring(
+            searchString.indexOf(" ") + 1, searchString.length)
+        : "";
+    if (cache.containsKey(searchString)) {
+      return cache[searchString]!;
+    }
+    debugPrint("Sending search request for $searchString");
+    dynamic payload = await sendRequestOverSocket(searchString);
+    List<AQILocation> list = parseLocationSearchResponse(payload);
+    if (additionalQueryString.isNotEmpty) {
+      list = list
+          .where((element) =>
+              element.name.toLowerCase().contains(additionalQueryString))
+          .toList();
+    }
+    cache[searchString] = list;
+    return list;
+  }
+
+  @override
+  void close() {
+    debugPrint("Closing aqi autocomplete search socket");
+    channel.sink.close();
   }
 }
 

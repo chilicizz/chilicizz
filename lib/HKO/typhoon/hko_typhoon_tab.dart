@@ -111,16 +111,16 @@ class TyphoonsListView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
-        physics: const AlwaysScrollableScrollPhysics(),
-        itemCount: typhoons.length,
-        itemBuilder: (BuildContext context, int index) {
-          return TyphoonTile(
-            typhoon: typhoons[index],
-            lastTick: lastTick,
-            expanded: typhoons.length == 1,
-          );
-        },
-      );
+      physics: const AlwaysScrollableScrollPhysics(),
+      itemCount: typhoons.length,
+      itemBuilder: (BuildContext context, int index) {
+        return TyphoonTile(
+          typhoon: typhoons[index],
+          lastTick: lastTick,
+          expanded: typhoons.length == 1,
+        );
+      },
+    );
   }
 }
 

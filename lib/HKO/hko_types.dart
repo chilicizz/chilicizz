@@ -375,7 +375,11 @@ List<Typhoon> parseTyphoonFeed(String xmlString) {
             element.findElements("TropicalCycloneChineseName").first.innerText,
         englishName:
             element.findElements("TropicalCycloneEnglishName").first.innerText,
-        url: element.findElements("TropicalCycloneURL").first.innerText.replaceAll("http://", "https://"),
+        url: element
+            .findElements("TropicalCycloneURL")
+            .first
+            .innerText
+            .replaceAll("http://", "https://"),
       );
     }).toList();
   } catch (e) {

@@ -22,7 +22,7 @@ class ForecastChart extends StatelessWidget {
     int i = 0;
     int interval = (Colors.primaries.length - 1) ~/ data.length;
     List<LineChartBarData> barData = data.entries.map((dataSeries) {
-      Color seriesColor = Colors.primaries[i+=interval];
+      Color seriesColor = Colors.primaries[i += interval];
       colorMap[dataSeries.key.label] = seriesColor;
       return LineChartBarData(
         spots: dataSeries.value.map((entry) {

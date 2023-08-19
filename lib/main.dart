@@ -1,4 +1,3 @@
-import 'package:chilicizz/AQI/live_aqi_tab.dart';
 import 'package:chilicizz/Chat/chat.dart';
 import 'package:chilicizz/HKO/typhoon/hko_typhoon_tab.dart';
 import 'package:chilicizz/HKO/warnings/live_hko_warnings.dart';
@@ -98,7 +97,7 @@ class _DashboardState extends State<Dashboard> {
               Tab(icon: Text("AIR QUALITY")),
               Tab(icon: Text("WARNINGS")),
               Tab(icon: Text("TYPHOON")),
-              Tab(icon: Text("🚧")),
+              // Tab(icon: Text("🚧")),
             ],
           ),
           actions: [
@@ -108,7 +107,7 @@ class _DashboardState extends State<Dashboard> {
                 context: context,
                 builder: (BuildContext context) {
                   final qrController = TextEditingController();
-                  qrController.text  = 'https://app.cyrilng.com/';
+                  qrController.text = 'https://app.cyrilng.com/';
                   final ValueNotifier<String> textValue =
                       ValueNotifier<String>(qrController.text);
                   return AlertDialog(
@@ -152,7 +151,7 @@ class _DashboardState extends State<Dashboard> {
             AQITab(),
             LiveHKOWarnings(),
             HKOTyphoonTab(),
-            AQIPreferenceLoader(),
+            // AQIPreferenceLoader(),
           ],
         ),
       ),

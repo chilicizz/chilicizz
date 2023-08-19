@@ -160,8 +160,8 @@ class _AQITabState extends State<LiveAQITab> {
   late WebSocketChannel _channel;
   final Map<String, AQIData?> locationDataMap = {};
   int _failures = 0;
-
   bool _displayInput = false;
+  late AQILocationSearch aqiLocationSearch;
 
   @override
   void initState() {
@@ -188,12 +188,16 @@ class _AQITabState extends State<LiveAQITab> {
 
   void refreshAll() {
     for (var element in widget.locations) {
-      debugPrint("Requesting location $element");
-      _channel.sink.add(
-        jsonEncode(
-            {"id": element, "type": "AQI_FEED_REQUEST", "payload": element}),
-      );
+      requestLocation(element);
     }
+  }
+
+  void requestLocation(String element) {
+    debugPrint("Requesting location $element");
+    _channel.sink.add(
+      jsonEncode(
+          {"id": element, "type": "AQI_FEED_REQUEST", "payload": element}),
+    );
   }
 
   Future<dynamic> sendRequestOverSocket(String searchString) {
@@ -266,8 +270,9 @@ class _AQITabState extends State<LiveAQITab> {
             }
         }
         // request data from socket
-        refreshAll();
-        AQILocationSearch locationSearch = FunctionalAQILocationSearch(queryLocation);
+        // refreshAll();
+        aqiLocationSearch = SocketAQILocationSearch(widget.socketURL);
+        // aqiLocationSearch = HTTPAQILocationSearch(dotenv.env['aqiLocationSearchTemplate']!);
         return RefreshIndicator(
           onRefresh: () async {
             refreshAll();
@@ -306,15 +311,37 @@ class _AQITabState extends State<LiveAQITab> {
                   handleSocketMessages(event);
                 }
                 return _displayInput
-                    ? AQILocationAutocomplete(
-                        autofocus: true,
-                        selectionCallback: (value) {
-                          setState(() {
-                            widget.addLocationCallback(value);
-                            _displayInput = false;
-                          });
-                        },
-                        aqiLocationSearch: locationSearch)
+                    ? ListTile(
+                        title: AQILocationAutocomplete(
+                            autofocus: true,
+                            selectionCallback: (value) {
+                              setState(() {
+                                widget.addLocationCallback(value);
+                                _displayInput = false;
+                              });
+                            },
+                            aqiLocationSearch: aqiLocationSearch),
+                        trailing:
+                            Row(mainAxisSize: MainAxisSize.min, children: [
+                          OutlinedButton(
+                            child: const Icon(Icons.cancel_outlined),
+                            onPressed: () {
+                              setState(() {
+                                widget.addLocationCallback("");
+                              });
+                            },
+                          ),
+                          ElevatedButton(
+                            onPressed: () {
+                              widget.addLocationCallback('here');
+                            },
+                            child: const Tooltip(
+                              message: "Current Location",
+                              child: Icon(Icons.my_location),
+                            ),
+                          ),
+                        ]),
+                      )
                     : ListView.builder(
                         scrollDirection: Axis.vertical,
                         itemCount: locationDataMap.length,
@@ -322,6 +349,9 @@ class _AQITabState extends State<LiveAQITab> {
                           var entry = locationDataMap.entries.elementAt(index);
                           var location = entry.key;
                           var aqiData = entry.value;
+                          if (aqiData == null) {
+                            requestLocation(location);
+                          }
                           return AQIStatelessListTile(
                             location: location,
                             data: aqiData,
@@ -342,7 +372,8 @@ class _AQITabState extends State<LiveAQITab> {
 
   @override
   void dispose() {
-    debugPrint("Closing websocket");
+    debugPrint("Closing AQI websocket");
+    aqiLocationSearch.close();
     _channel.sink.close();
     super.dispose();
   }
@@ -370,9 +401,7 @@ class AQIStatelessListTile extends StatelessWidget {
         title: Text(location),
         trailing: IconButton(
           icon: const Icon(Icons.delete),
-          onPressed: () {
-            deleteMe();
-          },
+          onPressed: deleteMe,
         ),
       );
     } else {

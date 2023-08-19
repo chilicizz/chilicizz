@@ -212,10 +212,7 @@ class LoadingListView extends StatelessWidget {
 class ErrorListView extends StatelessWidget {
   final String message;
 
-  const ErrorListView({
-    super.key,
-    required this.message
-  });
+  const ErrorListView({super.key, required this.message});
 
   @override
   Widget build(BuildContext context) {

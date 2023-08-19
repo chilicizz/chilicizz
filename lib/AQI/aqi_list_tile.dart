@@ -197,12 +197,15 @@ class _AQIListTileState extends State<AQIListTile> {
     super.initState();
     textController = TextEditingController();
     textController.text = widget.location;
-    aqiLocationSearch = HTTPAQILocationSearch(dotenv.env['aqiLocationSearchTemplate']!);
+    // aqiLocationSearch = HTTPAQILocationSearch(dotenv.env['aqiLocationSearchTemplate']!);
+    aqiLocationSearch =
+        SocketAQILocationSearch(Uri.parse(dotenv.env['aqiUrl']!));
     refresh();
   }
 
   @override
   void dispose() {
+    aqiLocationSearch.close();
     textController.dispose();
     super.dispose();
   }

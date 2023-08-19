@@ -14,8 +14,8 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   group('Typhoon unit tests', () {
     test('testParseTyphoonData', () async {
-      String fileContents =
-          await File('test/resources/typhoonExample.xml').readAsString(encoding: utf8);
+      String fileContents = await File('test/resources/typhoonExample.xml')
+          .readAsString(encoding: utf8);
       expect(fileContents.isNotEmpty, true,
           reason: "Test file should not be empty");
       List<Typhoon> typhoons = parseTyphoonFeed(fileContents);
@@ -31,8 +31,8 @@ void main() {
     });
 
     test('testParseTyphoonTrack', () async {
-      String fileContents =
-          await File('test/resources/typhoonTrackExample.xml').readAsString(encoding: utf8);
+      String fileContents = await File('test/resources/typhoonTrackExample.xml')
+          .readAsString(encoding: utf8);
       expect(fileContents.isNotEmpty, true,
           reason: "Test file should not be empty");
       TyphoonTrack? typhoonTrack = parseTyphoonTrack(fileContents);
@@ -47,7 +47,8 @@ void main() {
 
     test('testParseTyphoonTrack2', () async {
       String fileContents =
-          await File('test/resources/typhoonTrackExample2.xml').readAsString(encoding: utf8);
+          await File('test/resources/typhoonTrackExample2.xml')
+              .readAsString(encoding: utf8);
       expect(fileContents.isNotEmpty, true,
           reason: "Test file should not be empty");
       TyphoonTrack? typhoonTrack = parseTyphoonTrack(fileContents);

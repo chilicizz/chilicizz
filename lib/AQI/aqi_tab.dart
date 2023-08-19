@@ -32,7 +32,15 @@ class _AQITabState extends State<AQITab> {
         return prefs.getStringList(aqiLocationsPreferenceLabel) ?? <String>[];
       },
     );
-    aqiLocationSearch = HTTPAQILocationSearch(dotenv.env['aqiLocationSearchTemplate']!);
+    // aqiLocationSearch = HTTPAQILocationSearch(dotenv.env['aqiLocationSearchTemplate']!);
+    aqiLocationSearch =
+        SocketAQILocationSearch(Uri.parse(dotenv.env['aqiUrl']!));
+  }
+
+  @override
+  void dispose() {
+    aqiLocationSearch.close();
+    super.dispose();
   }
 
   @override

@@ -105,7 +105,7 @@ class _LiveHKOWarningsState extends State<LiveHKOWarnings> {
                   case ConnectionState.waiting:
                     return const LoadingListView();
                   case ConnectionState.done:
-                    debugPrint("Websocket closed: ${snapshot.error}");
+                    debugPrint("HKO socket closed: ${snapshot.error}");
                     _reconnect();
                     return ErrorListView(
                         message: "Connection closed ${_channel.closeReason}");
