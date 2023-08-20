@@ -113,15 +113,6 @@ class _AQITabState extends State<AQITab> {
             });
           },
         ),
-        ElevatedButton(
-          onPressed: () {
-            _addLocation('here');
-          },
-          child: const Tooltip(
-            message: "Current Location",
-            child: Icon(Icons.my_location),
-          ),
-        ),
       ]),
     );
   }

@@ -267,6 +267,7 @@ class SocketAQILocationSearch extends AQILocationSearch {
   final Map<String, List<AQILocation>> cache = {};
   final Map<String, Completer> waitingResponse = {};
   late WebSocketChannel channel;
+  int _failures = 0;
 
   SocketAQILocationSearch(Uri socketURL) {
     channel = WebSocketChannel.connect(socketURL);
@@ -279,12 +280,27 @@ class SocketAQILocationSearch extends AQILocationSearch {
             completer.complete(response["payload"]);
           }
         }
+        _failures = 0;
       }, onError: (error) {
         debugPrint("Error on socket: $error");
+        reconnect(socketURL);
       }, onDone: () {
         debugPrint("AQI socket closed");
+        reconnect(socketURL);
       });
     });
+  }
+
+  void reconnect(Uri socketURL) {
+    if (_failures < 10) {
+      Future.delayed(Duration(milliseconds: 100 * _failures), () {
+        debugPrint("Reconnecting websocket. Times failed: $_failures");
+        channel = WebSocketChannel.connect(socketURL);
+      });
+      _failures++;
+    } else {
+      debugPrint("Too many failures, not reconnecting");
+    }
   }
 
   @override
