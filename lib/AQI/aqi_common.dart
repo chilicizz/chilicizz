@@ -263,18 +263,6 @@ abstract class AQILocationSearch {
   }
 }
 
-class FunctionalAQILocationSearch extends AQILocationSearch {
-  final Future<List<AQILocation>> Function(String location)
-      locationQueryFunction;
-
-  FunctionalAQILocationSearch(this.locationQueryFunction);
-
-  @override
-  Future<List<AQILocation>> locationQuery(String location) {
-    return locationQueryFunction(location);
-  }
-}
-
 class SocketAQILocationSearch extends AQILocationSearch {
   final Map<String, List<AQILocation>> cache = {};
   final Map<String, Completer> waitingResponse = {};
@@ -282,18 +270,20 @@ class SocketAQILocationSearch extends AQILocationSearch {
 
   SocketAQILocationSearch(Uri socketURL) {
     channel = WebSocketChannel.connect(socketURL);
-    channel.stream.listen((event) {
-      var response = jsonDecode(event);
-      if (response["type"] == "AQI_SEARCH_RESPONSE") {
-        var completer = waitingResponse.remove(response["id"]);
-        if (completer != null) {
-          completer.complete(response["payload"]);
+    channel.ready.then((value) {
+      channel.stream.listen((event) {
+        var response = jsonDecode(event);
+        if (response["type"] == "AQI_SEARCH_RESPONSE") {
+          var completer = waitingResponse.remove(response["id"]);
+          if (completer != null) {
+            completer.complete(response["payload"]);
+          }
         }
-      }
-    }, onError: (error) {
-      debugPrint("Error on socket: $error");
-    }, onDone: () {
-      debugPrint("AQI socket closed");
+      }, onError: (error) {
+        debugPrint("Error on socket: $error");
+      }, onDone: () {
+        debugPrint("AQI socket closed");
+      });
     });
   }
 

@@ -33,12 +33,12 @@ final List<NavRoute> routes = [
       ]),
   NavRoute(
     path: '/chat',
-    label: "Chat",
+    label: "🚧 Chat",
     buildFunction: (context) => const ChatExample(title: "WebSocket Chat"),
   ),
   NavRoute(
     path: '/rss',
-    label: "RSS Reader",
+    label: "🚧 RSS Reader",
     buildFunction: (context) => const RSSReader(),
   ),
 ];
@@ -87,7 +87,7 @@ class _DashboardState extends State<Dashboard> {
   Widget build(BuildContext context) {
     return DefaultTabController(
       initialIndex: widget.initial,
-      length: 4,
+      length: 3,
       child: Scaffold(
         drawer: NavDrawer(routes: routes),
         appBar: AppBar(

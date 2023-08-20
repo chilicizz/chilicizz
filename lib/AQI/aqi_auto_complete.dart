@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'aqi_common.dart';
 
+/// Autocomplete for AQI locations
 class AQILocationAutocomplete extends StatelessWidget {
   final Function(String value) selectionCallback;
   final String? initialValue;
