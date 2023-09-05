@@ -74,6 +74,7 @@ const Map<String, String> warningStringMap = {
   "TC9": "Increasing Gale or Storm No.9",
   "TC10": "Hurricane Signal No.10",
   "WTCSGNL": "Tropical Cyclone Signals Cancelled",
+  "CANCEL": "All Signals Cancelled",
   "WFROST": "Frost Warning",
   "WHOT": "Very Hot Weather Warning",
   "WCOLD": "Cold Weather Warning",
@@ -131,6 +132,9 @@ const Map<String, CircleAvatar> warningIconMap = {
       child: Text("T10",
           style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black))),
   "WTCSGNL": CircleAvatar(
+      backgroundColor: Colors.white,
+      child: Icon(Icons.check_circle_outline, color: Colors.green)),
+  "CANCEL": CircleAvatar(
       backgroundColor: Colors.white,
       child: Icon(Icons.check_circle_outline, color: Colors.green)),
   "WFROST": CircleAvatar(
