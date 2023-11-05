@@ -8,7 +8,7 @@ import 'aqi_common.dart';
 class ForecastChart extends StatelessWidget {
   final Map<IAQIRecord, List<ForecastEntry>> data;
 
-  const ForecastChart({Key? key, required this.data}) : super(key: key);
+  const ForecastChart({super.key, required this.data});
 
   int daysBetween(DateTime from, DateTime to) {
     from = DateTime(from.year, from.month, from.day);

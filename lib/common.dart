@@ -27,9 +27,9 @@ class NavDrawer extends StatelessWidget {
   final List<NavRoute> routes;
 
   const NavDrawer({
-    Key? key,
+    super.key,
     required this.routes,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

@@ -6,7 +6,7 @@ import 'main.dart';
 class RSSReader extends StatefulWidget {
   final int initial;
 
-  const RSSReader({Key? key, this.initial = 0}) : super(key: key);
+  const RSSReader({super.key, this.initial = 0});
 
   @override
   State<RSSReader> createState() => _RSSReaderState();

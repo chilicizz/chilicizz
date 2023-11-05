@@ -12,7 +12,7 @@ import '../hko_types.dart';
 import 'hko_typhoon_tile.dart';
 
 class HKOTyphoonTab extends StatefulWidget {
-  const HKOTyphoonTab({Key? key}) : super(key: key);
+  const HKOTyphoonTab({super.key});
 
   @override
   State<HKOTyphoonTab> createState() => _HKOTyphoonTabState();

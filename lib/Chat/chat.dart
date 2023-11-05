@@ -131,8 +131,7 @@ class ChatMessage extends StatelessWidget {
   final String text;
   final String name;
 
-  const ChatMessage({Key? key, required this.text, required this.name})
-      : super(key: key);
+  const ChatMessage({super.key, required this.text, required this.name});
 
   @override
   Widget build(BuildContext context) {

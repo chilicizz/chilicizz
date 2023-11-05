@@ -17,12 +17,11 @@ class AQIListTile extends StatefulWidget {
   final String aqiFeedTemplate;
 
   const AQIListTile(
-      {Key? key,
+      {super.key,
       required this.location,
       required this.removeLocationCallback,
       required this.updateLocationCallback,
-      required this.aqiFeedTemplate})
-      : super(key: key);
+      required this.aqiFeedTemplate});
 
   @override
   State<AQIListTile> createState() => _AQIListTileState();

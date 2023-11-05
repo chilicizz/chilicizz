@@ -53,7 +53,7 @@ Future<void> main() async {
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -76,7 +76,7 @@ class MyApp extends StatelessWidget {
 class Dashboard extends StatefulWidget {
   final int initial;
 
-  const Dashboard({Key? key, this.initial = 0}) : super(key: key);
+  const Dashboard({super.key, this.initial = 0});
 
   @override
   State<Dashboard> createState() => _DashboardState();

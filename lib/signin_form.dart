@@ -30,8 +30,8 @@ class SignInHttpDemo extends StatefulWidget {
 
   const SignInHttpDemo({
     this.httpClient,
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   _SignInHttpDemoState createState() => _SignInHttpDemoState();

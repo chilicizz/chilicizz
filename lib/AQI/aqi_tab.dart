@@ -11,7 +11,7 @@ import 'aqi_auto_complete.dart';
 const String aqiLocationsPreferenceLabel = 'aqi_locations';
 
 class AQITab extends StatefulWidget {
-  const AQITab({Key? key}) : super(key: key);
+  const AQITab({super.key});
 
   @override
   State<AQITab> createState() => _AQITabState();

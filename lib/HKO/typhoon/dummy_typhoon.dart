@@ -2,15 +2,10 @@ import '../hko_types.dart';
 
 class DummyTyphoon extends Typhoon {
   DummyTyphoon(
-      {required int id,
-      required String chineseName,
-      required String englishName,
-      required String url})
-      : super(
-            id: id,
-            chineseName: chineseName,
-            englishName: englishName,
-            url: url);
+      {required super.id,
+      required super.chineseName,
+      required super.englishName,
+      required super.url});
 
   @override
   Future<TyphoonTrack?> getTyphoonTrack() {

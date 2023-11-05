@@ -144,13 +144,12 @@ class LiveAQITab extends StatefulWidget {
   final Function(String) addLocationCallback;
 
   const LiveAQITab(
-      {Key? key,
+      {super.key,
       required this.locations,
       required this.removeLocationCallback,
       required this.updateLocationCallback,
       required this.socketURL,
-      required this.addLocationCallback})
-      : super(key: key);
+      required this.addLocationCallback});
 
   @override
   State<LiveAQITab> createState() => _AQITabState();
@@ -158,8 +157,8 @@ class LiveAQITab extends StatefulWidget {
 
 class _AQITabState extends State<LiveAQITab> {
   late WebSocketChannel _channel;
-  final Map<String, AQIData?> locationDataMap = {};
   int _failures = 0;
+  final Map<String, AQIData?> locationDataMap = {};
   bool _displayInput = false;
   late AQILocationSearch aqiLocationSearch;
 

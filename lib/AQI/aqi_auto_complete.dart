@@ -10,12 +10,11 @@ class AQILocationAutocomplete extends StatelessWidget {
   final AQILocationSearch aqiLocationSearch;
 
   const AQILocationAutocomplete(
-      {Key? key,
+      {super.key,
       required this.selectionCallback,
       this.autofocus = false,
       this.initialValue,
-      required this.aqiLocationSearch})
-      : super(key: key);
+      required this.aqiLocationSearch});
 
   @override
   Widget build(BuildContext context) {

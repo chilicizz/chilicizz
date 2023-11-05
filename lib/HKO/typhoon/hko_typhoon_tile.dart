@@ -16,11 +16,10 @@ class TyphoonTile extends StatelessWidget {
   final bool expanded;
 
   const TyphoonTile(
-      {Key? key,
+      {super.key,
       required this.typhoon,
       required this.lastTick,
-      this.expanded = false})
-      : super(key: key);
+      this.expanded = false});
 
   @override
   Widget build(BuildContext context) {
@@ -134,7 +133,7 @@ class TyphoonTile extends StatelessWidget {
 class HKOTyphoonTrackWidget extends StatelessWidget {
   final TyphoonTrack track;
 
-  const HKOTyphoonTrackWidget(this.track, {Key? key}) : super(key: key);
+  const HKOTyphoonTrackWidget(this.track, {super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -240,7 +239,7 @@ class HKOTyphoonTrackWidget extends StatelessWidget {
       point: LatLng(
           (hkLatLng.latitude + closestPosition.getLatLng().latitude) / 2,
           (hkLatLng.longitude + closestPosition.getLatLng().longitude) / 2),
-      builder: (ctx) => FittedBox(
+      child: FittedBox(
         child: Text(
           "$minDistance km",
           style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
@@ -251,19 +250,15 @@ class HKOTyphoonTrackWidget extends StatelessWidget {
       height: 500,
       child: FlutterMap(
         options: MapOptions(
-          center: mid,
-          zoom: 5.0,
+          initialCenter: mid,
+          initialZoom: 5.0,
           minZoom: 5.0,
           maxZoom: 10.0,
-          interactiveFlags: InteractiveFlag.drag |
-              InteractiveFlag.pinchZoom |
-              InteractiveFlag.doubleTapZoom,
+          interactionOptions: const InteractionOptions(
+              flags: InteractiveFlag.drag |
+                  InteractiveFlag.pinchZoom |
+                  InteractiveFlag.doubleTapZoom),
         ),
-        nonRotatedChildren: const [
-          SimpleAttributionWidget(
-            source: Text("Open Street Map"),
-          )
-        ],
         children: [
           TileLayer(
               //https://wiki.openstreetmap.org/wiki/Tiles
@@ -276,31 +271,33 @@ class HKOTyphoonTrackWidget extends StatelessWidget {
           ),
           MarkerLayer(
             markers: [
-              Marker(
+              const Marker(
                 width: 30.0,
                 height: 30.0,
                 point: hkLatLng,
-                builder: (ctx) =>
-                    const Icon(Icons.location_pin, color: Colors.red),
+                child: Icon(Icons.location_pin, color: Colors.red),
               ),
               Marker(
                 width: 50.0,
                 height: 50.0,
                 point: track.current.getLatLng(),
-                builder: (ctx) =>
+                child:
                     Icon(Icons.storm, color: track.current.typhoonClass.color),
               ),
               // Draw dates for forecast with an offset
               for (var position in dates)
                 Marker(
                   point: position.getLatLng(longitudeOffset: 0.2),
-                  builder: (ctx) => Text(
+                  child: Text(
                     mapLabelFormat(position.time),
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ),
               closestDistance,
             ],
+          ),
+          const SimpleAttributionWidget(
+            source: Text("Open Street Map"),
           )
         ],
       ),

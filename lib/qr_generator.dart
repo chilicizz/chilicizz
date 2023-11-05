@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class QRGenerator extends StatefulWidget {
   final String initialValue;
 
-  const QRGenerator({Key? key, this.initialValue = ""}) : super(key: key);
+  const QRGenerator({super.key, this.initialValue = ""});
 
   @override
   State<QRGenerator> createState() => _QRGeneratorState();

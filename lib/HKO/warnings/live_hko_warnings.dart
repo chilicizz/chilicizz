@@ -9,7 +9,7 @@ import '../../common.dart';
 import '../hko_types.dart';
 
 class LiveHKOWarnings extends StatefulWidget {
-  const LiveHKOWarnings({Key? key}) : super(key: key);
+  const LiveHKOWarnings({super.key});
 
   @override
   State<LiveHKOWarnings> createState() => _LiveHKOWarningsState();

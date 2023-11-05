@@ -11,7 +11,7 @@ import '../hko_types.dart';
 
 @Deprecated("Use LiveHKOWarnings instead")
 class HKOWarnings extends StatefulWidget {
-  const HKOWarnings({Key? key}) : super(key: key);
+  const HKOWarnings({super.key});
 
   @override
   State<HKOWarnings> createState() => _HKOWarningsState();
