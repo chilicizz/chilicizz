@@ -230,7 +230,7 @@ class HKOTyphoonTrackWidget extends StatelessWidget {
       points: [hkLatLng, closestPosition!.getLatLng()],
       color: Colors.deepPurple,
       strokeWidth: 1,
-      isDotted: false,
+      pattern: const StrokePattern.dotted(),
     ));
     // marker
     final Marker closestDistance = Marker(
@@ -266,7 +266,6 @@ class HKOTyphoonTrackWidget extends StatelessWidget {
               subdomains: dotenv.env['mapTileSubDomains']!.split(","),
               userAgentPackageName: mapUserAgent),
           PolylineLayer(
-            polylineCulling: true,
             polylines: trackLines,
           ),
           MarkerLayer(
