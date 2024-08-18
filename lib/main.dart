@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 import 'AQI/aqi_tab.dart';
+import 'AQI/live_aqi_tab.dart';
 import 'common.dart';
 
 const String appEnv = String.fromEnvironment('ENV', defaultValue: "pdn");
@@ -148,7 +149,7 @@ class _DashboardState extends State<Dashboard> {
         ),
         body: const TabBarView(
           children: [
-            AQITab(),
+            AQIPreferenceLoader(),
             LiveHKOWarnings(),
             HKOTyphoonTab(),
             // AQIPreferenceLoader(),

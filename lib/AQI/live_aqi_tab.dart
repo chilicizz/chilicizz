@@ -76,13 +76,14 @@ class _AQIPreferenceLoaderState extends State<AQIPreferenceLoader> {
     }
     setState(() {
       locationsLoaded.add(location);
-      prefs.setStringList(aqiLocationsPreferenceLabel, locationsLoaded).then(
-            (bool success) => {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Added new tile for $location')),
-              )
-            },
-          );
+      _loadingLocations = prefs
+          .setStringList(aqiLocationsPreferenceLabel, locationsLoaded)
+          .then((bool success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Added new tile for $location')),
+        );
+        return locationsLoaded;
+      });
     });
   }
 
@@ -312,14 +313,15 @@ class _AQITabState extends State<LiveAQITab> {
                 return _displayInput
                     ? ListTile(
                         title: AQILocationAutocomplete(
-                            autofocus: true,
-                            selectionCallback: (value) {
-                              setState(() {
-                                widget.addLocationCallback(value);
-                                _displayInput = false;
-                              });
-                            },
-                            aqiLocationSearch: aqiLocationSearch),
+                          autofocus: true,
+                          selectionCallback: (value) {
+                            setState(() {
+                              widget.addLocationCallback(value);
+                              _displayInput = false;
+                            });
+                          },
+                          aqiLocationSearch: aqiLocationSearch,
+                        ),
                         trailing:
                             Row(mainAxisSize: MainAxisSize.min, children: [
                           OutlinedButton(
