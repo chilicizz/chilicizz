@@ -73,7 +73,7 @@ class NavDrawer extends StatelessWidget {
                     },
                   )
                 : ExpansionTile(
-                    initiallyExpanded: !isSmallDevice(),
+                    initiallyExpanded: !isSmallScreen(context),
                     title: GestureDetector(
                       onTap: () {
                         Navigator.pushNamedAndRemoveUntil(
@@ -184,11 +184,6 @@ bool isSmallScreen(BuildContext context) {
   // a common breakpoint for a typical 7-inch tablet.
   final bool useMobileLayout = shortestSide < 600;
   return useMobileLayout;
-}
-
-bool isSmallDevice() {
-  final data = MediaQueryData.fromView(WidgetsBinding.instance.window);
-  return data.size.shortestSide < 600;
 }
 
 class LoadingListView extends StatelessWidget {

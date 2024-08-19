@@ -86,7 +86,7 @@ class TyphoonTile extends StatelessWidget {
                             label: Tooltip(
                               message:
                                   "Maximum winds ${typhoonClass.minWind}${typhoonClass.maxWind != double.maxFinite ? "-${typhoonClass.maxWind}" : "+"} km/h",
-                              child: !isSmallDevice()
+                              child: !isSmallScreen(context)
                                   ? Text(
                                       "${typhoonClass.name} ${typhoonClass.minWind}${typhoonClass.maxWind != double.maxFinite ? "-${typhoonClass.maxWind}" : "+"} km/h")
                                   : Text(typhoonClass.name),
@@ -289,7 +289,7 @@ class HKOTyphoonTrackWidget extends StatelessWidget {
                   point: position.getLatLng(longitudeOffset: 0.2),
                   child: Text(
                     mapLabelFormat(position.time),
-                    style: const TextStyle(fontWeight: FontWeight.bold),
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 10),
                   ),
                 ),
               closestDistance,

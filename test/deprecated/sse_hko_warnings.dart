@@ -3,9 +3,9 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:sse/client/sse_client.dart';
 
-import '../../common.dart';
-import '../hko_types.dart';
-import 'live_hko_warnings.dart';
+import 'package:chilicizz/common.dart';
+import 'package:chilicizz/HKO/hko_types.dart';
+import 'package:chilicizz/HKO/warnings/live_hko_warnings.dart';
 
 /// SSE Does not currently seem to be working for Web
 /// Connects OK but no data is returned

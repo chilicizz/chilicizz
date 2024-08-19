@@ -5,11 +5,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 
-import '../common.dart';
-import 'aqi_auto_complete.dart';
-import 'aqi_common.dart';
-import 'forecast_chart.dart';
+import '../../lib/common.dart';
+import '../../lib/AQI/aqi_auto_complete.dart';
+import '../../lib/AQI/aqi_common.dart';
+import '../../lib/AQI/forecast_chart.dart';
 
+@Deprecated("Use Stateless")
 class AQIListTile extends StatefulWidget {
   final String location;
   final Function(String) removeLocationCallback;
@@ -130,7 +131,7 @@ class _AQIListTileState extends State<AQIListTile> {
                     alignment: Alignment.centerLeft,
                     fit: BoxFit.scaleDown,
                     child: Text(
-                        isSmallDevice()
+                        isSmallScreen(context)
                             ? data!.getShortCityName()
                             : data!.cityName,
                         style: Theme.of(context).textTheme.headlineSmall),
@@ -237,35 +238,5 @@ class _AQIListTileState extends State<AQIListTile> {
       debugPrint("Failed to fetch data $location $e");
     }
     return null;
-  }
-}
-
-class AQIChip extends StatelessWidget {
-  const AQIChip({
-    super.key,
-    required this.record,
-    required this.value,
-  });
-
-  final IAQIRecord record;
-  final double value;
-
-  @override
-  Widget build(BuildContext context) {
-    return Tooltip(
-      message: record.label,
-      child: Chip(
-        avatar: CircleAvatar(
-          backgroundColor: record.getColour(value),
-          foregroundColor: Colors.white.withAlpha(200),
-          child: Padding(
-            padding: const EdgeInsets.all(1.0),
-            child: FittedBox(child: record.getIcon()),
-          ),
-        ),
-        label: Text(
-            "${value.toStringAsFixed(value > 50 ? 0 : 1)} ${record.unit ?? ''}"),
-      ),
-    );
   }
 }

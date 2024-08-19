@@ -187,7 +187,7 @@ class HKOWarningsList extends StatelessWidget {
           leading: icon,
           title: Text(warning.getDescription()),
           subtitle: buildIssued(warning.updateTime),
-          initiallyExpanded: !isSmallDevice() || warnings.length == 1,
+          initiallyExpanded: !isSmallScreen(context) || warnings.length == 1,
           children: [
             for (var s in warning.contents)
               ListTile(

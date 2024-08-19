@@ -9,7 +9,6 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 import '../common.dart';
 import 'aqi_auto_complete.dart';
 import 'aqi_common.dart';
-import 'aqi_list_tile.dart';
 import 'forecast_chart.dart';
 
 const String aqiLocationsPreferenceLabel = 'aqi_locations';
@@ -170,6 +169,9 @@ class _AQITabState extends State<LiveAQITab> {
     for (var element in widget.locations) {
       locationDataMap[element] = null;
     }
+    if (widget.locations.isEmpty) {
+      _displayInput = true;
+    }
   }
 
   void _reconnect() {
@@ -272,7 +274,6 @@ class _AQITabState extends State<LiveAQITab> {
         // request data from socket
         // refreshAll();
         aqiLocationSearch = SocketAQILocationSearch(widget.socketURL);
-        // aqiLocationSearch = HTTPAQILocationSearch(dotenv.env['aqiLocationSearchTemplate']!);
         return RefreshIndicator(
           onRefresh: () async {
             refreshAll();
@@ -441,7 +442,7 @@ class AQIStatelessListTile extends StatelessWidget {
               alignment: Alignment.centerLeft,
               fit: BoxFit.scaleDown,
               child: Text(
-                  isSmallDevice() ? data!.getShortCityName() : data!.cityName,
+                  isSmallScreen(context) ? data!.getShortCityName() : data!.cityName,
                   style: Theme.of(context).textTheme.headlineSmall),
             ),
             subtitle: buildLastUpdatedText(data?.lastUpdatedTime),

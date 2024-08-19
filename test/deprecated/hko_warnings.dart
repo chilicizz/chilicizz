@@ -6,8 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 
-import '../../common.dart';
-import '../hko_types.dart';
+import 'package:chilicizz/common.dart';
+import 'package:chilicizz/HKO/hko_types.dart';
 
 @Deprecated("Use LiveHKOWarnings instead")
 class HKOWarnings extends StatefulWidget {

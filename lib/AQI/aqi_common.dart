@@ -395,3 +395,33 @@ class HTTPAQILocationSearch extends AQILocationSearch {
     }
   }
 }
+
+class AQIChip extends StatelessWidget {
+  const AQIChip({
+    super.key,
+    required this.record,
+    required this.value,
+  });
+
+  final IAQIRecord record;
+  final double value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: record.label,
+      child: Chip(
+        avatar: CircleAvatar(
+          backgroundColor: record.getColour(value),
+          foregroundColor: Colors.white.withAlpha(200),
+          child: Padding(
+            padding: const EdgeInsets.all(1.0),
+            child: FittedBox(child: record.getIcon()),
+          ),
+        ),
+        label: Text(
+            "${value.toStringAsFixed(value > 50 ? 0 : 1)} ${record.unit ?? ''}"),
+      ),
+    );
+  }
+}

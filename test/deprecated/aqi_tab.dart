@@ -1,15 +1,16 @@
 import 'dart:async';
 
 import 'package:chilicizz/AQI/aqi_common.dart';
-import 'package:chilicizz/AQI/aqi_list_tile.dart';
+import 'aqi_list_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'aqi_auto_complete.dart';
+import 'package:chilicizz/AQI/aqi_auto_complete.dart';
 
 const String aqiLocationsPreferenceLabel = 'aqi_locations';
 
+@Deprecated("Use LIVE AQI INSTEAD")
 class AQITab extends StatefulWidget {
   const AQITab({super.key});
 

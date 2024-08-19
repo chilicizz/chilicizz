@@ -7,7 +7,6 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
-import 'AQI/aqi_tab.dart';
 import 'AQI/live_aqi_tab.dart';
 import 'common.dart';
 
@@ -152,7 +151,6 @@ class _DashboardState extends State<Dashboard> {
             AQIPreferenceLoader(),
             LiveHKOWarnings(),
             HKOTyphoonTab(),
-            // AQIPreferenceLoader(),
           ],
         ),
       ),
