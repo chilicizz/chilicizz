@@ -244,7 +244,7 @@ class _AQITabState extends State<LiveAQITab> {
     var payload = message["payload"];
     var location = message["id"];
     if (type == "AQI_FEED_RESPONSE") {
-      debugPrint("Received message for location: $location");
+      debugPrint("Received AQIData for location: $location");
       AQIData data = AQIData.fromJSON(jsonDecode(payload)["data"]);
       locationDataMap[location] = data;
     } else if (type == "AQI_SEARCH_RESPONSE") {
@@ -330,12 +330,14 @@ class _AQITabState extends State<LiveAQITab> {
                             onPressed: () {
                               setState(() {
                                 widget.addLocationCallback("");
+                                _displayInput = false;
                               });
                             },
                           ),
                           ElevatedButton(
                             onPressed: () {
                               widget.addLocationCallback('here');
+                              _displayInput = false;
                             },
                             child: const Tooltip(
                               message: "Current Location",
