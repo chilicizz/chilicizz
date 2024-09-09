@@ -5,10 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 
-import '../../lib/common.dart';
-import '../../lib/AQI/aqi_auto_complete.dart';
-import '../../lib/AQI/aqi_common.dart';
-import '../../lib/AQI/forecast_chart.dart';
+import 'package:chilicizz/common.dart';
+import 'package:chilicizz/AQI/aqi_auto_complete.dart';
+import 'package:chilicizz/AQI/aqi_common.dart';
+import 'package:chilicizz/AQI/forecast_chart.dart';
 
 @Deprecated("Use Stateless")
 class AQIListTile extends StatefulWidget {
