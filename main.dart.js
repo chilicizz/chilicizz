@@ -42179,7 +42179,7 @@ p=r.i(q,"type")
 o=r.i(q,"payload")
 n=r.i(q,"id")
 r=J.i7(p)
-if(r.j(p,"AQI_FEED_RESPONSE")){A.bA().$1("Received message for location: "+A.l(n))
+if(r.j(p,"AQI_FEED_RESPONSE")){A.bA().$1("Received AQIData for location: "+A.l(n))
 s.f.n(0,n,A.aSd(J.cm(B.aX.qw(o,m),"data")))}else if(r.j(p,"AQI_SEARCH_RESPONSE")){A.bA().$1("Received search response for: "+A.l(n))
 if($.aGh.av(n)){$.aGh.i(0,n).dM(o)
 $.aGh.D(0,n)}}else A.bA().$1("Received unknown message: "+A.l(q))}if(s.r){r=s.w
@@ -42201,10 +42201,14 @@ $0(){var s=this.a
 s.a6(new A.aqe(s))},
 $S:0}
 A.aqe.prototype={
-$0(){this.a.a.H2("")},
+$0(){var s=this.a
+s.a.H2("")
+s.r=!1},
 $S:0}
 A.aqi.prototype={
-$0(){this.a.a.H2("here")},
+$0(){var s=this.a
+s.a.H2("here")
+s.r=!1},
 $S:0}
 A.aqj.prototype={
 $2(a,b){var s=this.a,r=s.f.geq().cl(0,b),q=r.a,p=r.b
