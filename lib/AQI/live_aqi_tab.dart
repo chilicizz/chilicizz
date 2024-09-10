@@ -45,7 +45,7 @@ class _AQIPreferenceLoaderState extends State<AQIPreferenceLoader> {
       builder: (context, snapshot) {
         switch (snapshot.connectionState) {
           case ConnectionState.waiting:
-            debugPrint("Loading locations");
+            debugPrint("Loading AQI locations...");
             return const LoadingListView();
           default:
             locationsLoaded =
@@ -69,7 +69,7 @@ class _AQIPreferenceLoaderState extends State<AQIPreferenceLoader> {
     }
     if (locationsLoaded.contains(location)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Location $location already exists')),
+        SnackBar(content: Text('AQI Location $location already exists')),
       );
       return;
     }
@@ -79,7 +79,7 @@ class _AQIPreferenceLoaderState extends State<AQIPreferenceLoader> {
           .setStringList(aqiLocationsPreferenceLabel, locationsLoaded)
           .then((bool success) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Added new tile for $location')),
+          SnackBar(content: Text('Added new AQI tile for $location')),
         );
         return locationsLoaded;
       });
@@ -97,7 +97,7 @@ class _AQIPreferenceLoaderState extends State<AQIPreferenceLoader> {
         prefs.setStringList(aqiLocationsPreferenceLabel, locationsLoaded).then(
               (bool success) => {
                 ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Removed tile for $location')))
+                    SnackBar(content: Text('Removed AQI tile for $location')))
               },
             );
         _loadingLocations = _prefs.then(
@@ -122,7 +122,8 @@ class _AQIPreferenceLoaderState extends State<AQIPreferenceLoader> {
         prefs.setStringList(aqiLocationsPreferenceLabel, locationsLoaded).then(
               (bool success) => {
                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                    content: Text('Updated tile $original to $newLocation')))
+                    content:
+                        Text('Updated AQI tile $original to $newLocation')))
               },
             );
         _loadingLocations = _prefs.then(
@@ -195,7 +196,7 @@ class _AQITabState extends State<LiveAQITab> {
   }
 
   void requestLocation(String element) {
-    debugPrint("Requesting location $element");
+    debugPrint("Requesting AQI location $element");
     _channel.sink.add(
       jsonEncode(
           {"id": element, "type": "AQI_FEED_REQUEST", "payload": element}),
@@ -272,7 +273,7 @@ class _AQITabState extends State<LiveAQITab> {
             }
         }
         // request data from socket
-        // refreshAll();
+        refreshAll();
         aqiLocationSearch = SocketAQILocationSearch(widget.socketURL);
         return RefreshIndicator(
           onRefresh: () async {
@@ -444,7 +445,9 @@ class AQIStatelessListTile extends StatelessWidget {
               alignment: Alignment.centerLeft,
               fit: BoxFit.scaleDown,
               child: Text(
-                  isSmallScreen(context) ? data!.getShortCityName() : data!.cityName,
+                  isSmallScreen(context)
+                      ? data!.getShortCityName()
+                      : data!.cityName,
                   style: Theme.of(context).textTheme.headlineSmall),
             ),
             subtitle: buildLastUpdatedText(data?.lastUpdatedTime),
