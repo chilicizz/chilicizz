@@ -53,8 +53,14 @@ class _LiveHKOWarningsState extends State<LiveHKOWarnings> {
   List<WarningInformation> dummyWarnings() {
     List<WarningInformation> warnings = [];
     warnings.addAll(warningStringMap.keys
-        .map((key) => WarningInformation(
-            key, null, ["This is an example warning"], DateTime.now()))
+        .map(
+          (key) => WarningInformation(
+            key,
+            null,
+            ["This is an example warning"],
+            DateTime.now(),
+          ),
+        )
         .toList());
     return warnings;
   }
@@ -108,11 +114,13 @@ class _LiveHKOWarningsState extends State<LiveHKOWarnings> {
                     debugPrint("HKO socket closed: ${snapshot.error}");
                     _reconnect();
                     return ErrorListView(
-                        message: "Connection closed ${_channel.closeReason}");
+                      message: "Connection closed ${_channel.closeReason}",
+                    );
                   case ConnectionState.none:
                     _reconnect();
                     return ErrorListView(
-                        message: "No connection ${_channel.closeReason}");
+                      message: "No connection ${_channel.closeReason}",
+                    );
                   default:
                     if (snapshot.hasError) {
                       debugPrint("Error: ${snapshot.error}");

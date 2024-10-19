@@ -34,8 +34,10 @@ class TyphoonTile extends StatelessWidget {
               title: FittedBox(
                 alignment: Alignment.centerLeft,
                 fit: BoxFit.scaleDown,
-                child: Text("${typhoon.englishName} (${typhoon.chineseName})",
-                    style: Theme.of(context).textTheme.headlineMedium),
+                child: Text(
+                  "${typhoon.englishName} (${typhoon.chineseName})",
+                  style: Theme.of(context).textTheme.headlineMedium,
+                ),
               ),
               subtitle: buildLastTick(lastTick),
             );
@@ -55,15 +57,18 @@ class TyphoonTile extends StatelessWidget {
                 return ExpansionTile(
                   leading: CircleAvatar(
                     backgroundColor: Theme.of(context).focusColor,
-                    child: Icon(Icons.storm,
-                        color: track.current.typhoonClass.color),
+                    child: Icon(
+                      Icons.storm,
+                      color: track.current.typhoonClass.color,
+                    ),
                   ),
                   title: FittedBox(
                     alignment: Alignment.centerLeft,
                     fit: BoxFit.scaleDown,
                     child: Text(
-                        "${track.current.intensity} ${typhoon.englishName} (${typhoon.chineseName})",
-                        style: Theme.of(context).textTheme.headlineLarge),
+                      "${track.current.intensity} ${typhoon.englishName} (${typhoon.chineseName})",
+                      style: Theme.of(context).textTheme.headlineLarge,
+                    ),
                   ),
                   subtitle: Text(
                       "${shortDateFormat(track.bulletin.time)} $currentDistance $maxWindSpeed"),
@@ -75,8 +80,10 @@ class TyphoonTile extends StatelessWidget {
                     ),
                     ListTile(
                       subtitle: Center(
-                          child: Text(
-                              "${snapshot.data!.bulletin.provider} - ${snapshot.data!.bulletin.name}")),
+                        child: Text(
+                          "${snapshot.data!.bulletin.provider} - ${snapshot.data!.bulletin.name}",
+                        ),
+                      ),
                       title: Wrap(
                         alignment: WrapAlignment.spaceEvenly,
                         runSpacing: 1,
@@ -88,7 +95,8 @@ class TyphoonTile extends StatelessWidget {
                                   "Maximum winds ${typhoonClass.minWind}${typhoonClass.maxWind != double.maxFinite ? "-${typhoonClass.maxWind}" : "+"} km/h",
                               child: !isSmallScreen(context)
                                   ? Text(
-                                      "${typhoonClass.name} ${typhoonClass.minWind}${typhoonClass.maxWind != double.maxFinite ? "-${typhoonClass.maxWind}" : "+"} km/h")
+                                      "${typhoonClass.name} ${typhoonClass.minWind}${typhoonClass.maxWind != double.maxFinite ? "-${typhoonClass.maxWind}" : "+"} km/h",
+                                    )
                                   : Text(typhoonClass.name),
                             ),
                             avatar: CircleAvatar(
@@ -117,8 +125,9 @@ class TyphoonTile extends StatelessWidget {
                     alignment: Alignment.centerLeft,
                     fit: BoxFit.scaleDown,
                     child: Text(
-                        "${typhoon.englishName} (${typhoon.chineseName})",
-                        style: Theme.of(context).textTheme.headlineMedium),
+                      "${typhoon.englishName} (${typhoon.chineseName})",
+                      style: Theme.of(context).textTheme.headlineMedium,
+                    ),
                   ),
                   subtitle: buildLastTick(lastTick),
                 );
@@ -237,8 +246,9 @@ class HKOTyphoonTrackWidget extends StatelessWidget {
       height: 30,
       width: 60,
       point: LatLng(
-          (hkLatLng.latitude + closestPosition.getLatLng().latitude) / 2,
-          (hkLatLng.longitude + closestPosition.getLatLng().longitude) / 2),
+        (hkLatLng.latitude + closestPosition.getLatLng().latitude) / 2,
+        (hkLatLng.longitude + closestPosition.getLatLng().longitude) / 2,
+      ),
       child: FittedBox(
         child: Text(
           "$minDistance km",
@@ -255,16 +265,18 @@ class HKOTyphoonTrackWidget extends StatelessWidget {
           minZoom: 5.0,
           maxZoom: 10.0,
           interactionOptions: const InteractionOptions(
-              flags: InteractiveFlag.drag |
-                  InteractiveFlag.pinchZoom |
-                  InteractiveFlag.doubleTapZoom),
+            flags: InteractiveFlag.drag |
+                InteractiveFlag.pinchZoom |
+                InteractiveFlag.doubleTapZoom,
+          ),
         ),
         children: [
           TileLayer(
-              //https://wiki.openstreetmap.org/wiki/Tiles
-              urlTemplate: dotenv.env['mapTileUrl'],
-              subdomains: dotenv.env['mapTileSubDomains']!.split(","),
-              userAgentPackageName: mapUserAgent),
+            //https://wiki.openstreetmap.org/wiki/Tiles
+            urlTemplate: dotenv.env['mapTileUrl'],
+            subdomains: dotenv.env['mapTileSubDomains']!.split(","),
+            userAgentPackageName: mapUserAgent,
+          ),
           PolylineLayer(
             polylines: trackLines,
           ),
@@ -289,7 +301,10 @@ class HKOTyphoonTrackWidget extends StatelessWidget {
                   point: position.getLatLng(longitudeOffset: 0.2),
                   child: Text(
                     mapLabelFormat(position.time),
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 10),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 10,
+                    ),
                   ),
                 ),
               closestDistance,

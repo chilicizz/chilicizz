@@ -297,11 +297,13 @@ class _AQITabState extends State<LiveAQITab> {
                   case ConnectionState.done:
                     _reconnect();
                     return ErrorListView(
-                        message: "Connection closed ${_channel.closeReason}");
+                      message: "Connection closed ${_channel.closeReason}",
+                    );
                   case ConnectionState.none:
                     _reconnect();
                     return ErrorListView(
-                        message: "No connection ${_channel.closeReason}");
+                      message: "No connection ${_channel.closeReason}",
+                    );
                   default:
                     if (snapshot.hasError) {
                       debugPrint("Error: ${snapshot.error}");
@@ -335,16 +337,16 @@ class _AQITabState extends State<LiveAQITab> {
                               });
                             },
                           ),
-                          ElevatedButton(
-                            onPressed: () {
-                              widget.addLocationCallback('here');
-                              _displayInput = false;
-                            },
-                            child: const Tooltip(
-                              message: "Current Location",
-                              child: Icon(Icons.my_location),
-                            ),
-                          ),
+                          // ElevatedButton(
+                          //   onPressed: () {
+                          //     widget.addLocationCallback('here');
+                          //     _displayInput = false;
+                          //   },
+                          //   child: const Tooltip(
+                          //     message: "Current Location",
+                          //     child: Icon(Icons.my_location),
+                          //   ),
+                          // ),
                         ]),
                       )
                     : ListView.builder(

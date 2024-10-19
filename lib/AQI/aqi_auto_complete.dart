@@ -9,12 +9,13 @@ class AQILocationAutocomplete extends StatelessWidget {
   final bool autofocus;
   final AQILocationSearch aqiLocationSearch;
 
-  const AQILocationAutocomplete(
-      {super.key,
-      required this.selectionCallback,
-      this.autofocus = false,
-      this.initialValue,
-      required this.aqiLocationSearch});
+  const AQILocationAutocomplete({
+    super.key,
+    required this.selectionCallback,
+    this.autofocus = false,
+    this.initialValue,
+    required this.aqiLocationSearch,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -27,14 +28,17 @@ class AQILocationAutocomplete extends StatelessWidget {
           textEditingController.text = initialValue!;
         }
         textEditingController.selection = TextSelection(
-            baseOffset: 0, extentOffset: textEditingController.text.length);
+          baseOffset: 0,
+          extentOffset: textEditingController.text.length,
+        );
         return TextField(
           autofocus: autofocus,
           focusNode: focusNode,
           controller: textEditingController,
           decoration: const InputDecoration(
-              border: OutlineInputBorder(),
-              hintText: "enter the name of a city to add a new tile"),
+            border: OutlineInputBorder(),
+            hintText: "enter the name of a city to add a new tile",
+          ),
           onSubmitted: (value) {
             onFieldSubmitted();
           },

@@ -416,11 +416,14 @@ class AQIChip extends StatelessWidget {
           foregroundColor: Colors.white.withAlpha(200),
           child: Padding(
             padding: const EdgeInsets.all(1.0),
-            child: FittedBox(child: record.getIcon()),
+            child: FittedBox(
+              child: record.getIcon(),
+            ),
           ),
         ),
         label: Text(
-            "${value.toStringAsFixed(value > 50 ? 0 : 1)} ${record.unit ?? ''}"),
+          "${value.toStringAsFixed(value > 50 ? 0 : 1)} ${record.unit ?? ''}",
+        ),
       ),
     );
   }

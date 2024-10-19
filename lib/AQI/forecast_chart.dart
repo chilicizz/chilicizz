@@ -77,9 +77,12 @@ class ForecastChart extends StatelessWidget {
               ),
             ),
             borderData: FlBorderData(
-                show: true,
-                border: const Border(
-                    left: BorderSide(width: 1), bottom: BorderSide(width: 1))),
+              show: true,
+              border: const Border(
+                left: BorderSide(width: 1),
+                bottom: BorderSide(width: 1),
+              ),
+            ),
             lineBarsData: barData,
           ),
         ),
@@ -94,8 +97,9 @@ class ForecastChart extends StatelessWidget {
       children: [
         for (var e in data.entries)
           Chip(
-              avatar: CircleAvatar(backgroundColor: colorMap[e.key.label]),
-              label: Text(e.key.label))
+            avatar: CircleAvatar(backgroundColor: colorMap[e.key.label]),
+            label: Text(e.key.label),
+          )
       ],
     );
   }
