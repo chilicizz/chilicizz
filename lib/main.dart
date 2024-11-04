@@ -1,6 +1,7 @@
 import 'package:chilicizz/Chat/chat.dart';
 import 'package:chilicizz/HKO/typhoon/hko_typhoon_tab.dart';
 import 'package:chilicizz/HKO/warnings/live_hko_warnings.dart';
+import 'package:chilicizz/config/config_controller.dart';
 import 'package:chilicizz/rss_reader.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -46,10 +47,7 @@ final List<NavRoute> routes = [
 Future<void> main() async {
   await dotenv.load(fileName: "assets/config/$appEnv.properties");
   debugPrint("Starting environment: $appEnv");
-  runApp(ChangeNotifierProvider(
-    child: const MyApp(),
-    create: (BuildContext context) {},
-  ));
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -61,14 +59,22 @@ class MyApp extends StatelessWidget {
     for (var route in routes) {
       appRoutes.addAll(route.getRoutes());
     }
-    return MaterialApp(
-      title: 'app.cyrilng.com',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSwatch(
-            primarySwatch: Colors.deepPurple, brightness: Brightness.light),
-      ),
-      initialRoute: '/dashboard',
-      routes: appRoutes,
+    return MultiProvider(
+      providers: [
+        Provider(create: (context) => ConfigController()),
+      ],
+      child: Builder(builder: (context) {
+        return MaterialApp(
+          title: 'app.cyrilng.com',
+          theme: ThemeData(
+              colorScheme: ColorScheme.fromSwatch(
+                  primarySwatch: Colors.deepPurple,
+                  brightness: Brightness.light),
+              useMaterial3: true),
+          initialRoute: '/dashboard',
+          routes: appRoutes,
+        );
+      }),
     );
   }
 }
@@ -149,39 +155,12 @@ class _DashboardState extends State<Dashboard> {
         body: const TabBarView(
           children: [
             AQIPreferenceLoader(),
+            //AQITabLoader(),
             LiveHKOWarnings(),
             HKOTyphoonTab(),
           ],
         ),
       ),
     );
-  }
-}
-
-class User {
-  String username;
-  String firstName;
-  String lastName;
-
-  User(this.username, this.firstName, this.lastName);
-}
-
-class Auth extends ChangeNotifier {
-  // https://docs.flutter.dev/development/data-and-backend/state-mgmt/simple
-  // Consumer<Auth>()
-  User? _loggedInUser;
-
-  bool isLoggedIn() {
-    return _loggedInUser != null;
-  }
-
-  void logIn(User user) {
-    _loggedInUser = user;
-    notifyListeners();
-  }
-
-  void logOut() {
-    _loggedInUser = null;
-    notifyListeners();
   }
 }

@@ -16,7 +16,11 @@ class WarningInformation {
   final DateTime updateTime;
 
   WarningInformation(
-      this.warningStatementCode, this.subType, this.contents, this.updateTime);
+    this.warningStatementCode,
+    this.subType,
+    this.contents,
+    this.updateTime,
+  );
 
   factory WarningInformation.fromJSON(dynamic entry) {
     String warningStatementCode = entry?["warningStatementCode"];
@@ -24,7 +28,11 @@ class WarningInformation {
     var updateTime = DateTime.parse("${entry?["updateTime"]}");
     List<String> contents = [for (var i in entry?["contents"]) '$i'];
     return WarningInformation(
-        warningStatementCode, subType, contents, updateTime);
+      warningStatementCode,
+      subType,
+      contents,
+      updateTime,
+    );
   }
 
   String getDescription() {
@@ -37,7 +45,9 @@ class WarningInformation {
     return warningIconMap[subType ?? warningStatementCode] ??
         CircleAvatar(
           child: FittedBox(
-            child: Text(subType ?? warningStatementCode),
+            child: Text(
+              subType ?? warningStatementCode,
+            ),
           ),
         );
   }
@@ -50,7 +60,9 @@ List<WarningInformation> extractWarnings(dynamic json) {
   }
   for (dynamic entry in json?["details"]) {
     try {
-      result.add(WarningInformation.fromJSON(entry));
+      result.add(
+        WarningInformation.fromJSON(entry),
+      );
     } catch (e) {
       debugPrint(e.toString());
     }
@@ -267,8 +279,15 @@ class TyphoonPosition {
   final double longitude; // E
   final TyphoonClass typhoonClass;
 
-  TyphoonPosition(this.index, this.intensity, this.maximumWind, this.time,
-      this.latitude, this.longitude, this.typhoonClass);
+  TyphoonPosition(
+    this.index,
+    this.intensity,
+    this.maximumWind,
+    this.time,
+    this.latitude,
+    this.longitude,
+    this.typhoonClass,
+  );
 
   factory TyphoonPosition.fromXMLElement(XmlElement element) {
     int index = 0;
@@ -324,7 +343,12 @@ class TyphoonClass {
   final double maxWind;
   final Color color;
 
-  TyphoonClass(this.name, this.minWind, this.maxWind, this.color);
+  TyphoonClass(
+    this.name,
+    this.minWind,
+    this.maxWind,
+    this.color,
+  );
 
   bool within(double speed) {
     return speed >= minWind && speed < maxWind;
@@ -348,7 +372,11 @@ class TyphoonBulletin {
   final String provider;
   final DateTime time;
 
-  TyphoonBulletin(this.name, this.provider, this.time);
+  TyphoonBulletin(
+    this.name,
+    this.provider,
+    this.time,
+  );
 
   factory TyphoonBulletin.fromXmlElement(XmlElement bulletinElement) {
     String? name = "";

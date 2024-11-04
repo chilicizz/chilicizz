@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:chilicizz/config/config_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -10,10 +11,34 @@ import '../common.dart';
 import 'aqi_auto_complete.dart';
 import 'aqi_common.dart';
 import 'forecast_chart.dart';
+import 'package:provider/provider.dart';
 
 const String aqiLocationsPreferenceLabel = 'aqi_locations';
 Map<String, List<AQILocation>> cache = {};
 Map<String, Completer> waitingResponse = {};
+
+class AQITabLoader extends StatelessWidget {
+  const AQITabLoader({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final config = context.watch<ConfigController>();
+    return ValueListenableBuilder<List<String>>(
+        valueListenable: config.aqiLocations,
+        builder: (context, value, child) {
+          debugPrint("loading LiveAQITab with $value");
+          return LiveAQITab(
+            socketURL: Uri.parse(dotenv.env['aqiUrl']!),
+            locations: value.toSet(),
+            removeLocationCallback: (location) =>
+                config.removeAQILocation(location),
+            updateLocationCallback: (original, updated) =>
+                config.updateAQILocation(original, updated),
+            addLocationCallback: (location) => config.addAQILocation(location),
+          );
+        });
+  }
+}
 
 /// Loads preferences and then loads the AQI tab
 class AQIPreferenceLoader extends StatefulWidget {

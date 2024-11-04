@@ -231,16 +231,19 @@ class HKOTyphoonTrackWidget extends StatelessWidget {
     );
     // centre the map at the middle of the typhoon and hk
     final LatLng mid = LatLng(
-        (hkLatLng.latitude + track.current.getLatLng().latitude) / 2,
-        (hkLatLng.longitude + track.current.getLatLng().longitude) / 2);
+      (hkLatLng.latitude + track.current.getLatLng().latitude) / 2,
+      (hkLatLng.longitude + track.current.getLatLng().longitude) / 2,
+    );
 
     // calculate the minimum expected distance
-    trackLines.add(Polyline(
-      points: [hkLatLng, closestPosition!.getLatLng()],
-      color: Colors.deepPurple,
-      strokeWidth: 1,
-      pattern: const StrokePattern.dotted(),
-    ));
+    trackLines.add(
+      Polyline(
+        points: [hkLatLng, closestPosition!.getLatLng()],
+        color: Colors.deepPurple,
+        strokeWidth: 1,
+        pattern: const StrokePattern.dotted(),
+      ),
+    );
     // marker
     final Marker closestDistance = Marker(
       height: 30,
@@ -286,14 +289,19 @@ class HKOTyphoonTrackWidget extends StatelessWidget {
                 width: 30.0,
                 height: 30.0,
                 point: hkLatLng,
-                child: Icon(Icons.location_pin, color: Colors.red),
+                child: Icon(
+                  Icons.location_pin,
+                  color: Colors.red,
+                ),
               ),
               Marker(
                 width: 50.0,
                 height: 50.0,
                 point: track.current.getLatLng(),
-                child:
-                    Icon(Icons.storm, color: track.current.typhoonClass.color),
+                child: Icon(
+                  Icons.storm,
+                  color: track.current.typhoonClass.color,
+                ),
               ),
               // Draw dates for forecast with an offset
               for (var position in dates)

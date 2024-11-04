@@ -69,7 +69,9 @@ class _LiveHKOWarningsState extends State<LiveHKOWarnings> {
   Widget build(BuildContext context) {
     if (displayDummy) {
       return Scaffold(
-        body: Center(child: HKOWarningsList(warnings: dummyWarnings())),
+        body: Center(
+          child: HKOWarningsList(warnings: dummyWarnings()),
+        ),
       );
     }
 

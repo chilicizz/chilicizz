@@ -48,17 +48,21 @@ class NavDrawer extends StatelessWidget {
                   Padding(
                     padding: EdgeInsets.all(5.0),
                     child: SizedBox(
-                        height: 60,
-                        child: Image(
-                            fit: BoxFit.fill,
-                            image: AssetImage('assets/cn.png'))),
+                      height: 60,
+                      child: Image(
+                        fit: BoxFit.fill,
+                        image: AssetImage('assets/cn.png'),
+                      ),
+                    ),
                   ),
                   Text(
                     'Cyril Ng Lung Kit',
-                    style:
-                        TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      fontSize: 16.0,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                  Text('ToyBox 2023'),
+                  Text('ToyBox 2024'),
                 ],
               ),
             ),
