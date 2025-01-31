@@ -6,4 +6,8 @@ abstract class ConfigStore {
   Future<void> saveUserName(String value);
 
   Future<void> saveAQILocations(List<String> locations);
+
+  Future<void> setSessionId(String value);
+
+  Future<String> getSessionId();
 }

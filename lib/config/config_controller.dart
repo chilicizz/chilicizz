@@ -14,6 +14,8 @@ class ConfigController {
 
   ValueNotifier<List<String>> aqiLocations = ValueNotifier(<String>[]);
 
+  ValueNotifier<String> sessionId = ValueNotifier('');
+
   /// Creates a new instance of [ConfigController] backed by [store].
   ///
   /// By default, settings are persisted using [ConfigLocalStorage]
@@ -59,8 +61,10 @@ class ConfigController {
   /// Asynchronously loads values from the injected persistence store.
   Future<void> _loadStateFromPersistence() async {
     final loadedValues = await Future.wait([
+      _store.getSessionId().then((value) => sessionId.value = value),
       _store.getUserName().then((value) => userName.value = value),
       _store.getAQILocations().then((value) => aqiLocations.value = value),
     ]);
+    debugPrint('Loaded state from persistence: $loadedValues');
   }
 }

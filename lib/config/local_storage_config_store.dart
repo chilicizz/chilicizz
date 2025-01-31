@@ -1,3 +1,4 @@
+import 'package:flutter/widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'config_store.dart';
@@ -28,5 +29,17 @@ class ConfigLocalStorage extends ConfigStore {
   Future<void> saveAQILocations(List<String> locations) async {
     final prefs = await instanceFuture;
     await prefs.setStringList('aqi_locations', locations);
+  }
+
+  @override
+  Future<String> getSessionId() async {
+    final prefs = await instanceFuture;
+    return prefs.getString('device_id') ?? UniqueKey().hashCode.toString();
+  }
+
+  @override
+  Future<void> setSessionId(String value) async {
+    final prefs = await instanceFuture;
+    await prefs.setString('device_id', value);
   }
 }
