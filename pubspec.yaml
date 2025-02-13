@@ -28,7 +28,7 @@ dependencies:
   date_format: ^2.0.5
   shared_preferences: ^2.0.13
   xml: ^6.1.0
-  flutter_map: ^7.0.1
+  flutter_map: ^8.0.0
   json_annotation: ^4.4.0
   provider: ^6.0.0
   latlong2: ^0.9.0
