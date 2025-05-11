@@ -75,6 +75,7 @@ class _AQIPreferenceLoaderState extends State<AQIPreferenceLoader> {
           default:
             locationsLoaded =
                 snapshot.hasError ? [] : snapshot.data as List<String>;
+            debugPrint("Locations loaded: $locationsLoaded");
             return LiveAQITab(
               socketURL: Uri.parse(dotenv.env['aqiUrl']!),
               locations: locationsLoaded.toSet(),
@@ -296,6 +297,7 @@ class _AQITabState extends State<LiveAQITab> {
             if (snapshot.hasError) {
               debugPrint("Error: ${snapshot.error}");
             }
+            debugPrint("Websocket connection ready");
         }
         // request data from socket
         refreshAll();
@@ -318,7 +320,32 @@ class _AQITabState extends State<LiveAQITab> {
               builder: (context, snapshot) {
                 switch (snapshot.connectionState) {
                   case ConnectionState.waiting:
-                    return const LoadingListView();
+                    return _displayInput
+                        ? ListTile(
+                            title: AQILocationAutocomplete(
+                              autofocus: true,
+                              selectionCallback: (value) {
+                                setState(() {
+                                  widget.addLocationCallback(value);
+                                  _displayInput = false;
+                                });
+                              },
+                              aqiLocationSearch: aqiLocationSearch,
+                            ),
+                            trailing:
+                                Row(mainAxisSize: MainAxisSize.min, children: [
+                              OutlinedButton(
+                                child: const Icon(Icons.cancel_outlined),
+                                onPressed: () {
+                                  setState(() {
+                                    widget.addLocationCallback("");
+                                    _displayInput = false;
+                                  });
+                                },
+                              ),
+                            ]),
+                          )
+                        : const LoadingListView();
                   case ConnectionState.done:
                     _reconnect();
                     return ErrorListView(
