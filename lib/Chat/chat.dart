@@ -6,8 +6,8 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 import '../common.dart';
 import '../main.dart';
 
-class ChatExample extends StatefulWidget {
-  const ChatExample({
+class ChatScreen extends StatefulWidget {
+  const ChatScreen({
     super.key,
     required this.title,
   });
@@ -15,10 +15,10 @@ class ChatExample extends StatefulWidget {
   final String title;
 
   @override
-  State<ChatExample> createState() => _ChatExampleState();
+  State<ChatScreen> createState() => _ChatScreenState();
 }
 
-class _ChatExampleState extends State<ChatExample> {
+class _ChatScreenState extends State<ChatScreen> {
   final _textController = TextEditingController();
   final FocusNode _focusNode = FocusNode();
   bool _isComposing = false;
@@ -28,7 +28,7 @@ class _ChatExampleState extends State<ChatExample> {
   final List<ChatMessage> _messages = [];
 
   // register the listener
-  _ChatExampleState() {
+  _ChatScreenState() {
     _channel.stream.listen((event) {
       setState(() {
         _messages.insert(0, ChatMessage(text: event, name: ""));

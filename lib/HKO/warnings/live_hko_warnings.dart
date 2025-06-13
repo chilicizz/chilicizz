@@ -52,16 +52,18 @@ class _LiveHKOWarningsState extends State<LiveHKOWarnings> {
 
   List<WarningInformation> dummyWarnings() {
     List<WarningInformation> warnings = [];
-    warnings.addAll(warningStringMap.keys
-        .map(
-          (key) => WarningInformation(
-            key,
-            null,
-            ["This is an example warning"],
-            DateTime.now(),
-          ),
-        )
-        .toList());
+    warnings.addAll(
+      warningStringMap.keys
+          .map(
+            (key) => WarningInformation(
+              key,
+              null,
+              ["This is an example warning"],
+              DateTime.now(),
+            ),
+          )
+          .toList(),
+    );
     return warnings;
   }
 

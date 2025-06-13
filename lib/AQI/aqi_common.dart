@@ -61,7 +61,7 @@ class AQIData {
               forecast.add(forecastEntryResult);
             }
           } catch (e) {
-            // ignored
+            debugPrint("Error handling the forecast: $e");
           }
         }
         iaqiForecast[entry] = forecast;
@@ -363,7 +363,7 @@ class HTTPAQILocationSearch extends AQILocationSearch {
         .replaceAll("_TOKEN_", token);
   }
 
-  Future<http.Response> locationQueryHttp(location) {
+  Future<http.Response> locationQueryHttp(String location) {
     var locationSearchUrl = aqiLocationSearchUrl(location, aqiToken);
     return http.get(Uri.parse(locationSearchUrl));
   }

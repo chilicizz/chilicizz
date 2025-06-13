@@ -20,22 +20,25 @@ final List<NavRoute> routes = [
       buildFunction: (context) => const Dashboard(),
       subRoutes: [
         NavRoute(
-            path: '/aqi',
-            label: "Air Quality",
-            buildFunction: (context) => const Dashboard(initial: 0)),
+          path: '/aqi',
+          label: "Air Quality",
+          buildFunction: (context) => const Dashboard(initial: 0),
+        ),
         NavRoute(
-            path: '/hko',
-            label: "HKO Warnings",
-            buildFunction: (context) => const Dashboard(initial: 1)),
+          path: '/hko',
+          label: "HKO Warnings",
+          buildFunction: (context) => const Dashboard(initial: 1),
+        ),
         NavRoute(
-            path: '/typhoon',
-            label: "HKO Typhoon",
-            buildFunction: (context) => const Dashboard(initial: 2)),
+          path: '/typhoon',
+          label: "HKO Typhoon",
+          buildFunction: (context) => const Dashboard(initial: 2),
+        ),
       ]),
   NavRoute(
     path: '/chat',
     label: "🚧 Chat",
-    buildFunction: (context) => const ChatExample(title: "WebSocket Chat"),
+    buildFunction: (context) => const ChatScreen(title: "WebSocket Chat"),
   ),
   NavRoute(
     path: '/rss',
@@ -63,18 +66,20 @@ class MyApp extends StatelessWidget {
       providers: [
         Provider(create: (context) => ConfigController()),
       ],
-      child: Builder(builder: (context) {
-        return MaterialApp(
-          title: 'app.cyrilng.com',
-          theme: ThemeData(
-              colorScheme: ColorScheme.fromSwatch(
-                  primarySwatch: Colors.deepPurple,
-                  brightness: Brightness.light),
-              useMaterial3: true),
-          initialRoute: '/dashboard',
-          routes: appRoutes,
-        );
-      }),
+      child: Builder(
+        builder: (context) {
+          return MaterialApp(
+            title: 'app.cyrilng.com',
+            theme: ThemeData(
+                colorScheme: ColorScheme.fromSwatch(
+                    primarySwatch: Colors.deepPurple,
+                    brightness: Brightness.light),
+                useMaterial3: true),
+            initialRoute: '/dashboard',
+            routes: appRoutes,
+          );
+        },
+      ),
     );
   }
 }
@@ -100,8 +105,8 @@ class _DashboardState extends State<Dashboard> {
           title: const Text('Dashboard'),
           bottom: const TabBar(
             tabs: [
-              Tab(icon: Text("AIR QUALITY")),
               Tab(icon: Text("WARNINGS")),
+              Tab(icon: Text("AIR QUALITY")),
               Tab(icon: Text("TYPHOON")),
               // Tab(icon: Text("🚧")),
             ],
@@ -154,13 +159,18 @@ class _DashboardState extends State<Dashboard> {
         ),
         body: const TabBarView(
           children: [
+            LiveHKOWarnings(),
             AQIPreferenceLoader(),
             //AQITabLoader(),
-            LiveHKOWarnings(),
             HKOTyphoonTab(),
           ],
         ),
       ),
     );
   }
+}
+
+String idGenerator() {
+  final now = DateTime.now();
+  return now.microsecondsSinceEpoch.toString();
 }

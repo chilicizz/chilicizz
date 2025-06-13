@@ -1,6 +1,3 @@
-// Copyright 2022, the Flutter project authors. Please see the AUTHORS file
-// for details. All rights reserved. Use of this source code is governed by a
-// BSD-style license that can be found in the LICENSE file.
 import 'package:chilicizz/config/config_store.dart';
 import 'package:flutter/foundation.dart';
 
@@ -9,7 +6,6 @@ import 'local_storage_config_store.dart';
 class ConfigController {
   final ConfigStore _store;
 
-  /// The player's name. Used for things like high score lists.
   ValueNotifier<String> userName = ValueNotifier('anon');
 
   ValueNotifier<List<String>> aqiLocations = ValueNotifier(<String>[]);

@@ -24,19 +24,20 @@ class AQITabLoader extends StatelessWidget {
   Widget build(BuildContext context) {
     final config = context.watch<ConfigController>();
     return ValueListenableBuilder<List<String>>(
-        valueListenable: config.aqiLocations,
-        builder: (context, value, child) {
-          debugPrint("loading LiveAQITab with $value");
-          return LiveAQITab(
-            socketURL: Uri.parse(dotenv.env['aqiUrl']!),
-            locations: value.toSet(),
-            removeLocationCallback: (location) =>
-                config.removeAQILocation(location),
-            updateLocationCallback: (original, updated) =>
-                config.updateAQILocation(original, updated),
-            addLocationCallback: (location) => config.addAQILocation(location),
-          );
-        });
+      valueListenable: config.aqiLocations,
+      builder: (context, value, child) {
+        debugPrint("loading LiveAQITab with $value");
+        return LiveAQITab(
+          socketURL: Uri.parse(dotenv.env['aqiUrl']!),
+          locations: value.toSet(),
+          removeLocationCallback: (location) =>
+              config.removeAQILocation(location),
+          updateLocationCallback: (original, updated) =>
+              config.updateAQILocation(original, updated),
+          addLocationCallback: (location) => config.addAQILocation(location),
+        );
+      },
+    );
   }
 }
 
