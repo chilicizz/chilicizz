@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:chilicizz/HKO/warnings/live_hko_warnings.dart';
+import 'package:chilicizz/HKO/warnings/hko_warnings_list.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
