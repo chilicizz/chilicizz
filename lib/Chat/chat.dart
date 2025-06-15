@@ -1,6 +1,7 @@
-import 'package:flutter/cupertino.dart';
+import 'package:chilicizz/config/config_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:provider/provider.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 import '../common.dart';
@@ -41,36 +42,41 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      drawer: NavDrawer(routes: routes),
-      appBar: AppBar(
-        title: Text(widget.title),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          children: [
-            Flexible(
-              child: ListView.builder(
-                reverse: true,
-                itemBuilder: (_, int index) => _messages[index],
-                itemCount: _messages.length,
+    final config = context.watch<ConfigController>();
+    return ValueListenableBuilder(
+        valueListenable: config.userName,
+        builder: (context, value, child) {
+          return Scaffold(
+            drawer: NavDrawer(routes: routes),
+            appBar: AppBar(
+              title: Text("${widget.title} (${config.userName.value})"),
+            ),
+            body: Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Column(
+                children: [
+                  Flexible(
+                    child: ListView.builder(
+                      reverse: true,
+                      itemBuilder: (_, int index) => _messages[index],
+                      itemCount: _messages.length,
+                    ),
+                  ),
+                  Container(
+                    decoration:
+                        BoxDecoration(color: Theme.of(context).cardColor),
+                    child: _buildTextComposer(),
+                  ),
+                ],
               ),
             ),
-            const Divider(height: 1.0),
-            Container(
-              decoration: BoxDecoration(color: Theme.of(context).cardColor),
-              child: _buildTextComposer(),
+            floatingActionButton: FloatingActionButton(
+              onPressed: _sendMessage,
+              tooltip: 'Send message',
+              child: const Icon(Icons.send),
             ),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _sendMessage,
-        tooltip: 'Send message',
-        child: const Icon(Icons.send),
-      ),
-    );
+          );
+        });
   }
 
   Widget _buildTextComposer() {
@@ -87,6 +93,9 @@ class _ChatScreenState extends State<ChatScreen> {
             onEditingComplete: () {
               _isComposing ? _sendMessage : null;
             },
+            onFieldSubmitted: (value) {
+              _isComposing ? _sendMessage() : null;
+            },
             decoration:
                 const InputDecoration.collapsed(hintText: 'Send a message'),
             focusNode: _focusNode,
@@ -94,16 +103,9 @@ class _ChatScreenState extends State<ChatScreen> {
         ),
         IconTheme(
           data: IconThemeData(color: Theme.of(context).colorScheme.secondary),
-          child: Container(
-            child: Theme.of(context).platform == TargetPlatform.iOS
-                ? CupertinoButton(
-                    onPressed: _isComposing ? () => _sendMessage() : null,
-                    child: const Text('Send'),
-                  )
-                : IconButton(
-                    icon: const Icon(Icons.send),
-                    onPressed: _isComposing ? () => _sendMessage() : null,
-                  ),
+          child: IconButton(
+            icon: const Icon(Icons.send),
+            onPressed: _isComposing ? () => _sendMessage() : null,
           ),
         )
       ],

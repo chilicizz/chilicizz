@@ -20,13 +20,13 @@ final List<NavRoute> routes = [
       buildFunction: (context) => const Dashboard(),
       subRoutes: [
         NavRoute(
-          path: '/aqi',
-          label: "Air Quality",
+          path: '/hko',
+          label: "HKO Warnings",
           buildFunction: (context) => const Dashboard(initial: 0),
         ),
         NavRoute(
-          path: '/hko',
-          label: "HKO Warnings",
+          path: '/aqi',
+          label: "Air Quality",
           buildFunction: (context) => const Dashboard(initial: 1),
         ),
         NavRoute(
@@ -38,7 +38,7 @@ final List<NavRoute> routes = [
   NavRoute(
     path: '/chat',
     label: "🚧 Chat",
-    buildFunction: (context) => const ChatScreen(title: "WebSocket Chat"),
+    buildFunction: (context) => const ChatScreen(title: "Chat"),
   ),
   NavRoute(
     path: '/rss',
