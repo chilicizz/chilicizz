@@ -4,6 +4,8 @@ import 'dart:io';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 void main() {
+  const disabled = true; //These tests are only for manual use
+
   late WebSocketChannel channel;
   setUp(() {
     channel = WebSocketChannel.connect(Uri.parse('ws://localhost:8080/chat/all/anon'));
@@ -13,7 +15,7 @@ void main() {
   test('Connects', () async {
     await channel.ready;
     expect(channel.ready, completes);
-  });
+  }, skip: disabled);
 
   test('WebSocketChannel can send and receive messages', () async {
     await channel.ready;
@@ -27,7 +29,7 @@ void main() {
     });
     // Allow time for the message to be processed
     await Future.delayed(Duration(seconds: 3));
-  });
+  }, skip: disabled);
 
   test('WebSocketChannel can send and receive messages', () async {
     try {
@@ -59,7 +61,7 @@ void main() {
 
     // Allow time for the message to be processed
     await Future.delayed(Duration(seconds: 3));
-  });
+  }, skip: disabled);
 
   tearDown(() async {
     await channel.sink.close();
