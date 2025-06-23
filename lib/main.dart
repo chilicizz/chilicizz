@@ -1,4 +1,5 @@
 import 'package:chilicizz/Chat/chat.dart';
+import 'package:chilicizz/Chat/chat_provider.dart';
 import 'package:chilicizz/HKO/typhoon/hko_typhoon_tab.dart';
 import 'package:chilicizz/HKO/warnings/live_hko_warnings.dart';
 import 'package:chilicizz/config/config_controller.dart';
@@ -65,6 +66,7 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         Provider(create: (context) => ConfigController()),
+        Provider(create: (context) => ChatProvider(Uri.parse(dotenv.env['chatUrl']!))),
       ],
       child: Builder(
         builder: (context) {
@@ -72,8 +74,7 @@ class MyApp extends StatelessWidget {
             title: 'app.cyrilng.com',
             theme: ThemeData(
                 colorScheme: ColorScheme.fromSwatch(
-                    primarySwatch: Colors.deepPurple,
-                    brightness: Brightness.light),
+                    primarySwatch: Colors.deepPurple, brightness: Brightness.light),
                 useMaterial3: true),
             initialRoute: '/dashboard',
             routes: appRoutes,
@@ -119,8 +120,7 @@ class _DashboardState extends State<Dashboard> {
                 builder: (BuildContext context) {
                   final qrController = TextEditingController();
                   qrController.text = 'https://app.cyrilng.com/';
-                  final ValueNotifier<String> textValue =
-                      ValueNotifier<String>(qrController.text);
+                  final ValueNotifier<String> textValue = ValueNotifier<String>(qrController.text);
                   return AlertDialog(
                     title: TextField(
                       decoration: const InputDecoration(
@@ -132,8 +132,7 @@ class _DashboardState extends State<Dashboard> {
                     ),
                     content: ValueListenableBuilder(
                       valueListenable: textValue,
-                      builder:
-                          (BuildContext context, String value, Widget? child) {
+                      builder: (BuildContext context, String value, Widget? child) {
                         return SizedBox(
                           height: 300,
                           width: 300,

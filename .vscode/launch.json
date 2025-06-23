@@ -8,7 +8,7 @@
             "name": "chilicizz DEV",
             "request": "launch",
             "type": "dart",
-            "args": ["--dart-define=ENV=dev"]
+            "args": ["--dart-define=ENV=dev"],
         },
         {
             "name": "chilicizz PDN",

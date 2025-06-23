@@ -25,6 +25,7 @@ class _LiveHKOWarningsState extends State<LiveHKOWarnings> {
   bool displayDummy = false;
 
   void _reconnect() {
+    debugPrint("Reconnecting websocket: $_failures");
     if (_failures < 10) {
       Future.delayed(Duration(milliseconds: 100 * _failures), () {
         setState(() {

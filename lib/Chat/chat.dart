@@ -1,8 +1,9 @@
+import 'dart:convert';
+
+import 'package:chilicizz/Chat/chat_provider.dart';
 import 'package:chilicizz/config/config_controller.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
-import 'package:web_socket_channel/web_socket_channel.dart';
 
 import '../common.dart';
 import '../main.dart';
@@ -24,58 +25,63 @@ class _ChatScreenState extends State<ChatScreen> {
   final FocusNode _focusNode = FocusNode();
   bool _isComposing = false;
 
-  final _channel = WebSocketChannel.connect(Uri.parse(dotenv.env['chatUrl']!));
-
-  final List<ChatMessage> _messages = [];
-
   // register the listener
-  _ChatScreenState() {
-    _channel.stream.listen((event) {
-      setState(() {
-        _messages.insert(0, ChatMessage(text: event, name: ""));
-        if (_messages.length > 20) {
-          _messages.removeLast();
-        }
-      });
-    });
-  }
+  _ChatScreenState();
 
   @override
   Widget build(BuildContext context) {
     final config = context.watch<ConfigController>();
+
     return ValueListenableBuilder(
-        valueListenable: config.userName,
-        builder: (context, value, child) {
-          return Scaffold(
-            drawer: NavDrawer(routes: routes),
-            appBar: AppBar(
-              title: Text("${widget.title} (${config.userName.value})"),
-            ),
-            body: Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Column(
-                children: [
-                  Flexible(
-                    child: ListView.builder(
-                      reverse: true,
-                      itemBuilder: (_, int index) => _messages[index],
-                      itemCount: _messages.length,
+        valueListenable: config.sessionId,
+        builder: (context, sessionId, child) {
+          if (sessionId.isEmpty) {
+            var sessionId = DateTime.now().millisecondsSinceEpoch.toString();
+            context.read<ConfigController>().setSessionId(sessionId);
+            debugPrint("Session ID is empty setting new session: $sessionId.");
+          }
+          // _channel.sink.add(sessionId);
+          return ValueListenableBuilder(
+              valueListenable: config.userName,
+              builder: (context, value, child) {
+                var provider = Provider.of<ChatProvider>(context, listen: true);
+                return Scaffold(
+                  drawer: NavDrawer(routes: routes),
+                  appBar: AppBar(
+                    title: Text("${widget.title} (${config.userName.value})"),
+                  ),
+                  body: Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: Column(
+                      children: [
+                        Flexible(
+                          child: ListenableBuilder(
+                            listenable: provider.chatModel,
+                            // Using Consumer to listen to changes in ChatProvider
+                            // and rebuild the ListView when messages change.
+                            builder: (context, child) {
+                              return ListView.builder(
+                                reverse: true,
+                                itemBuilder: (_, int index) => provider.chatModel.messages[index],
+                                itemCount: provider.chatModel.messages.length,
+                              );
+                            },
+                          ),
+                        ),
+                        Container(
+                          decoration: BoxDecoration(color: Theme.of(context).cardColor),
+                          child: _buildTextComposer(),
+                        ),
+                      ],
                     ),
                   ),
-                  Container(
-                    decoration:
-                        BoxDecoration(color: Theme.of(context).cardColor),
-                    child: _buildTextComposer(),
+                  floatingActionButton: FloatingActionButton(
+                    onPressed: _sendMessage,
+                    tooltip: 'Send message',
+                    child: const Icon(Icons.send),
                   ),
-                ],
-              ),
-            ),
-            floatingActionButton: FloatingActionButton(
-              onPressed: _sendMessage,
-              tooltip: 'Send message',
-              child: const Icon(Icons.send),
-            ),
-          );
+                );
+              });
         });
   }
 
@@ -96,8 +102,7 @@ class _ChatScreenState extends State<ChatScreen> {
             onFieldSubmitted: (value) {
               _isComposing ? _sendMessage() : null;
             },
-            decoration:
-                const InputDecoration.collapsed(hintText: 'Send a message'),
+            decoration: const InputDecoration.collapsed(hintText: 'Send a message'),
             focusNode: _focusNode,
           ),
         ),
@@ -114,7 +119,12 @@ class _ChatScreenState extends State<ChatScreen> {
 
   void _sendMessage() {
     if (_textController.value.text.isNotEmpty) {
-      _channel.sink.add(_textController.text);
+      var payload = jsonEncode({
+        'text': _textController.text,
+        'name': context.read<ConfigController>().userName.value,
+        'sessionId': context.read<ConfigController>().sessionId.value,
+      });
+      context.read<ChatProvider>().sendMessage(ChatMessage.fromJsonString(payload));
       _isComposing = false;
     }
     _textController.clear();
@@ -123,7 +133,6 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   void dispose() {
-    _channel.sink.close();
     _textController.dispose();
     super.dispose();
   }
@@ -135,8 +144,35 @@ class ChatMessage extends StatelessWidget {
 
   const ChatMessage({super.key, required this.text, required this.name});
 
+  /// Factory constructor to create a ChatMessage from a JSON object.
+  /// The JSON object should contain 'text' and optionally 'name'.
+  /// If 'name' is not provided, it defaults to an empty string.
+  factory ChatMessage.fromJson(Map<String, dynamic> json) {
+    return ChatMessage(
+      text: json['text'] as String,
+      name: json['name'] as String? ?? "",
+    );
+  }
+
+  factory ChatMessage.fromJsonString(String jsonString) {
+    final Map<String, dynamic> json = jsonDecode(jsonString);
+    return ChatMessage.fromJson(json);
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'text': text,
+      'name': name,
+    };
+  }
+
   @override
   Widget build(BuildContext context) {
-    return ListTile(title: Text(text));
+    return ListTile(
+      title: Text(text),
+      leading: CircleAvatar(
+        child: Text(name.isNotEmpty ? name[0].toUpperCase() : '?'),
+      ),
+    );
   }
 }

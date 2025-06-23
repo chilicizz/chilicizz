@@ -17,8 +17,7 @@ class ConfigController {
   /// By default, settings are persisted using [ConfigLocalStorage]
   /// (i.e. NSUserDefaults on iOS, SharedPreferences on Android or
   /// local storage on the web).
-  ConfigController({ConfigStore? store})
-      : _store = store ?? ConfigLocalStorage() {
+  ConfigController({ConfigStore? store}) : _store = store ?? ConfigLocalStorage() {
     _loadStateFromPersistence();
   }
 
@@ -52,6 +51,12 @@ class ConfigController {
     locations.remove(originalLocation);
     aqiLocations.value = locations;
     setAQILocations(locations);
+  }
+
+  /// Sets the session ID and persists it.
+  void setSessionId(String sessionId) {
+    this.sessionId.value = sessionId;
+    _store.setSessionId(sessionId);
   }
 
   /// Asynchronously loads values from the injected persistence store.
