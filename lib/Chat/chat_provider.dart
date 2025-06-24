@@ -29,7 +29,6 @@ class ChatProvider {
   bool _disposed = false;
 
   ChatProvider(this.chatUrl) {
-    debugPrint('ChatProvider initialized');
     _connect();
   }
 

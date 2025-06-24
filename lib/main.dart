@@ -1,6 +1,7 @@
 import 'package:chilicizz/Chat/chat.dart';
 import 'package:chilicizz/Chat/chat_provider.dart';
 import 'package:chilicizz/HKO/typhoon/hko_typhoon_tab.dart';
+import 'package:chilicizz/HKO/warnings/hko_warnings_provider.dart';
 import 'package:chilicizz/HKO/warnings/live_hko_warnings.dart';
 import 'package:chilicizz/config/config_controller.dart';
 import 'package:chilicizz/rss_reader.dart';
@@ -67,6 +68,9 @@ class MyApp extends StatelessWidget {
       providers: [
         Provider(create: (context) => ConfigController()),
         Provider(create: (context) => ChatProvider(Uri.parse(dotenv.env['chatUrl']!))),
+        Provider(
+          create: (context) => HKOWarningsProvider(Uri.parse(dotenv.env['warningsUrl']!)),
+        ),
       ],
       child: Builder(
         builder: (context) {
