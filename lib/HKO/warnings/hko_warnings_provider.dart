@@ -5,8 +5,8 @@ import 'package:flutter/widgets.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 class HKOWarningsProvider {
-  ValueNotifier<List<WarningInformation>> hkoWeatherWarnings =
-      ValueNotifier(<WarningInformation>[]);
+  ValueNotifier<List<WarningInformation>?> hkoWeatherWarnings =
+      ValueNotifier(null);
   DateTime lastTick = DateTime.now();
 
   final Uri hkoWarningsURL;

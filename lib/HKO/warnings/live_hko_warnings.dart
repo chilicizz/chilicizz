@@ -65,10 +65,12 @@ class _LiveHKOWarningsState extends State<LiveHKOWarnings> {
         ],
       ),
       body: Center(
-        child: ValueListenableBuilder<List<WarningInformation>>(
+        child: ValueListenableBuilder<List<WarningInformation>?>(
           valueListenable: provider.hkoWeatherWarnings,
           builder: (context, warnings, child) {
-            if (warnings.isEmpty) {
+            if (warnings == null) {
+              return LoadingListView();
+            } else if (warnings.isEmpty) {
               return NoWarningsList(lastTick: provider.lastTick);
             } else {
               return HKOWarningsList(warnings: warnings);
