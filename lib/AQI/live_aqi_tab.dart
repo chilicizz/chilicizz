@@ -14,7 +14,7 @@ import 'package:provider/provider.dart';
 import './aqi_tile.dart';
 
 const String aqiLocationsPreferenceLabel = 'aqi_locations';
-Map<String, List<AQILocation>> cache = {};
+Map<String, List<AQILocation>> searchCache = {};
 Map<String, Completer> waitingResponse = {};
 
 class AQITabLoader extends StatelessWidget {
@@ -30,8 +30,7 @@ class AQITabLoader extends StatelessWidget {
         return LiveAQITab(
           socketURL: Uri.parse(dotenv.env['aqiUrl']!),
           locations: value.toSet(),
-          removeLocationCallback: (location) =>
-              config.removeAQILocation(location),
+          removeLocationCallback: (location) => config.removeAQILocation(location),
           updateLocationCallback: (original, updated) =>
               config.updateAQILocation(original, updated),
           addLocationCallback: (location) => config.addAQILocation(location),
@@ -74,8 +73,7 @@ class _AQIPreferenceLoaderState extends State<AQIPreferenceLoader> {
             debugPrint("Loading AQI locations...");
             return const LoadingListView();
           default:
-            locationsLoaded =
-                snapshot.hasError ? [] : snapshot.data as List<String>;
+            locationsLoaded = snapshot.hasError ? [] : snapshot.data as List<String>;
             debugPrint("Locations loaded: $locationsLoaded");
             return LiveAQITab(
               socketURL: Uri.parse(dotenv.env['aqiUrl']!),
@@ -102,9 +100,8 @@ class _AQIPreferenceLoaderState extends State<AQIPreferenceLoader> {
     }
     setState(() {
       locationsLoaded.add(location);
-      _loadingLocations = prefs
-          .setStringList(aqiLocationsPreferenceLabel, locationsLoaded)
-          .then((bool success) {
+      _loadingLocations =
+          prefs.setStringList(aqiLocationsPreferenceLabel, locationsLoaded).then((bool success) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Added new AQI tile for $location')),
         );
@@ -123,14 +120,13 @@ class _AQIPreferenceLoaderState extends State<AQIPreferenceLoader> {
         locationsLoaded.remove(location);
         prefs.setStringList(aqiLocationsPreferenceLabel, locationsLoaded).then(
               (bool success) => {
-                ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Removed AQI tile for $location')))
+                ScaffoldMessenger.of(context)
+                    .showSnackBar(SnackBar(content: Text('Removed AQI tile for $location')))
               },
             );
         _loadingLocations = _prefs.then(
           (SharedPreferences prefs) {
-            return prefs.getStringList(aqiLocationsPreferenceLabel) ??
-                <String>[];
+            return prefs.getStringList(aqiLocationsPreferenceLabel) ?? <String>[];
           },
         );
       },
@@ -148,15 +144,13 @@ class _AQIPreferenceLoaderState extends State<AQIPreferenceLoader> {
         locationsLoaded[index] = newLocation;
         prefs.setStringList(aqiLocationsPreferenceLabel, locationsLoaded).then(
               (bool success) => {
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                    content:
-                        Text('Updated AQI tile $original to $newLocation')))
+                ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Updated AQI tile $original to $newLocation')))
               },
             );
         _loadingLocations = _prefs.then(
           (SharedPreferences prefs) {
-            return prefs.getStringList(aqiLocationsPreferenceLabel) ??
-                <String>[];
+            return prefs.getStringList(aqiLocationsPreferenceLabel) ?? <String>[];
           },
         );
       },
@@ -225,8 +219,7 @@ class _AQITabState extends State<LiveAQITab> {
   void requestLocation(String element) {
     debugPrint("Requesting AQI location $element");
     _channel.sink.add(
-      jsonEncode(
-          {"id": element, "type": "AQI_FEED_REQUEST", "payload": element}),
+      jsonEncode({"id": element, "type": "AQI_FEED_REQUEST", "payload": element}),
     );
   }
 
@@ -235,11 +228,7 @@ class _AQITabState extends State<LiveAQITab> {
     waitingResponse[searchString] = completer;
     searchString = searchString.toLowerCase().replaceAll('/', '');
     _channel.sink.add(
-      jsonEncode({
-        "id": searchString,
-        "type": "AQI_SEARCH_REQUEST",
-        "payload": searchString
-      }),
+      jsonEncode({"id": searchString, "type": "AQI_SEARCH_REQUEST", "payload": searchString}),
     );
     return completer.future;
   }
@@ -247,22 +236,20 @@ class _AQITabState extends State<LiveAQITab> {
   Future<List<AQILocation>> queryLocation(String searchString) async {
     searchString = searchString.toLowerCase().replaceAll('/', '');
     String additionalQueryString = searchString.contains(" ")
-        ? searchString.substring(
-            searchString.indexOf(" ") + 1, searchString.length)
+        ? searchString.substring(searchString.indexOf(" ") + 1, searchString.length)
         : "";
-    if (cache.containsKey(searchString)) {
-      return cache[searchString]!;
+    if (searchCache.containsKey(searchString)) {
+      return searchCache[searchString]!;
     }
     debugPrint("Sending search request for $searchString");
     dynamic payload = await sendRequestOverSocket(searchString);
     List<AQILocation> list = parseLocationSearchResponse(payload);
     if (additionalQueryString.isNotEmpty) {
       list = list
-          .where((element) =>
-              element.name.toLowerCase().contains(additionalQueryString))
+          .where((element) => element.name.toLowerCase().contains(additionalQueryString))
           .toList();
     }
-    cache[searchString] = list;
+    searchCache[searchString] = list;
     return list;
   }
 
@@ -333,8 +320,7 @@ class _AQITabState extends State<LiveAQITab> {
                               },
                               aqiLocationSearch: aqiLocationSearch,
                             ),
-                            trailing:
-                                Row(mainAxisSize: MainAxisSize.min, children: [
+                            trailing: Row(mainAxisSize: MainAxisSize.min, children: [
                               OutlinedButton(
                                 child: const Icon(Icons.cancel_outlined),
                                 onPressed: () {
@@ -379,8 +365,7 @@ class _AQITabState extends State<LiveAQITab> {
                           },
                           aqiLocationSearch: aqiLocationSearch,
                         ),
-                        trailing:
-                            Row(mainAxisSize: MainAxisSize.min, children: [
+                        trailing: Row(mainAxisSize: MainAxisSize.min, children: [
                           OutlinedButton(
                             child: const Icon(Icons.cancel_outlined),
                             onPressed: () {
@@ -415,10 +400,8 @@ class _AQITabState extends State<LiveAQITab> {
                           return AQIStatelessListTile(
                             location: location,
                             data: aqiData,
-                            removeLocationCallback:
-                                widget.removeLocationCallback,
-                            updateLocationCallback:
-                                widget.updateLocationCallback,
+                            removeLocationCallback: widget.removeLocationCallback,
+                            updateLocationCallback: widget.updateLocationCallback,
                           );
                         },
                       );
