@@ -1,4 +1,6 @@
+import 'package:chilicizz/AQI/aqi_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import 'aqi_common.dart';
 
@@ -7,23 +9,20 @@ class AQILocationAutocomplete extends StatelessWidget {
   final Function(String value) selectionCallback;
   final String? initialValue;
   final bool autofocus;
-  final AQILocationSearch aqiLocationSearch;
 
   const AQILocationAutocomplete({
     super.key,
     required this.selectionCallback,
     this.autofocus = false,
     this.initialValue,
-    required this.aqiLocationSearch,
   });
 
   @override
   Widget build(BuildContext context) {
+    AQIProvider aqiProvider = context.read<AQIProvider>();
     return Autocomplete<AQILocation>(
-      fieldViewBuilder: (BuildContext context,
-          TextEditingController textEditingController,
-          FocusNode focusNode,
-          VoidCallback onFieldSubmitted) {
+      fieldViewBuilder: (BuildContext context, TextEditingController textEditingController,
+          FocusNode focusNode, VoidCallback onFieldSubmitted) {
         if (initialValue != null) {
           textEditingController.text = initialValue!;
         }
@@ -48,9 +47,8 @@ class AQILocationAutocomplete extends StatelessWidget {
         return "${location.name}\n(${location.url})";
       },
       optionsBuilder: (TextEditingValue textEditingValue) {
-        if (textEditingValue.text.isNotEmpty &&
-            textEditingValue.text.length > 3) {
-          return aqiLocationSearch.locationQuery(textEditingValue.text.trim());
+        if (textEditingValue.text.isNotEmpty && textEditingValue.text.length > 3) {
+          return aqiProvider.queryLocation(textEditingValue.text.trim());
         }
         return const Iterable<AQILocation>.empty();
       },

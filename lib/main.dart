@@ -1,3 +1,4 @@
+import 'package:chilicizz/AQI/aqi_provider.dart';
 import 'package:chilicizz/Chat/chat.dart';
 import 'package:chilicizz/Chat/chat_provider.dart';
 import 'package:chilicizz/HKO/typhoon/hko_typhoon_tab.dart';
@@ -70,6 +71,9 @@ class MyApp extends StatelessWidget {
         Provider(create: (context) => ChatProvider(Uri.parse(dotenv.env['chatUrl']!))),
         Provider(
           create: (context) => HKOWarningsProvider(Uri.parse(dotenv.env['warningsUrl']!)),
+        ),
+        Provider(
+          create: (context) => AQIProvider(Uri.parse(dotenv.env['aqiUrl']!)),
         ),
       ],
       child: Builder(

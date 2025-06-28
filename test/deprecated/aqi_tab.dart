@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:chilicizz/AQI/aqi_common.dart';
 import 'aqi_list_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -20,7 +19,6 @@ class AQITab extends StatefulWidget {
 
 class _AQITabState extends State<AQITab> {
   final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
-  late AQILocationSearch aqiLocationSearch;
   List<String> locations = [];
   late Future<List<String>> _locations;
   bool _displayInput = false;
@@ -33,13 +31,10 @@ class _AQITabState extends State<AQITab> {
         return prefs.getStringList(aqiLocationsPreferenceLabel) ?? <String>[];
       },
     );
-    aqiLocationSearch = HTTPAQILocationSearch(dotenv.env['aqiLocationSearchTemplate']!);
-    // aqiLocationSearch = SocketAQILocationSearch(Uri.parse(dotenv.env['aqiUrl']!));
   }
 
   @override
   void dispose() {
-    aqiLocationSearch.close();
     super.dispose();
   }
 
@@ -61,8 +56,7 @@ class _AQITabState extends State<AQITab> {
             : Center(
                 child: FutureBuilder(
                   future: _locations,
-                  builder: (BuildContext context,
-                      AsyncSnapshot<List<String>> snapshot) {
+                  builder: (BuildContext context, AsyncSnapshot<List<String>> snapshot) {
                     switch (snapshot.connectionState) {
                       case ConnectionState.waiting:
                         return const CircularProgressIndicator();
@@ -81,8 +75,7 @@ class _AQITabState extends State<AQITab> {
                                     location: locations[index],
                                     removeLocationCallback: _removeLocation,
                                     updateLocationCallback: _updateLocation,
-                                    aqiFeedTemplate:
-                                        dotenv.env['aqiFeedTemplate']!,
+                                    aqiFeedTemplate: dotenv.env['aqiFeedTemplate']!,
                                   );
                                 })
                             : _buildAutoCompleteListView(context);
@@ -103,7 +96,6 @@ class _AQITabState extends State<AQITab> {
       title: AQILocationAutocomplete(
         selectionCallback: _addLocation,
         autofocus: true,
-        aqiLocationSearch: aqiLocationSearch,
       ),
       trailing: Row(mainAxisSize: MainAxisSize.min, children: [
         OutlinedButton(
@@ -151,8 +143,8 @@ class _AQITabState extends State<AQITab> {
       locations.remove(location);
       prefs.setStringList(aqiLocationsPreferenceLabel, locations).then(
             (bool success) => {
-              ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Removed tile for $location')))
+              ScaffoldMessenger.of(context)
+                  .showSnackBar(SnackBar(content: Text('Removed tile for $location')))
             },
           );
       _locations = _prefs.then(
@@ -173,8 +165,8 @@ class _AQITabState extends State<AQITab> {
       locations[index] = newLocation;
       prefs.setStringList(aqiLocationsPreferenceLabel, locations).then(
             (bool success) => {
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                  content: Text('Updated tile $original to $newLocation')))
+              ScaffoldMessenger.of(context)
+                  .showSnackBar(SnackBar(content: Text('Updated tile $original to $newLocation')))
             },
           );
       _locations = _prefs.then(

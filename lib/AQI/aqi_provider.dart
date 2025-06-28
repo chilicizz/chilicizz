@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 class AqiDataModel extends ChangeNotifier {
+  final List<String> locations = [];
   final Map<String, AQIData> locationDataMap = {};
 
   /// Returns the AQIData for a given location, or null if not available.
@@ -23,6 +24,33 @@ class AqiDataModel extends ChangeNotifier {
     locationDataMap[location] = data;
     notifyListeners();
   }
+
+  void addLocation(String location) {
+    if (!locations.contains(location)) {
+      locations.add(location);
+      notifyListeners();
+    }
+  }
+
+  void removeLocation(String location) {
+    if (locations.contains(location)) {
+      locations.remove(location);
+      locationDataMap.remove(location);
+      notifyListeners();
+    }
+  }
+
+  void updateLocation(String oldLocation, String newLocation) {
+    if (locations.contains(oldLocation)) {
+      int index = locations.indexOf(oldLocation);
+      locations[index] = newLocation;
+      var data = locationDataMap.remove(oldLocation);
+      if (data != null) {
+        locationDataMap[newLocation] = data;
+      }
+      notifyListeners();
+    }
+  }
 }
 
 class AQIProvider {
@@ -31,18 +59,23 @@ class AQIProvider {
   ValueNotifier<List<String>?> aqiLocations = ValueNotifier(null);
   AqiDataModel aqiDataModel = AqiDataModel();
 
+  final Map<String, List<AQILocation>> searchCache = {};
   WebSocketChannel? _channel;
   int _reconnectAttempts = 0;
   bool _disposed = false;
   final Map<String, Completer> _waitingResponse = {};
 
   AQIProvider(this._chatUrl) {
-    var loadLocations = getAQILocations();
-    loadLocations.then((locations) {
-      aqiLocations.value = locations;
-    }).catchError((error) {
-      debugPrint('Error loading AQI locations: $error');
-    });
+    debugPrint('AQIProvider initialized with URL: $_chatUrl');
+    _loadStateFromPersistence();
+    _connect();
+  }
+
+  Future<void> _loadStateFromPersistence() async {
+    final loadedValues = await Future.wait([
+      getAQILocations().then((value) => aqiLocations.value = value),
+    ]);
+    debugPrint('Loaded state from persistence: $loadedValues');
   }
 
   Future<List<String>> getAQILocations() async {
@@ -63,6 +96,7 @@ class AQIProvider {
       _channel!.stream.listen(
         (message) {
           debugPrint('AQIProvider Received message: $message');
+          handleSocketMessages(message);
         },
         onError: (error) {
           debugPrint('AQIProvider Error receiving message: $error');
@@ -82,11 +116,31 @@ class AQIProvider {
     }
   }
 
-  Future<dynamic> sendRequestOverSocket(String searchString) {
+  Future<List<AQILocation>> queryLocation(String searchString) async {
+    searchString = searchString.toLowerCase().replaceAll('/', '');
+    String additionalQueryString = searchString.contains(" ")
+        ? searchString.substring(searchString.indexOf(" ") + 1, searchString.length)
+        : "";
+    if (searchCache.containsKey(searchString)) {
+      return searchCache[searchString]!;
+    }
+    debugPrint("Sending search request for $searchString");
+    dynamic payload = await _sendRequestOverSocket(searchString);
+    List<AQILocation> list = parseLocationSearchResponse(payload);
+    if (additionalQueryString.isNotEmpty) {
+      list = list
+          .where((element) => element.name.toLowerCase().contains(additionalQueryString))
+          .toList();
+    }
+    searchCache[searchString] = list;
+    return list;
+  }
+
+  Future<dynamic> _sendRequestOverSocket(String searchString) {
     Completer<dynamic> completer = Completer();
     _waitingResponse[searchString] = completer;
     searchString = searchString.toLowerCase().replaceAll('/', '');
-    _channel?.sink.add(
+    _channel!.sink.add(
       jsonEncode({"id": searchString, "type": "AQI_SEARCH_REQUEST", "payload": searchString}),
     );
     return completer.future;

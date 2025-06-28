@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:chilicizz/AQI/aqi_provider.dart';
 import 'package:chilicizz/config/config_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -23,13 +24,14 @@ class AQITabLoader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final config = context.watch<ConfigController>();
-    return ValueListenableBuilder<List<String>>(
-      valueListenable: config.aqiLocations,
-      builder: (context, value, child) {
-        debugPrint("loading LiveAQITab with $value");
+    final aqiProvider = Provider.of<AQIProvider>(context, listen: true);
+    return ListenableBuilder(
+      listenable: aqiProvider.aqiLocations,
+      builder: (context, child) {
+        debugPrint("loading LiveAQITab with ${aqiProvider.aqiLocations}");
         return LiveAQITab(
           socketURL: Uri.parse(dotenv.env['aqiUrl']!),
-          locations: value.toSet(),
+          locations: aqiProvider.aqiLocations.value!.toSet(),
           removeLocationCallback: (location) => config.removeAQILocation(location),
           updateLocationCallback: (original, updated) =>
               config.updateAQILocation(original, updated),
@@ -182,7 +184,6 @@ class _AQITabState extends State<LiveAQITab> {
   int _failures = 0;
   final Map<String, AQIData?> locationDataMap = {};
   bool _displayInput = false;
-  late AQILocationSearch aqiLocationSearch;
 
   @override
   void initState() {
@@ -289,7 +290,6 @@ class _AQITabState extends State<LiveAQITab> {
         }
         // request data from socket
         refreshAll();
-        aqiLocationSearch = SocketAQILocationSearch(widget.socketURL);
         return RefreshIndicator(
           onRefresh: () async {
             refreshAll();
@@ -318,7 +318,6 @@ class _AQITabState extends State<LiveAQITab> {
                                   _displayInput = false;
                                 });
                               },
-                              aqiLocationSearch: aqiLocationSearch,
                             ),
                             trailing: Row(mainAxisSize: MainAxisSize.min, children: [
                               OutlinedButton(
@@ -363,7 +362,6 @@ class _AQITabState extends State<LiveAQITab> {
                               _displayInput = false;
                             });
                           },
-                          aqiLocationSearch: aqiLocationSearch,
                         ),
                         trailing: Row(mainAxisSize: MainAxisSize.min, children: [
                           OutlinedButton(
@@ -416,7 +414,6 @@ class _AQITabState extends State<LiveAQITab> {
   @override
   void dispose() {
     debugPrint("Closing AQI websocket");
-    aqiLocationSearch.close();
     _channel.sink.close();
     super.dispose();
   }

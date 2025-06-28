@@ -62,7 +62,6 @@ class _AQIListTileState extends State<AQIListTile> {
       return editingLocation
           ? ListTile(
               title: AQILocationAutocomplete(
-                  aqiLocationSearch: aqiLocationSearch,
                   selectionCallback: (value) => {
                         widget.updateLocation(value),
                         editingLocation = false,
@@ -130,10 +129,7 @@ class _AQIListTileState extends State<AQIListTile> {
                   title: FittedBox(
                     alignment: Alignment.centerLeft,
                     fit: BoxFit.scaleDown,
-                    child: Text(
-                        isSmallScreen(context)
-                            ? data!.getShortCityName()
-                            : data!.cityName,
+                    child: Text(isSmallScreen(context) ? data!.getShortCityName() : data!.cityName,
                         style: Theme.of(context).textTheme.headlineSmall),
                   ),
                   subtitle: buildLastUpdatedText(data?.lastUpdatedTime),
@@ -217,9 +213,7 @@ class _AQIListTileState extends State<AQIListTile> {
   }
 
   String _getAqiFeedUrl(String location, String token) {
-    return widget.aqiFeedTemplate
-        .replaceAll("_LOCATION_", location)
-        .replaceAll("_TOKEN_", token);
+    return widget.aqiFeedTemplate.replaceAll("_LOCATION_", location).replaceAll("_TOKEN_", token);
   }
 
   Future<AQIData?> _fetchAQIData(String location) async {
