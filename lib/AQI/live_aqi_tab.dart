@@ -37,6 +37,8 @@ class _AQITabLoaderState extends State<AQITabLoader> {
                       setState(() {
                         _displayInput = false;
                         aqiProvider.addLocation(location);
+                        final snackBar = SnackBar(content: Text('Added new location: $location'));
+                        ScaffoldMessenger.of(context).showSnackBar(snackBar);
                       });
                     },
                   ),
@@ -57,18 +59,25 @@ class _AQITabLoaderState extends State<AQITabLoader> {
                     setState(() {
                       _displayInput = false;
                       aqiProvider.removeLocation(location);
+                      final snackBar = SnackBar(content: Text('Removed location: $location'));
+                      ScaffoldMessenger.of(context).showSnackBar(snackBar);
                     });
                   },
                   updateLocationCallback: (original, updated) {
                     setState(() {
                       _displayInput = false;
                       aqiProvider.updateLocation(original, updated);
+                      final snackBar =
+                          SnackBar(content: Text('Updated location: $original to $updated'));
+                      ScaffoldMessenger.of(context).showSnackBar(snackBar);
                     });
                   },
                   addLocationCallback: (location) {
                     setState(() {
                       _displayInput = false;
                       aqiProvider.addLocation(location);
+                      final snackBar = SnackBar(content: Text('Added new location: $location'));
+                      ScaffoldMessenger.of(context).showSnackBar(snackBar);
                     });
                   },
                 ),

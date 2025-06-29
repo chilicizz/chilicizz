@@ -55,8 +55,7 @@ class _HKOWarningsState extends State<HKOWarnings> {
   Future<List<WarningInformation>> dummyWarnings() async {
     List<WarningInformation> warnings = [];
     warnings.addAll(warningStringMap.keys
-        .map((key) => WarningInformation(
-            key, null, ["This is an example warning"], DateTime.now()))
+        .map((key) => WarningInformation(key, null, ["This is an example warning"], DateTime.now()))
         .toList());
     return warnings;
   }
@@ -88,8 +87,7 @@ class _HKOWarningsState extends State<HKOWarnings> {
           child: FutureBuilder<List<WarningInformation>>(
             future: futureWarnings,
             initialData: const [],
-            builder: (BuildContext context,
-                AsyncSnapshot<List<WarningInformation>> snapshot) {
+            builder: (BuildContext context, AsyncSnapshot<List<WarningInformation>> snapshot) {
               switch (snapshot.connectionState) {
                 case ConnectionState.waiting:
                   return const LoadingListView();
@@ -106,8 +104,7 @@ class _HKOWarningsState extends State<HKOWarnings> {
                                 leading: const CircleAvatar(
                                   child: Icon(Icons.done),
                                 ),
-                                title:
-                                    const Text("No weather warnings in force"),
+                                title: const Text("No weather warnings in force"),
                                 subtitle: buildLastTick(lastTick),
                               ),
                             ],

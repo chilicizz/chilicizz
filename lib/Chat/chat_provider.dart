@@ -23,7 +23,7 @@ class ChatModel extends ChangeNotifier {
 
 class ChatProvider {
   final Uri chatUrl;
-  ChatModel chatModel = ChatModel();
+  final chatModel = ChatModel();
   WebSocketChannel? _channel;
   int _reconnectAttempts = 0;
   bool _disposed = false;

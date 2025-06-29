@@ -25,9 +25,6 @@ class _ChatScreenState extends State<ChatScreen> {
   final FocusNode _focusNode = FocusNode();
   bool _isComposing = false;
 
-  // register the listener
-  _ChatScreenState();
-
   @override
   Widget build(BuildContext context) {
     final config = context.watch<ConfigController>();

@@ -6,9 +6,10 @@ import 'aqi_common.dart';
 
 // https://pub.dev/packages/fl_chart
 class ForecastChart extends StatelessWidget {
-  final Map<IAQIRecord, List<ForecastEntry>> data;
+  final Map<IAQIRecord, List<ForecastEntry>> _data;
 
-  const ForecastChart({super.key, required this.data});
+  const ForecastChart({super.key, required Map<IAQIRecord, List<ForecastEntry>> data})
+      : _data = data;
 
   int daysBetween(DateTime from, DateTime to) {
     from = DateTime(from.year, from.month, from.day);
@@ -20,8 +21,8 @@ class ForecastChart extends StatelessWidget {
   Widget build(BuildContext context) {
     Map<String, Color> colorMap = {};
     int i = 0;
-    int interval = (Colors.primaries.length - 1) ~/ data.length;
-    List<LineChartBarData> barData = data.entries.map((dataSeries) {
+    int interval = (Colors.primaries.length - 1) ~/ _data.length;
+    List<LineChartBarData> barData = _data.entries.map((dataSeries) {
       Color seriesColor = Colors.primaries[i += interval];
       colorMap[dataSeries.key.label] = seriesColor;
       return LineChartBarData(
@@ -63,9 +64,8 @@ class ForecastChart extends StatelessWidget {
                     showTitles: true,
                     interval: 1,
                     getTitlesWidget: (value, meta) {
-                      String text = graphFormat(DateTime.now()
-                          .add(Duration(days: value.toInt()))
-                          .toLocal());
+                      String text =
+                          graphFormat(DateTime.now().add(Duration(days: value.toInt())).toLocal());
                       return Text(text, textAlign: TextAlign.center);
                     }),
               ),
@@ -95,7 +95,7 @@ class ForecastChart extends StatelessWidget {
     return Wrap(
       direction: Axis.vertical,
       children: [
-        for (var e in data.entries)
+        for (var e in _data.entries)
           Chip(
             avatar: CircleAvatar(backgroundColor: colorMap[e.key.label]),
             label: Text(e.key.label),

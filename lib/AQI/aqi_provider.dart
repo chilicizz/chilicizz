@@ -9,20 +9,20 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 /// Storage model for AQI data.
 /// This model holds the AQI data for different locations and provides methods to access and manage it
 class AqiDataModel extends ChangeNotifier {
-  final Map<String, AQIData> locationDataMap = {};
+  final Map<String, AQIData> _locationDataMap = {};
 
   /// Returns the AQIData for a given location, or null if not available.
   AQIData? getAQIData(String location) {
-    return locationDataMap[location];
+    return _locationDataMap[location];
   }
 
   /// Returns a list of all locations with available AQIData.
   List<String> getAvailableLocations() {
-    return locationDataMap.keys.toList();
+    return _locationDataMap.keys.toList();
   }
 
   void addAQIData(String location, AQIData data) {
-    locationDataMap[location] = data;
+    _locationDataMap[location] = data;
     notifyListeners();
   }
 }
@@ -74,11 +74,10 @@ class AQIProvider {
   final UserAQILocations aqiLocations = UserAQILocations();
   final AqiDataModel aqiDataModel = AqiDataModel();
   final Map<String, List<AQILocation>> _searchCache = {};
-
+  final Map<String, Completer> _waitingResponse = {};
   WebSocketChannel? _channel;
   int _reconnectAttempts = 0;
   bool _disposed = false;
-  final Map<String, Completer> _waitingResponse = {};
 
   AQIProvider(this._chatUrl) {
     debugPrint('AQIProvider initialized with URL: $_chatUrl');

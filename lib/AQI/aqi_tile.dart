@@ -10,15 +10,17 @@ import 'forecast_chart.dart';
 class AQIStatelessListTile extends StatelessWidget {
   final String location;
   final AQIData? data;
-  final Function(String) removeLocationCallback;
-  final Function(String, String) updateLocationCallback;
+  final Function(String) _removeLocationCallback;
+  final Function(String, String) _updateLocationCallback;
 
   const AQIStatelessListTile(
       {super.key,
       required this.location,
       this.data,
-      required this.removeLocationCallback,
-      required this.updateLocationCallback});
+      required dynamic Function(String) removeLocationCallback,
+      required dynamic Function(String, String) updateLocationCallback})
+      : _updateLocationCallback = updateLocationCallback,
+        _removeLocationCallback = removeLocationCallback;
 
   @override
   Widget build(BuildContext context) {
@@ -66,10 +68,7 @@ class AQIStatelessListTile extends StatelessWidget {
             title: FittedBox(
               alignment: Alignment.centerLeft,
               fit: BoxFit.scaleDown,
-              child: Text(
-                  isSmallScreen(context)
-                      ? data!.getShortCityName()
-                      : data!.cityName,
+              child: Text(isSmallScreen(context) ? data!.getShortCityName() : data!.cityName,
                   style: Theme.of(context).textTheme.headlineSmall),
             ),
             subtitle: buildLastUpdatedText(data?.lastUpdatedTime),
@@ -107,12 +106,12 @@ class AQIStatelessListTile extends StatelessWidget {
   }
 
   void deleteMe() {
-    removeLocationCallback(location);
+    _removeLocationCallback(location);
   }
 
   void updateLocation(String newLocation) {
     if (newLocation != location) {
-      updateLocationCallback(location, newLocation);
+      _updateLocationCallback(location, newLocation);
     }
   }
 

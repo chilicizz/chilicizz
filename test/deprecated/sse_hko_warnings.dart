@@ -38,8 +38,7 @@ class _SSEHKOWarningsState extends State<SSEHKOWarnings> {
   List<WarningInformation> dummyWarnings() {
     List<WarningInformation> warnings = [];
     warnings.addAll(warningStringMap.keys
-        .map((key) => WarningInformation(
-            key, null, ["This is an example warning"], DateTime.now()))
+        .map((key) => WarningInformation(key, null, ["This is an example warning"], DateTime.now()))
         .toList());
     return warnings;
   }
@@ -78,11 +77,9 @@ class _SSEHKOWarningsState extends State<SSEHKOWarnings> {
                 return const LoadingListView();
               case ConnectionState.done:
                 debugPrint("HKO socket closed: ${snapshot.error.toString()}");
-                return ErrorListView(
-                    message: "Connection closed ${snapshot.error.toString()}");
+                return ErrorListView(message: "Connection closed ${snapshot.error.toString()}");
               case ConnectionState.none:
-                return ErrorListView(
-                    message: "No connection ${snapshot.error.toString()}");
+                return ErrorListView(message: "No connection ${snapshot.error.toString()}");
               default:
                 if (snapshot.hasError) {
                   debugPrint("Error: ${snapshot.error.toString()}");

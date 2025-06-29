@@ -6,16 +6,18 @@ import 'aqi_common.dart';
 
 /// Autocomplete for AQI locations
 class AQILocationAutocomplete extends StatelessWidget {
-  final Function(String value) selectionCallback;
-  final String? initialValue;
-  final bool autofocus;
+  final Function(String value) _selectionCallback;
+  final String? _initialValue;
+  final bool _autofocus;
 
   const AQILocationAutocomplete({
     super.key,
-    required this.selectionCallback,
-    this.autofocus = false,
-    this.initialValue,
-  });
+    required dynamic Function(String) selectionCallback,
+    bool autofocus = false,
+    String? initialValue,
+  })  : _selectionCallback = selectionCallback,
+        _initialValue = initialValue,
+        _autofocus = autofocus;
 
   @override
   Widget build(BuildContext context) {
@@ -23,15 +25,15 @@ class AQILocationAutocomplete extends StatelessWidget {
     return Autocomplete<AQILocation>(
       fieldViewBuilder: (BuildContext context, TextEditingController textEditingController,
           FocusNode focusNode, VoidCallback onFieldSubmitted) {
-        if (initialValue != null) {
-          textEditingController.text = initialValue!;
+        if (_initialValue != null) {
+          textEditingController.text = _initialValue!;
         }
         textEditingController.selection = TextSelection(
           baseOffset: 0,
           extentOffset: textEditingController.text.length,
         );
         return TextField(
-          autofocus: autofocus,
+          autofocus: _autofocus,
           focusNode: focusNode,
           controller: textEditingController,
           decoration: const InputDecoration(
@@ -53,7 +55,7 @@ class AQILocationAutocomplete extends StatelessWidget {
         return const Iterable<AQILocation>.empty();
       },
       onSelected: (AQILocation selection) {
-        selectionCallback(selection.url);
+        _selectionCallback(selection.url);
       },
     );
   }
