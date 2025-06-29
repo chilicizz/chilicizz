@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:chilicizz/Chat/chat_model.dart';
 import 'package:chilicizz/config/config_controller.dart';
 import 'package:chilicizz/data/chat_provider.dart';
@@ -34,20 +32,58 @@ class _ChatScreenState extends State<ChatScreen> {
     return ValueListenableBuilder(
         valueListenable: config.sessionId,
         builder: (context, sessionId, child) {
-          if (sessionId.isEmpty) {
-            var sessionId = DateTime.now().millisecondsSinceEpoch.toString();
-            context.read<ConfigController>().setSessionId(sessionId);
-            debugPrint("Session ID is empty setting new session: $sessionId.");
+          if (sessionId == null) {
+            debugPrint("Session Id not yet loaded"); // Session ID is null, show a loading indicator
+            return LoadingListView();
           }
-          // _channel.sink.add(sessionId);
           return ValueListenableBuilder(
               valueListenable: config.userName,
-              builder: (context, value, child) {
+              builder: (context, usernameVar, child) {
+                if (usernameVar == null || usernameVar.isEmpty) {
+                  // TODO do this better
+                  Future.microtask(() {
+                    context.mounted
+                        ? showDialog(
+                            context: context,
+                            barrierDismissible: false,
+                            builder: (context) {
+                              final usernameController = TextEditingController();
+                              return AlertDialog(
+                                title: const Text('Enter your display name'),
+                                content: TextField(
+                                  controller: usernameController,
+                                  decoration: const InputDecoration(hintText: 'Display Name'),
+                                  autofocus: true,
+                                  onSubmitted: (value) {
+                                    if (value.isNotEmpty) {
+                                      config.setUserName(value);
+                                      Navigator.of(context).pop();
+                                    }
+                                  },
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () {
+                                      if (usernameController.text.isNotEmpty) {
+                                        config.userName.value = usernameController.text;
+                                        Navigator.of(context).pop();
+                                      }
+                                    },
+                                    child: const Text('OK'),
+                                  ),
+                                ],
+                              );
+                            },
+                          )
+                        : null;
+                  });
+                }
+
                 var provider = Provider.of<ChatProvider>(context, listen: true);
                 return Scaffold(
                   drawer: NavDrawer(routes: routes),
                   appBar: AppBar(
-                    title: Text("${widget.title} (${config.userName.value})"),
+                    title: Text("${widget.title} (${usernameVar ?? ""})"),
                   ),
                   body: Padding(
                     padding: const EdgeInsets.all(20.0),
@@ -61,23 +97,28 @@ class _ChatScreenState extends State<ChatScreen> {
                             builder: (context, child) {
                               return ListView.builder(
                                 reverse: true,
-                                itemBuilder: (_, int index) => provider.chatModel.messages[index],
+                                itemBuilder: (context, int index) {
+                                  // Display messages in reverse order
+                                  var message = provider.chatModel.messages[index];
+                                  return message;
+                                },
                                 itemCount: provider.chatModel.messages.length,
                               );
                             },
                           ),
                         ),
                         Container(
-                          decoration: BoxDecoration(color: Theme.of(context).cardColor),
+                          padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).cardColor,
+                            border:
+                                Border.all(color: Theme.of(context).colorScheme.primaryContainer),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
                           child: _buildTextComposer(),
                         ),
                       ],
                     ),
-                  ),
-                  floatingActionButton: FloatingActionButton(
-                    onPressed: _sendMessage,
-                    tooltip: 'Send message',
-                    child: const Icon(Icons.send),
                   ),
                 );
               });
@@ -106,7 +147,7 @@ class _ChatScreenState extends State<ChatScreen> {
           ),
         ),
         IconTheme(
-          data: IconThemeData(color: Theme.of(context).colorScheme.secondary),
+          data: IconThemeData(color: Theme.of(context).colorScheme.primary),
           child: IconButton(
             icon: const Icon(Icons.send),
             onPressed: _isComposing ? () => _sendMessage() : null,
@@ -118,12 +159,12 @@ class _ChatScreenState extends State<ChatScreen> {
 
   void _sendMessage() {
     if (_textController.value.text.isNotEmpty) {
-      var payload = jsonEncode({
-        'text': _textController.text,
-        'name': context.read<ConfigController>().userName.value,
-        'sessionId': context.read<ConfigController>().sessionId.value,
-      });
-      context.read<ChatProvider>().sendMessage(ChatMessage.fromJsonString(payload));
+      var chatMessage = ChatMessage(
+        text: _textController.text,
+        name: context.read<ConfigController>().userName.value ?? "",
+        sessionId: context.read<ConfigController>().sessionId.value ?? "",
+      );
+      context.read<ChatProvider>().sendMessage(chatMessage);
       _isComposing = false;
     }
     _textController.clear();

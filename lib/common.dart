@@ -16,8 +16,7 @@ class NavRoute {
   Map<String, Widget Function(BuildContext)> getRoutes() {
     var routes = {path: buildFunction};
     if (subRoutes.isNotEmpty) {
-      routes
-          .addAll({for (var e in subRoutes) "$path${e.path}": e.buildFunction});
+      routes.addAll({for (var e in subRoutes) "$path${e.path}": e.buildFunction});
     }
     return routes;
   }
@@ -62,7 +61,7 @@ class NavDrawer extends StatelessWidget {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  Text('ToyBox 2024'),
+                  Text('2025'),
                 ],
               ),
             ),
@@ -91,9 +90,7 @@ class NavDrawer extends StatelessWidget {
                           title: Text(subRoute.label),
                           onTap: () {
                             Navigator.pushNamedAndRemoveUntil(
-                                context,
-                                "${route.path}${subRoute.path}",
-                                ModalRoute.withName('/'));
+                                context, "${route.path}${subRoute.path}", ModalRoute.withName('/'));
                           },
                         )
                     ],

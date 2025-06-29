@@ -6,9 +6,9 @@ import 'local_storage_config_store.dart';
 class ConfigController {
   final ConfigStore _store;
 
-  final ValueNotifier<String> userName = ValueNotifier('anon');
+  final ValueNotifier<String?> userName = ValueNotifier(null);
 
-  final ValueNotifier<String> sessionId = ValueNotifier('');
+  final ValueNotifier<String?> sessionId = ValueNotifier(null);
 
   /// Creates a new instance of [ConfigController] backed by [store].
   ///

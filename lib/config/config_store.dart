@@ -1,5 +1,5 @@
 abstract class ConfigStore {
-  Future<String> getUserName();
+  Future<String?> getUserName();
 
   Future<void> saveUserName(String value);
 

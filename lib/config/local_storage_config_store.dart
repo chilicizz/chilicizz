@@ -7,9 +7,9 @@ class ConfigLocalStorage extends ConfigStore {
   final Future<SharedPreferences> instanceFuture = SharedPreferences.getInstance();
 
   @override
-  Future<String> getUserName() async {
+  Future<String?> getUserName() async {
     final prefs = await instanceFuture;
-    return prefs.getString('user_name') ?? 'anon';
+    return prefs.getString('user_name');
   }
 
   @override
@@ -21,7 +21,10 @@ class ConfigLocalStorage extends ConfigStore {
   @override
   Future<String> getSessionId() async {
     final prefs = await instanceFuture;
-    return prefs.getString('device_id') ?? UniqueKey().hashCode.toString();
+    // If no session ID is stored, generate a new one using UniqueKey
+    var id = prefs.getString('device_id') ?? UniqueKey().hashCode.toString();
+    prefs.setString('device_id', id);
+    return id;
   }
 
   @override
