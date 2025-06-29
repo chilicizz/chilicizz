@@ -55,8 +55,8 @@ class _ChatScreenState extends State<ChatScreen> {
                                   decoration: const InputDecoration(hintText: 'Display Name'),
                                   autofocus: true,
                                   onSubmitted: (value) {
-                                    if (value.isNotEmpty) {
-                                      config.setUserName(value);
+                                    if (value.trim().isNotEmpty) {
+                                      config.setUserName(value.trim());
                                       Navigator.of(context).pop();
                                     }
                                   },
@@ -64,8 +64,8 @@ class _ChatScreenState extends State<ChatScreen> {
                                 actions: [
                                   TextButton(
                                     onPressed: () {
-                                      if (usernameController.text.isNotEmpty) {
-                                        config.userName.value = usernameController.text;
+                                      if (usernameController.text.trim().isNotEmpty) {
+                                        config.setUserName(usernameController.text.trim());
                                         Navigator.of(context).pop();
                                       }
                                     },
