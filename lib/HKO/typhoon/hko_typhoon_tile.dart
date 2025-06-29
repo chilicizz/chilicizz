@@ -15,10 +15,7 @@ class TyphoonTile extends StatelessWidget {
   final bool expanded;
 
   const TyphoonTile(
-      {super.key,
-      required this.typhoon,
-      required this.lastTick,
-      this.expanded = false});
+      {super.key, required this.typhoon, required this.lastTick, this.expanded = false});
 
   @override
   Widget build(BuildContext context) {
@@ -46,10 +43,9 @@ class TyphoonTile extends StatelessWidget {
             } else {
               if (snapshot.data != null) {
                 final TyphoonTrack track = snapshot.data!;
-                final double distKm = haversineCalc.as(
-                    LengthUnit.Kilometer, hkLatLng, track.current.getLatLng());
-                final String currentDistance =
-                    !distKm.isNaN ? '| distance $distKm km' : "";
+                final double distKm =
+                    haversineCalc.as(LengthUnit.Kilometer, hkLatLng, track.current.getLatLng());
+                final String currentDistance = !distKm.isNaN ? '| distance $distKm km' : "";
                 final String maxWindSpeed = !track.current.maximumWind!.isNaN
                     ? '| max winds up to ${track.current.maximumWind} km/h'
                     : "";
@@ -99,10 +95,8 @@ class TyphoonTile extends StatelessWidget {
                                   : Text(typhoonClass.name),
                             ),
                             avatar: CircleAvatar(
-                              backgroundColor:
-                                  Theme.of(context).scaffoldBackgroundColor,
-                              child:
-                                  Icon(Icons.storm, color: typhoonClass.color),
+                              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+                              child: Icon(Icons.storm, color: typhoonClass.color),
                             ),
                           );
                         }).toList(),
@@ -114,8 +108,7 @@ class TyphoonTile extends StatelessWidget {
                 debugPrint(snapshot.error?.toString());
                 return ListTile(
                   leading: Tooltip(
-                    message:
-                        "Failed to load typhoon track data: ${snapshot.error?.toString()}",
+                    message: "Failed to load typhoon track data: ${snapshot.error?.toString()}",
                     child: const CircleAvatar(
                       child: Icon(Icons.error_outline),
                     ),

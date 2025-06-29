@@ -1,13 +1,15 @@
 import 'dart:convert';
 
-import 'package:chilicizz/Chat/chat_provider.dart';
+import 'package:chilicizz/Chat/chat_model.dart';
 import 'package:chilicizz/config/config_controller.dart';
+import 'package:chilicizz/data/chat_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../common.dart';
 import '../main.dart';
 
+// This screen displays a chat interface where users can send and receive messages.
 class ChatScreen extends StatefulWidget {
   const ChatScreen({
     super.key,
@@ -132,44 +134,5 @@ class _ChatScreenState extends State<ChatScreen> {
   void dispose() {
     _textController.dispose();
     super.dispose();
-  }
-}
-
-class ChatMessage extends StatelessWidget {
-  final String text;
-  final String name;
-
-  const ChatMessage({super.key, required this.text, required this.name});
-
-  /// Factory constructor to create a ChatMessage from a JSON object.
-  /// The JSON object should contain 'text' and optionally 'name'.
-  /// If 'name' is not provided, it defaults to an empty string.
-  factory ChatMessage.fromJson(Map<String, dynamic> json) {
-    return ChatMessage(
-      text: json['text'] as String,
-      name: json['name'] as String? ?? "",
-    );
-  }
-
-  factory ChatMessage.fromJsonString(String jsonString) {
-    final Map<String, dynamic> json = jsonDecode(jsonString);
-    return ChatMessage.fromJson(json);
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'text': text,
-      'name': name,
-    };
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      title: Text(text),
-      leading: CircleAvatar(
-        child: Text(name.isNotEmpty ? name[0].toUpperCase() : '?'),
-      ),
-    );
   }
 }

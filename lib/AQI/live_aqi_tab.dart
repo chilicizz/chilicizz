@@ -1,9 +1,10 @@
-import 'package:chilicizz/AQI/aqi_provider.dart';
+import 'package:chilicizz/data/aqi_provider.dart';
 import 'package:flutter/material.dart';
 import 'aqi_auto_complete.dart';
 import 'package:provider/provider.dart';
 import './aqi_tile.dart';
 
+// This tab displays the live AQI data for multiple locations.
 class AQITabLoader extends StatefulWidget {
   const AQITabLoader({super.key});
 

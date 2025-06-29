@@ -2,8 +2,6 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 
-const String aqiToken = String.fromEnvironment('AQI_TOKEN');
-
 class AQILocation {
   final String name;
   final String url;

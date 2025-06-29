@@ -52,8 +52,7 @@ class _HKOTyphoonTabState extends State<HKOTyphoonTab> {
           onRefresh: refresh,
           child: FutureBuilder(
             future: futureTyphoons,
-            builder:
-                (BuildContext context, AsyncSnapshot<List<Typhoon>> snapshot) {
+            builder: (BuildContext context, AsyncSnapshot<List<Typhoon>> snapshot) {
               switch (snapshot.connectionState) {
                 case ConnectionState.waiting:
                   return const LoadingListView();

@@ -27,8 +27,7 @@ class HKOTyphoonTrackWidget extends StatelessWidget {
     for (int i = 0; i < track.past.length; i++) {
       final TyphoonPosition position = track.past[i];
       // update if closer
-      final double distKm = haversineCalc.as(
-          LengthUnit.Kilometer, hkLatLng, position.getLatLng());
+      final double distKm = haversineCalc.as(LengthUnit.Kilometer, hkLatLng, position.getLatLng());
       if (closestPosition == null || distKm < minDistance) {
         closestPosition = position;
         minDistance = distKm;
@@ -65,8 +64,7 @@ class HKOTyphoonTrackWidget extends StatelessWidget {
     for (int i = 0; i < track.forecast.length; i++) {
       final TyphoonPosition position = track.forecast[i];
       // update if closer
-      final double distKm = haversineCalc.as(
-          LengthUnit.Kilometer, hkLatLng, position.getLatLng());
+      final double distKm = haversineCalc.as(LengthUnit.Kilometer, hkLatLng, position.getLatLng());
       if (closestPosition == null || distKm < minDistance) {
         closestPosition = position;
         minDistance = distKm;
@@ -139,9 +137,7 @@ class HKOTyphoonTrackWidget extends StatelessWidget {
           minZoom: 5.0,
           maxZoom: 10.0,
           interactionOptions: const InteractionOptions(
-            flags: InteractiveFlag.drag |
-                InteractiveFlag.pinchZoom |
-                InteractiveFlag.doubleTapZoom,
+            flags: InteractiveFlag.drag | InteractiveFlag.pinchZoom | InteractiveFlag.doubleTapZoom,
           ),
         ),
         children: [

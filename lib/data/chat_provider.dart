@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:chilicizz/Chat/chat.dart';
+import 'package:chilicizz/Chat/chat_model.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'dart:async';

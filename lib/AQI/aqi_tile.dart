@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../common.dart';
-import 'aqi_common.dart';
+import 'aqi_model.dart';
 import 'forecast_chart.dart';
 
 /// A stateless widget that displays the AQI data for a location as a ListTile

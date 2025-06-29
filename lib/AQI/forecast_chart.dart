@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 
 import '../common.dart';
-import 'aqi_common.dart';
+import 'aqi_model.dart';
 
+// This widget displays a forecast chart for AQI data.
 // https://pub.dev/packages/fl_chart
 class ForecastChart extends StatelessWidget {
   final Map<IAQIRecord, List<ForecastEntry>> _data;

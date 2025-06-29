@@ -1,8 +1,8 @@
-import 'package:chilicizz/AQI/aqi_provider.dart';
+import 'package:chilicizz/data/aqi_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'aqi_common.dart';
+import 'aqi_model.dart';
 
 /// Autocomplete for AQI locations
 class AQILocationAutocomplete extends StatelessWidget {
