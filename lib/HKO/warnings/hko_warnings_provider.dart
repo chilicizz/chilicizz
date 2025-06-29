@@ -4,9 +4,9 @@ import 'package:chilicizz/HKO/hko_types.dart';
 import 'package:flutter/widgets.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
+// Extracts warnings from the HKO feed JSON
 class HKOWarningsProvider {
-  ValueNotifier<List<WarningInformation>?> hkoWeatherWarnings =
-      ValueNotifier(null);
+  final ValueNotifier<List<WarningInformation>?> hkoWeatherWarnings = ValueNotifier(null);
   DateTime lastTick = DateTime.now();
 
   final Uri hkoWarningsURL;

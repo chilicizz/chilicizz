@@ -167,8 +167,7 @@ class _DashboardState extends State<Dashboard> {
         body: const TabBarView(
           children: [
             LiveHKOWarnings(),
-            AQIPreferenceLoader(),
-            //AQITabLoader(),
+            AQITabLoader(),
             HKOTyphoonTab(),
           ],
         ),

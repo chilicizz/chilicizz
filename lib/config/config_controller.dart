@@ -6,11 +6,9 @@ import 'local_storage_config_store.dart';
 class ConfigController {
   final ConfigStore _store;
 
-  ValueNotifier<String> userName = ValueNotifier('anon');
+  final ValueNotifier<String> userName = ValueNotifier('anon');
 
-  ValueNotifier<List<String>> aqiLocations = ValueNotifier(<String>[]);
-
-  ValueNotifier<String> sessionId = ValueNotifier('');
+  final ValueNotifier<String> sessionId = ValueNotifier('');
 
   /// Creates a new instance of [ConfigController] backed by [store].
   ///
@@ -26,33 +24,6 @@ class ConfigController {
     _store.saveUserName(userName);
   }
 
-  void setAQILocations(List<String> aqiLocations) {
-    this.aqiLocations.value = aqiLocations;
-    _store.saveAQILocations(aqiLocations);
-  }
-
-  void addAQILocation(String location) {
-    List<String> locations = aqiLocations.value;
-    locations.add(location);
-    aqiLocations.value = locations;
-    setAQILocations(locations);
-  }
-
-  void updateAQILocation(String originalLocation, String newLocation) {
-    List<String> locations = aqiLocations.value;
-    locations.remove(originalLocation);
-    locations.add(newLocation);
-    aqiLocations.value = locations;
-    setAQILocations(locations);
-  }
-
-  void removeAQILocation(String originalLocation) {
-    List<String> locations = aqiLocations.value;
-    locations.remove(originalLocation);
-    aqiLocations.value = locations;
-    setAQILocations(locations);
-  }
-
   /// Sets the session ID and persists it.
   void setSessionId(String sessionId) {
     this.sessionId.value = sessionId;
@@ -64,7 +35,6 @@ class ConfigController {
     final loadedValues = await Future.wait([
       _store.getSessionId().then((value) => sessionId.value = value),
       _store.getUserName().then((value) => userName.value = value),
-      _store.getAQILocations().then((value) => aqiLocations.value = value),
     ]);
     debugPrint('Loaded state from persistence: $loadedValues');
   }
