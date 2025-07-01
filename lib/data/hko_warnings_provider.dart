@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:chilicizz/HKO/warnings_model.dart';
 import 'package:chilicizz/HKO/typhoon_model.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 class TyphoonTrackNotifier extends ChangeNotifier {
@@ -34,6 +35,7 @@ class HKOWarningsProvider {
 
   HKOWarningsProvider(this.hkoWarningsURL) {
     _connect();
+    refreshTyphoons();
   }
 
   void _connect() {
@@ -82,6 +84,22 @@ class HKOWarningsProvider {
 
   void triggerRefresh() {
     _channel?.sink.add("Refresh");
+  }
+
+  void refreshTyphoons() {
+    // Fetch typhoon data
+    TyphoonHttpClient.fetchTyphoonFeed(dotenv.env['hkoTyphoonUrl']!).then((typhoons) {
+      hkoTyphoons.value = typhoons;
+      for (var typhoon in typhoons) {
+        TyphoonHttpClient.fetchTyphoonTrack(typhoon).then((track) {
+          if (track != null) {
+            typhoonTracks.addTyphoonTrack(typhoon.id.toString(), track);
+          }
+        });
+      }
+    }).catchError((error) {
+      debugPrint('HkoWarningsProvider Error fetching typhoons: $error');
+    });
   }
 
   void dispose() {

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:chilicizz/HKO/typhoon/dummy_typhoon.dart';
 import 'package:chilicizz/common.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -28,36 +29,7 @@ class Typhoon {
   }
 
   Future<TyphoonTrack?> getTyphoonTrack() async {
-    try {
-      Uri uri = getTrackUrlId();
-      var response = await http.get(uri, headers: {
-        HttpHeaders.contentTypeHeader: 'application/xml',
-        HttpHeaders.accessControlAllowOriginHeader: '*',
-        HttpHeaders.accessControlAllowMethodsHeader: 'GET,HEAD,POST,OPTIONS',
-        HttpHeaders.accessControlAllowHeadersHeader: '*',
-      });
-      if (response.statusCode == 200) {
-        String xmlDoc = const Utf8Decoder().convert(response.bodyBytes);
-        var typhoonTrack = parseTyphoonTrack(xmlDoc);
-        return typhoonTrack;
-      }
-    } catch (e) {
-      debugPrint("Error $e falling back to proxy");
-      Uri uri = getTrackUrl();
-      var response = await http.get(uri, headers: {
-        HttpHeaders.contentTypeHeader: 'application/xml',
-        HttpHeaders.accessControlAllowOriginHeader: '*',
-        HttpHeaders.accessControlAllowMethodsHeader: 'GET,HEAD,POST,OPTIONS',
-        HttpHeaders.accessControlAllowHeadersHeader: '*',
-      });
-      if (response.statusCode == 200) {
-        String xmlDoc = const Utf8Decoder().convert(response.bodyBytes);
-        var typhoonTrack = parseTyphoonTrack(xmlDoc);
-        return typhoonTrack;
-      }
-      debugPrint("Failed to fetch typhoon data $e");
-    }
-    return null;
+    return TyphoonHttpClient.fetchTyphoonTrack(this);
   }
 }
 
@@ -255,6 +227,67 @@ TyphoonPosition? parseEntry(XmlElement element) {
     return TyphoonPosition.fromXMLElement(element);
   } catch (e) {
     debugPrint("Failed to parse typhoon position data $e");
+    return null;
+  }
+}
+
+class TyphoonHttpClient {
+  static Future<List<Typhoon>> dummyTyphoonList() async {
+    return [dummyTyphoon()];
+  }
+
+  static Future<List<Typhoon>> fetchTyphoonFeed(String hkoTyphoonUrl) async {
+    try {
+      var path = Uri.parse(hkoTyphoonUrl);
+      var response = await http.get(path, headers: {
+        HttpHeaders.contentTypeHeader: 'application/xml',
+        HttpHeaders.accessControlAllowOriginHeader: '*',
+        HttpHeaders.accessControlAllowMethodsHeader: 'GET,HEAD,POST,OPTIONS',
+        HttpHeaders.accessControlAllowHeadersHeader: '*',
+      });
+      if (response.statusCode == 200) {
+        String xmlString = const Utf8Decoder().convert(response.bodyBytes);
+        var typhoonFeed = parseTyphoonFeed(xmlString);
+        return typhoonFeed;
+      } else {
+        throw Exception('Feed returned ${response.body}');
+      }
+    } catch (e) {
+      debugPrint("Failed to fetch typhoon data $e");
+      rethrow;
+    }
+  }
+
+  static Future<TyphoonTrack?> fetchTyphoonTrack(Typhoon typhoon) async {
+    try {
+      Uri uri = typhoon.getTrackUrlId();
+      var response = await http.get(uri, headers: {
+        HttpHeaders.contentTypeHeader: 'application/xml',
+        HttpHeaders.accessControlAllowOriginHeader: '*',
+        HttpHeaders.accessControlAllowMethodsHeader: 'GET,HEAD,POST,OPTIONS',
+        HttpHeaders.accessControlAllowHeadersHeader: '*',
+      });
+      if (response.statusCode == 200) {
+        String xmlDoc = const Utf8Decoder().convert(response.bodyBytes);
+        var typhoonTrack = parseTyphoonTrack(xmlDoc);
+        return typhoonTrack;
+      }
+    } catch (e) {
+      debugPrint("Error $e falling back to proxy");
+      Uri uri = typhoon.getTrackUrl();
+      var response = await http.get(uri, headers: {
+        HttpHeaders.contentTypeHeader: 'application/xml',
+        HttpHeaders.accessControlAllowOriginHeader: '*',
+        HttpHeaders.accessControlAllowMethodsHeader: 'GET,HEAD,POST,OPTIONS',
+        HttpHeaders.accessControlAllowHeadersHeader: '*',
+      });
+      if (response.statusCode == 200) {
+        String xmlDoc = const Utf8Decoder().convert(response.bodyBytes);
+        var typhoonTrack = parseTyphoonTrack(xmlDoc);
+        return typhoonTrack;
+      }
+      debugPrint("Failed to fetch typhoon data $e");
+    }
     return null;
   }
 }

@@ -1,14 +1,10 @@
 import 'dart:async';
-import 'dart:convert';
-import 'dart:io';
 
 import 'package:chilicizz/HKO/typhoon_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:http/http.dart' as http;
 
 import '../../common.dart';
-import 'dummy_typhoon.dart';
 import 'hko_typhoon_tile.dart';
 
 class HKOTyphoonTab extends StatefulWidget {
@@ -22,24 +18,15 @@ class _HKOTyphoonTabState extends State<HKOTyphoonTab> {
   late Future<List<Typhoon>> futureTyphoons;
   DateTime lastTick = DateTime.now();
 
-  Future<List<Typhoon>> dummyTyphoonList() async {
-    return [dummyTyphoon()];
-  }
-
   @override
   void initState() {
     super.initState();
     refresh();
   }
 
-  @override
-  void dispose() {
-    super.dispose();
-  }
-
   Future<void> refresh({Timer? t}) async {
     setState(() {
-      futureTyphoons = _fetchTyphoonFeed(dotenv.env['hkoTyphoonUrl']!);
+      futureTyphoons = TyphoonHttpClient.fetchTyphoonFeed(dotenv.env['hkoTyphoonUrl']!);
       lastTick = DateTime.now();
     });
   }
@@ -72,28 +59,6 @@ class _HKOTyphoonTabState extends State<HKOTyphoonTab> {
         ),
       ),
     );
-  }
-
-  Future<List<Typhoon>> _fetchTyphoonFeed(String hkoTyphoonUrl) async {
-    try {
-      var path = Uri.parse(hkoTyphoonUrl);
-      var response = await http.get(path, headers: {
-        HttpHeaders.contentTypeHeader: 'application/xml',
-        HttpHeaders.accessControlAllowOriginHeader: '*',
-        HttpHeaders.accessControlAllowMethodsHeader: 'GET,HEAD,POST,OPTIONS',
-        HttpHeaders.accessControlAllowHeadersHeader: '*',
-      });
-      if (response.statusCode == 200) {
-        String xmlString = const Utf8Decoder().convert(response.bodyBytes);
-        var typhoonFeed = parseTyphoonFeed(xmlString);
-        return typhoonFeed;
-      } else {
-        throw Exception('Feed returned ${response.body}');
-      }
-    } catch (e) {
-      debugPrint("Failed to fetch typhoon data $e");
-      rethrow;
-    }
   }
 }
 
