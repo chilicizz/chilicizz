@@ -21,6 +21,7 @@ class ChatModel extends ChangeNotifier {
   List<ChatMessage> get messages => _messages;
 }
 
+// ChatProvider manages the WebSocket connection and message handling
 class ChatProvider {
   final Uri chatUrl;
   final chatModel = ChatModel();

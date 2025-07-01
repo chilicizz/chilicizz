@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:sse/client/sse_client.dart';
 
 import 'package:chilicizz/common.dart';
-import 'package:chilicizz/HKO/hko_types.dart';
+import 'package:chilicizz/HKO/warnings_model.dart';
 import 'package:chilicizz/HKO/warnings/hko_warnings_list.dart';
 
 /// SSE Does not currently seem to be working for Web

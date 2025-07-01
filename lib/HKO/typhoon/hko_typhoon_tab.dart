@@ -2,13 +2,13 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:chilicizz/HKO/typhoon_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 
 import '../../common.dart';
 import 'dummy_typhoon.dart';
-import '../hko_types.dart';
 import 'hko_typhoon_tile.dart';
 
 class HKOTyphoonTab extends StatefulWidget {

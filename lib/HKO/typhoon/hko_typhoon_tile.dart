@@ -1,13 +1,9 @@
+import 'package:chilicizz/HKO/typhoon_model.dart';
 import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../../common.dart';
-import '../hko_types.dart';
 import './hko_typhoon_track.dart';
-
-const LatLng hkLatLng = LatLng(22.3453, 114.1372);
-const Distance haversineCalc = Distance(calculator: Haversine());
-const mapUserAgent = "app.cyrilng.com";
 
 class TyphoonTile extends StatelessWidget {
   final Typhoon typhoon;

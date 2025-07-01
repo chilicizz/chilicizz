@@ -1,4 +1,4 @@
-import '../hko_types.dart';
+import 'package:chilicizz/HKO/typhoon_model.dart';
 
 class DummyTyphoon extends Typhoon {
   DummyTyphoon(

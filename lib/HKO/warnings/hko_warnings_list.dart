@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../common.dart';
-import '../hko_types.dart';
+import '../warnings_model.dart';
 
 class HKOWarningsList extends StatelessWidget {
   const HKOWarningsList({

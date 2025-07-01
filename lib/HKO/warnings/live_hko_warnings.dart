@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../common.dart';
-import '../hko_types.dart';
+import '../warnings_model.dart';
 import './hko_warnings_list.dart';
 
 // This page displays live HKO warnings

@@ -1,12 +1,30 @@
 import 'dart:convert';
 
-import 'package:chilicizz/HKO/hko_types.dart';
+import 'package:chilicizz/HKO/warnings_model.dart';
+import 'package:chilicizz/HKO/typhoon_model.dart';
 import 'package:flutter/widgets.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
+
+class TyphoonTrackNotifier extends ChangeNotifier {
+  final Map<String, TyphoonTrack> _typhoonTracks = {};
+
+  TyphoonTrack? getTyphoonTrack(String typhoonId) {
+    return _typhoonTracks[typhoonId];
+  }
+
+  void addTyphoonTrack(String typhoonId, TyphoonTrack track) {
+    _typhoonTracks[typhoonId] = track;
+    notifyListeners();
+  }
+}
 
 // Extracts warnings from the HKO feed JSON
 class HKOWarningsProvider {
   final ValueNotifier<List<WarningInformation>?> hkoWeatherWarnings = ValueNotifier(null);
+  final ValueNotifier<List<Typhoon>?> hkoTyphoons = ValueNotifier(null);
+  final TyphoonTrackNotifier typhoonTracks = TyphoonTrackNotifier();
+
+  // Last time the WebSocket received a message
   DateTime lastTick = DateTime.now();
 
   final Uri hkoWarningsURL;

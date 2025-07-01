@@ -1,15 +1,17 @@
+import 'package:chilicizz/HKO/typhoon_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../../common.dart';
-import '../hko_types.dart';
 
 const LatLng hkLatLng = LatLng(22.3453, 114.1372);
 const Distance haversineCalc = Distance(calculator: Haversine());
-const mapUserAgent = "app.cyrilng.com";
+const String mapUserAgent = "app.cyrilng.com";
 
+// This widget displays the track of a typhoon on a Flutter Map
+// It shows the past, current, and forecast positions of the typhoon
 class HKOTyphoonTrackWidget extends StatelessWidget {
   final TyphoonTrack track;
 
