@@ -3,17 +3,16 @@ import 'dart:convert';
 import 'package:chilicizz/HKO/warnings_model.dart';
 import 'package:chilicizz/HKO/typhoon_model.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 class TyphoonTrackNotifier extends ChangeNotifier {
-  final Map<String, TyphoonTrack> _typhoonTracks = {};
+  final Map<String, TyphoonTrack?> _typhoonTracks = {};
 
   TyphoonTrack? getTyphoonTrack(String typhoonId) {
     return _typhoonTracks[typhoonId];
   }
 
-  void addTyphoonTrack(String typhoonId, TyphoonTrack track) {
+  void addTyphoonTrack(String typhoonId, TyphoonTrack? track) {
     _typhoonTracks[typhoonId] = track;
     notifyListeners();
   }
@@ -29,11 +28,12 @@ class HKOWarningsProvider {
   DateTime lastTick = DateTime.now();
 
   final Uri hkoWarningsURL;
+  final String hkoTyphoonURL;
   WebSocketChannel? _channel;
   int _reconnectAttempts = 0;
   bool _disposed = false;
 
-  HKOWarningsProvider(this.hkoWarningsURL) {
+  HKOWarningsProvider(this.hkoWarningsURL, this.hkoTyphoonURL) {
     _connect();
     refreshTyphoons();
   }
@@ -88,7 +88,7 @@ class HKOWarningsProvider {
 
   void refreshTyphoons() {
     // Fetch typhoon data
-    TyphoonHttpClient.fetchTyphoonFeed(dotenv.env['hkoTyphoonUrl']!).then((typhoons) {
+    TyphoonHttpClient.fetchTyphoonFeed(hkoTyphoonURL).then((typhoons) {
       hkoTyphoons.value = typhoons;
       for (var typhoon in typhoons) {
         TyphoonHttpClient.fetchTyphoonTrack(typhoon).then((track) {

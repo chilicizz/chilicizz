@@ -70,7 +70,8 @@ class MyApp extends StatelessWidget {
         Provider(create: (context) => ConfigController()),
         Provider(create: (context) => ChatProvider(Uri.parse(dotenv.env['chatUrl']!))),
         Provider(
-          create: (context) => HKOWarningsProvider(Uri.parse(dotenv.env['warningsUrl']!)),
+          create: (context) => HKOWarningsProvider(
+              Uri.parse(dotenv.env['warningsUrl']!), dotenv.env['hkoTyphoonUrl']!),
         ),
         Provider(
           create: (context) => AQIProvider(Uri.parse(dotenv.env['aqiUrl']!)),
@@ -168,7 +169,7 @@ class _DashboardState extends State<Dashboard> {
           children: [
             LiveHKOWarnings(),
             AQITabLoader(),
-            HKOTyphoonTab(),
+            TyphoonTab(),
           ],
         ),
       ),

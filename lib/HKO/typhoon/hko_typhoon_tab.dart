@@ -1,12 +1,62 @@
 import 'dart:async';
 
+import 'package:chilicizz/HKO/typhoon/dummy_typhoon.dart';
 import 'package:chilicizz/HKO/typhoon_model.dart';
+import 'package:chilicizz/data/hko_warnings_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:provider/provider.dart';
 
 import '../../common.dart';
 import 'hko_typhoon_tile.dart';
 
+class TyphoonTab extends StatelessWidget {
+  const TyphoonTab({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    var provider = context.watch<HKOWarningsProvider>();
+    return ValueListenableBuilder(
+      valueListenable: provider.hkoTyphoons,
+      builder: (BuildContext context, List<Typhoon>? typhoons, Widget? child) {
+        if (typhoons == null) {
+          return const LoadingListView();
+        }
+        return Scaffold(
+          body: Center(
+            child: RefreshIndicator(
+              onRefresh: () {
+                provider.refreshTyphoons();
+                return Future.value();
+              },
+              child: typhoons.isNotEmpty
+                  ? TyphoonsListView(typhoons: typhoons, lastTick: DateTime.now())
+                  : NoTyphoonsListView(lastTick: DateTime.now()),
+            ),
+          ),
+          floatingActionButton: GestureDetector(
+            child: ElevatedButton(
+              onPressed: () {
+                provider.refreshTyphoons();
+              },
+              child: buildLastTick(DateTime.now()),
+            ),
+            onLongPress: () async {
+              // For testing purposes, load dummy typhoon data
+              final dummyTyphoons = await TyphoonHttpClient.dummyTyphoonList();
+              provider.hkoTyphoons.value = dummyTyphoons;
+              dummyTrack().then((track) {
+                provider.typhoonTracks.addTyphoonTrack("2102", track);
+              });
+            },
+          ),
+        );
+      },
+    );
+  }
+}
+
+@Deprecated("Use TyphoonTab prefer fetching data from HKOWarningsProvider")
 class HKOTyphoonTab extends StatefulWidget {
   const HKOTyphoonTab({super.key});
 
@@ -78,10 +128,10 @@ class TyphoonsListView extends StatelessWidget {
       physics: const AlwaysScrollableScrollPhysics(),
       itemCount: typhoons.length,
       itemBuilder: (BuildContext context, int index) {
-        return TyphoonTile(
+        return TyphoonListTile(
           typhoon: typhoons[index],
           lastTick: lastTick,
-          expanded: typhoons.length == 1,
+          initiallyExpanded: typhoons.length == 1,
         );
       },
     );
