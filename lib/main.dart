@@ -137,7 +137,7 @@ class _DashboardState extends State<Dashboard> {
                       ),
                       textAlign: TextAlign.center,
                       controller: qrController,
-                      onChanged: (value) => {textValue.notifyListeners()},
+                      onChanged: (value) => {textValue.value = value},
                     ),
                     content: ValueListenableBuilder(
                       valueListenable: textValue,
@@ -175,9 +175,4 @@ class _DashboardState extends State<Dashboard> {
       ),
     );
   }
-}
-
-String idGenerator() {
-  final now = DateTime.now();
-  return now.microsecondsSinceEpoch.toString();
 }
