@@ -4,7 +4,6 @@ import 'package:chilicizz/HKO/typhoon/dummy_typhoon.dart';
 import 'package:chilicizz/HKO/typhoon_model.dart';
 import 'package:chilicizz/data/hko_warnings_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
 
 import '../../common.dart';
@@ -20,7 +19,7 @@ class TyphoonTab extends StatelessWidget {
       valueListenable: provider.hkoTyphoons,
       builder: (BuildContext context, List<Typhoon>? typhoons, Widget? child) {
         if (typhoons == null) {
-          return const LoadingListView();
+          provider.refreshTyphoons();
         }
         return Scaffold(
           body: Center(
@@ -29,9 +28,11 @@ class TyphoonTab extends StatelessWidget {
                 provider.refreshTyphoons();
                 return Future.value();
               },
-              child: typhoons.isNotEmpty
-                  ? TyphoonsListView(typhoons: typhoons, lastTick: DateTime.now())
-                  : NoTyphoonsListView(lastTick: DateTime.now()),
+              child: typhoons == null
+                  ? const LoadingListView()
+                  : typhoons.isNotEmpty
+                      ? TyphoonsListView(typhoons: typhoons, lastTick: DateTime.now())
+                      : NoTyphoonsListView(lastTick: DateTime.now()),
             ),
           ),
           floatingActionButton: GestureDetector(
@@ -52,62 +53,6 @@ class TyphoonTab extends StatelessWidget {
           ),
         );
       },
-    );
-  }
-}
-
-@Deprecated("Use TyphoonTab prefer fetching data from HKOWarningsProvider")
-class HKOTyphoonTab extends StatefulWidget {
-  const HKOTyphoonTab({super.key});
-
-  @override
-  State<HKOTyphoonTab> createState() => _HKOTyphoonTabState();
-}
-
-class _HKOTyphoonTabState extends State<HKOTyphoonTab> {
-  late Future<List<Typhoon>> futureTyphoons;
-  DateTime lastTick = DateTime.now();
-
-  @override
-  void initState() {
-    super.initState();
-    refresh();
-  }
-
-  Future<void> refresh({Timer? t}) async {
-    setState(() {
-      futureTyphoons = TyphoonHttpClient.fetchTyphoonFeed(dotenv.env['hkoTyphoonUrl']!);
-      lastTick = DateTime.now();
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: RefreshIndicator(
-          onRefresh: refresh,
-          child: FutureBuilder(
-            future: futureTyphoons,
-            builder: (BuildContext context, AsyncSnapshot<List<Typhoon>> snapshot) {
-              switch (snapshot.connectionState) {
-                case ConnectionState.waiting:
-                  return const LoadingListView();
-                default:
-                  List<Typhoon> typhoons;
-                  if (snapshot.hasError) {
-                    return ErrorListView(message: "${snapshot.error}");
-                  } else {
-                    typhoons = snapshot.data ?? [];
-                  }
-                  return typhoons.isNotEmpty
-                      ? TyphoonsListView(typhoons: typhoons, lastTick: lastTick)
-                      : NoTyphoonsListView(lastTick: lastTick);
-              }
-            },
-          ),
-        ),
-      ),
     );
   }
 }
