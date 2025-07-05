@@ -242,7 +242,7 @@ class TyphoonTile extends StatelessWidget {
                   children: [
                     SizedBox(
                       height: 500,
-                      child: HKOTyphoonTrackWidget(snapshot.data!),
+                      child: HKOTyphoonTrackWidget(snapshot.data!, dotenv.env['mapTileUrl']),
                     ),
                     ListTile(
                       subtitle: Center(

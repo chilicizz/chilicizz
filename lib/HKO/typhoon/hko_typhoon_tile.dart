@@ -1,6 +1,7 @@
 import 'package:chilicizz/HKO/typhoon_model.dart';
 import 'package:chilicizz/data/hko_warnings_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 
@@ -65,7 +66,7 @@ class TyphoonListTile extends StatelessWidget {
             children: [
               SizedBox(
                 height: 500,
-                child: HKOTyphoonTrackWidget(track),
+                child: HKOTyphoonTrackWidget(track, dotenv.env['mapTileUrl']),
               ),
               ListTile(
                 subtitle: Center(

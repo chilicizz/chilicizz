@@ -1,8 +1,8 @@
 import 'package:chilicizz/HKO/typhoon_model.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:flutter_map_cancellable_tile_provider/flutter_map_cancellable_tile_provider.dart';
 
 import '../../common.dart';
 
@@ -14,8 +14,8 @@ const String mapUserAgent = "app.cyrilng.com";
 // It shows the past, current, and forecast positions of the typhoon
 class HKOTyphoonTrackWidget extends StatelessWidget {
   final TyphoonTrack track;
-
-  const HKOTyphoonTrackWidget(this.track, {super.key});
+  final String? mapTileUrl;
+  const HKOTyphoonTrackWidget(this.track, this.mapTileUrl, {super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -145,9 +145,10 @@ class HKOTyphoonTrackWidget extends StatelessWidget {
         children: [
           TileLayer(
             //https://wiki.openstreetmap.org/wiki/Tiles
-            urlTemplate: dotenv.env['mapTileUrl'],
-            subdomains: dotenv.env['mapTileSubDomains']!.split(","),
+            urlTemplate: mapTileUrl,
+            // subdomains: dotenv.env['mapTileSubDomains']!.split(","),
             userAgentPackageName: mapUserAgent,
+            tileProvider: CancellableNetworkTileProvider(),
           ),
           PolylineLayer(
             polylines: trackLines,
@@ -188,7 +189,7 @@ class HKOTyphoonTrackWidget extends StatelessWidget {
             ],
           ),
           const SimpleAttributionWidget(
-            source: Text("Open Street Map"),
+            source: Text("OpenStreetMap"),
           )
         ],
       ),
