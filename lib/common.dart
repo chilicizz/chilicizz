@@ -226,6 +226,9 @@ class ErrorListView extends StatelessWidget {
   }
 }
 
-String removeNonNumeric(String entry) {
+String removeNonNumeric(String? entry) {
+  if (entry == null) {
+    return "";
+  }
   return entry.replaceAll(RegExp(r"[^\d.]"), "");
 }

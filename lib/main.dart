@@ -70,8 +70,8 @@ class MyApp extends StatelessWidget {
         Provider(create: (context) => ConfigController()),
         Provider(create: (context) => ChatProvider(Uri.parse(dotenv.env['chatUrl']!))),
         Provider(
-          create: (context) => HKOWarningsProvider(
-              Uri.parse(dotenv.env['warningsUrl']!), dotenv.env['hkoTyphoonUrl']!),
+          create: (context) => HKOWarningsProvider(Uri.parse(dotenv.env['warningsUrl']!),
+              dotenv.env['hkoTyphoonUrl']!, dotenv.env['hkoTyphoonBase']!),
         ),
         Provider(
           create: (context) => AQIProvider(Uri.parse(dotenv.env['aqiUrl']!)),

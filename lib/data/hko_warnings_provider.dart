@@ -23,17 +23,21 @@ class HKOWarningsProvider {
   final ValueNotifier<List<WarningInformation>?> hkoWeatherWarnings = ValueNotifier(null);
   final ValueNotifier<List<Typhoon>?> hkoTyphoons = ValueNotifier(null);
   final TyphoonTrackNotifier typhoonTracks = TyphoonTrackNotifier();
+  final TyphoonHttpClientJson typhoonHttpClient;
 
   // Last time the WebSocket received a message
   DateTime lastTick = DateTime.now();
 
   final Uri hkoWarningsURL;
   final String hkoTyphoonURL;
+  final String typhoonBaseUrl;
+
   WebSocketChannel? _channel;
   int _reconnectAttempts = 0;
   bool _disposed = false;
 
-  HKOWarningsProvider(this.hkoWarningsURL, this.hkoTyphoonURL) {
+  HKOWarningsProvider(this.hkoWarningsURL, this.hkoTyphoonURL, this.typhoonBaseUrl)
+      : typhoonHttpClient = TyphoonHttpClientJson(typhoonBaseUrl) {
     _connect();
     refreshTyphoons();
   }
@@ -88,10 +92,10 @@ class HKOWarningsProvider {
 
   void refreshTyphoons() {
     // Fetch typhoon data
-    TyphoonHttpClient.fetchTyphoonFeed(hkoTyphoonURL).then((typhoons) {
+    typhoonHttpClient.fetchTyphoonFeed().then((typhoons) {
       hkoTyphoons.value = typhoons;
       for (var typhoon in typhoons) {
-        TyphoonHttpClient.fetchTyphoonTrack(typhoon).then((track) {
+        typhoonHttpClient.fetchTyphoonTrack(typhoon).then((track) {
           if (track != null) {
             typhoonTracks.addTyphoonTrack(typhoon.id.toString(), track);
           }

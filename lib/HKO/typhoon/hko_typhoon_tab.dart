@@ -44,7 +44,7 @@ class TyphoonTab extends StatelessWidget {
             ),
             onLongPress: () async {
               // For testing purposes, load dummy typhoon data
-              final dummyTyphoons = await TyphoonHttpClient.dummyTyphoonList();
+              final dummyTyphoons = await TyphoonHttpClientJson.dummyTyphoonList();
               provider.hkoTyphoons.value = dummyTyphoons;
               dummyTrack().then((track) {
                 provider.typhoonTracks.addTyphoonTrack("2102", track);

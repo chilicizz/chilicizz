@@ -66,6 +66,84 @@ class TyphoonTrack {
     past.add(currentAnalysis); // add latest for easy reference
     return TyphoonTrack(bulletin, currentAnalysis, past, forecast);
   }
+
+  factory TyphoonTrack.fromJson(dynamic json) {
+    final TyphoonBulletin bulletin;
+    final List<TyphoonPosition> past = [];
+    final List<TyphoonPosition> forecast = [];
+    TyphoonPosition? current;
+
+    String name = json['bulletinName'] ?? '';
+    String provider = json['bulletinProvider'] ?? '';
+    DateTime time = DateTime.tryParse(json['bulletinTime']) ?? DateTime.now();
+    bulletin = TyphoonBulletin(name, provider, time);
+
+    if (json['track'] is List) {
+      for (dynamic entry in json['track']) {
+        TyphoonPosition position = TyphoonPosition.fromJson(entry);
+        switch (position.timePeriod) {
+          case TimePeriod.past:
+            past.add(position);
+            break;
+          case TimePeriod.current:
+            current = position;
+            break;
+          case TimePeriod.forecast:
+            forecast.add(position);
+            break;
+          default:
+            debugPrint(
+                "Unknown time period for position: ${position.index}, ${position.latitude}, ${position.longitude}");
+        }
+      }
+    } else {
+      throw Exception("Invalid track data format");
+    }
+
+    forecast.sort((a, b) {
+      return a.index.compareTo(b.index);
+    });
+    // oldest first
+    past.sort((a, b) {
+      return a.index.compareTo(b.index);
+    });
+    if (current == null) {
+      throw Exception("Current position not found in track data");
+    }
+    past.add(current); // add latest for easy reference
+    return TyphoonTrack(bulletin, current, past, forecast);
+  }
+}
+
+enum TimePeriod {
+  past,
+  current,
+  forecast;
+
+  String get name {
+    switch (this) {
+      case TimePeriod.past:
+        return "PAST";
+      case TimePeriod.current:
+        return "CURRENT";
+      case TimePeriod.forecast:
+        return "FORECAST";
+    }
+  }
+
+  static TimePeriod? fromString(String? value) {
+    if (value == null) return null;
+    switch (value.toLowerCase()) {
+      case 'past':
+        return TimePeriod.past;
+      case 'current':
+        return TimePeriod.current;
+      case 'forecast':
+        return TimePeriod.forecast;
+      default:
+        return null;
+    }
+  }
 }
 
 class TyphoonPosition {
@@ -76,6 +154,7 @@ class TyphoonPosition {
   final double latitude; // N
   final double longitude; // E
   final TyphoonClass typhoonClass;
+  final TimePeriod? timePeriod;
 
   TyphoonPosition(
     this.index,
@@ -85,6 +164,7 @@ class TyphoonPosition {
     this.latitude,
     this.longitude,
     this.typhoonClass,
+    this.timePeriod, // optional
   );
 
   factory TyphoonPosition.fromXMLElement(XmlElement element) {
@@ -123,7 +203,33 @@ class TyphoonPosition {
     if (latitude.isNaN || longitude.isNaN) {
       throw Exception("Failed to parse position $element");
     }
-    return TyphoonPosition(index, intensity, maximumWind, time, latitude, longitude, typhoonClass);
+    return TyphoonPosition(
+        index, intensity, maximumWind, time, latitude, longitude, typhoonClass, null);
+  }
+
+  factory TyphoonPosition.fromJson(dynamic json) {
+    double latitude = double.tryParse(removeNonNumeric(json['latitude'] ?? '')) ?? double.nan; // N
+    double longitude =
+        double.tryParse(removeNonNumeric(json['longitude'] ?? '')) ?? double.nan; // E
+    double? maximumWind =
+        double.tryParse(removeNonNumeric(json["maximumWind"] ?? '')) ?? double.nan; // km/h
+    TyphoonClass typhoonClass = unknownClass;
+    int index = json['index'] is int ? json["index"] : int.tryParse(json['index']) ?? 0;
+    if (latitude.isNaN || longitude.isNaN) {
+      throw Exception("Failed to parse position $json");
+    }
+    if (json is Map<String, dynamic>) {
+      for (var referenceClass in typhoonClasses) {
+        double speed = maximumWind ?? -1;
+        if (referenceClass.within(speed)) {
+          typhoonClass = referenceClass;
+        }
+      }
+      TimePeriod? timePeriod = TimePeriod.fromString(json["timePeriod"]);
+      return TyphoonPosition(index, json['intensity'], maximumWind,
+          DateTime.tryParse(json['time'] ?? ''), latitude, longitude, typhoonClass, timePeriod);
+    }
+    throw Exception("Failed to parse position $json");
   }
 
   LatLng getLatLng({latitudeOffset = 0, longitudeOffset = 0}) {
@@ -187,6 +293,16 @@ class TyphoonBulletin {
     }
     return TyphoonBulletin(name!, provider!, time);
   }
+
+  factory TyphoonBulletin.fromJson(dynamic json) {
+    if (json is! Map<String, dynamic>) {
+      throw Exception("Invalid JSON format for TyphoonBulletin");
+    }
+    String name = json['bulletinName'] ?? '';
+    String provider = json['bulletinProvider'] ?? '';
+    DateTime time = DateTime.tryParse(json['bulletinTime']) ?? DateTime.now();
+    return TyphoonBulletin(name, provider, time);
+  }
 }
 
 List<Typhoon> parseTyphoonFeed(String xmlString) {
@@ -231,6 +347,7 @@ TyphoonPosition? parseEntry(XmlElement element) {
   }
 }
 
+@Deprecated("Use TyphoonHttpClientJson instead")
 class TyphoonHttpClient {
   static Future<List<Typhoon>> dummyTyphoonList() async {
     return [dummyTyphoon()];
@@ -287,6 +404,81 @@ class TyphoonHttpClient {
         return typhoonTrack;
       }
       debugPrint("Failed to fetch typhoon data $e");
+    }
+    return null;
+  }
+}
+
+class TyphoonHttpClientJson {
+  static const typhoonListPath = "/typhoon-json/list";
+  static const typhoonTrackPath = "/typhoon-json/track/";
+
+  final String baseUrl;
+
+  TyphoonHttpClientJson(this.baseUrl);
+
+  static Future<List<Typhoon>> dummyTyphoonList() async {
+    return [dummyTyphoon()];
+  }
+
+  Future<List<Typhoon>> fetchTyphoonFeed() async {
+    try {
+      var path = Uri.parse(baseUrl + typhoonListPath);
+      var response = await http.get(path, headers: {
+        HttpHeaders.contentTypeHeader: 'application/json',
+        HttpHeaders.accessControlAllowOriginHeader: '*',
+        HttpHeaders.accessControlAllowMethodsHeader: 'GET,HEAD,POST,OPTIONS',
+        HttpHeaders.accessControlAllowHeadersHeader: '*',
+      });
+      if (response.statusCode == 200) {
+        String payload = const Utf8Decoder().convert(response.bodyBytes);
+        dynamic json = jsonDecode(payload);
+        if (json is List) {
+          return json.map<Typhoon>((item) {
+            return Typhoon(
+              id: int.parse(item['id'] ?? item['TropicalCycloneID']),
+              chineseName: item['chineseName'] ?? item['TropicalCycloneChineseName'] ?? '',
+              englishName: item['englishName'] ?? item['TropicalCycloneEnglishName'] ?? '',
+              url: (item['url'] ?? item['TropicalCycloneURL'] ?? '')
+                  .replaceAll("http://", "https://"),
+            );
+          }).toList();
+        } else {
+          throw Exception('Unexpected JSON format: $payload');
+        }
+      } else {
+        throw Exception('Feed returned ${response.body}');
+      }
+    } catch (e) {
+      debugPrint("Failed to fetch typhoon data $e");
+      rethrow;
+    }
+  }
+
+  Future<TyphoonTrack?> fetchTyphoonTrack(Typhoon typhoon) async {
+    try {
+      Uri uri = Uri.parse("$baseUrl$typhoonTrackPath${typhoon.id}");
+      var response = await http.get(uri, headers: {
+        HttpHeaders.contentTypeHeader: 'application/json',
+        HttpHeaders.accessControlAllowOriginHeader: '*',
+        HttpHeaders.accessControlAllowMethodsHeader: 'GET,HEAD,POST,OPTIONS',
+        HttpHeaders.accessControlAllowHeadersHeader: '*',
+      });
+      if (response.statusCode == 200) {
+        String payload = const Utf8Decoder().convert(response.bodyBytes);
+        dynamic json = jsonDecode(payload);
+        if (json is Map<String, dynamic>) {
+          if (json.isNotEmpty) {
+            return TyphoonTrack.fromJson(json);
+          } else {
+            throw Exception('No data found in response');
+          }
+        } else {
+          throw Exception('Unexpected JSON format: $payload');
+        }
+      }
+    } catch (e) {
+      debugPrint("Failed to fetch typhoon track data $e");
     }
     return null;
   }
