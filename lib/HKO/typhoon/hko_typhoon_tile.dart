@@ -31,7 +31,7 @@ class TyphoonListTile extends StatelessWidget {
               fit: BoxFit.scaleDown,
               child: Text(
                 "${typhoon.englishName} (${typhoon.chineseName})",
-                style: Theme.of(context).textTheme.headlineMedium,
+                style: Theme.of(context).textTheme.headlineSmall,
               ),
             ),
             subtitle: buildLastTick(lastTick),
@@ -61,7 +61,7 @@ class TyphoonListTile extends StatelessWidget {
               fit: BoxFit.scaleDown,
               child: Text(
                 typhoonTitle,
-                style: Theme.of(context).textTheme.headlineLarge,
+                style: Theme.of(context).textTheme.headlineSmall,
               ),
             ),
             subtitle: Text(subtitle),

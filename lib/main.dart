@@ -1,9 +1,8 @@
+import 'package:chilicizz/HKO/unified_hko_tab.dart';
 import 'package:chilicizz/data/aqi_provider.dart';
 import 'package:chilicizz/Chat/chat.dart';
 import 'package:chilicizz/data/chat_provider.dart';
-import 'package:chilicizz/HKO/typhoon/hko_typhoon_tab.dart';
 import 'package:chilicizz/data/hko_warnings_provider.dart';
-import 'package:chilicizz/HKO/warnings/live_hko_warnings.dart';
 import 'package:chilicizz/config/config_controller.dart';
 import 'package:chilicizz/rss_reader.dart';
 import 'package:flutter/material.dart';
@@ -31,12 +30,7 @@ final List<NavRoute> routes = [
           path: '/aqi',
           label: "Air Quality",
           buildFunction: (context) => const Dashboard(initial: 1),
-        ),
-        NavRoute(
-          path: '/typhoon',
-          label: "HKO Typhoon",
-          buildFunction: (context) => const Dashboard(initial: 2),
-        ),
+        )
       ]),
   NavRoute(
     path: '/chat',
@@ -108,16 +102,15 @@ class _DashboardState extends State<Dashboard> {
   Widget build(BuildContext context) {
     return DefaultTabController(
       initialIndex: widget.initial,
-      length: 3,
+      length: 2,
       child: Scaffold(
         drawer: NavDrawer(routes: routes),
         appBar: AppBar(
           title: const Text('Dashboard'),
           bottom: const TabBar(
             tabs: [
-              Tab(icon: Text("WARNINGS")),
+              Tab(icon: Text("HKO WARNINGS")),
               Tab(icon: Text("AIR QUALITY")),
-              Tab(icon: Text("TYPHOON")),
               // Tab(icon: Text("🚧")),
             ],
           ),
@@ -167,9 +160,8 @@ class _DashboardState extends State<Dashboard> {
         ),
         body: const TabBarView(
           children: [
-            LiveHKOWarnings(),
+            UnifiedHkoTab(),
             AQITabLoader(),
-            TyphoonTab(),
           ],
         ),
       ),

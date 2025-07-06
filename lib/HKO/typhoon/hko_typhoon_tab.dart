@@ -69,6 +69,7 @@ class TyphoonsListView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    bool initiallyExpanded = typhoons.length == 1;
     return ListView.builder(
       physics: const AlwaysScrollableScrollPhysics(),
       itemCount: typhoons.length,
@@ -76,7 +77,7 @@ class TyphoonsListView extends StatelessWidget {
         return TyphoonListTile(
           typhoon: typhoons[index],
           lastTick: lastTick,
-          initiallyExpanded: typhoons.length == 1,
+          initiallyExpanded: initiallyExpanded,
         );
       },
     );
@@ -96,20 +97,34 @@ class NoTyphoonsListView extends StatelessWidget {
     return ListView(
       physics: const AlwaysScrollableScrollPhysics(),
       children: [
-        ExpansionTile(
-          leading: const CircleAvatar(
-            child: Icon(Icons.done),
-          ),
-          title: const Text("No active typhoon warnings"),
-          subtitle: buildLastTick(lastTick),
-          children: const [
-            ListTile(
-              title: Text(
-                  "Tropical cyclone track information data provided by Hong Kong Observatory and "
-                  "is expected to be updated when a tropical cyclone forms within or enters the area bounded by 7-36N and 100-140E"),
-              subtitle: Text(""),
-            ),
-          ],
+        NoTyphoonsTile(lastTick: lastTick),
+      ],
+    );
+  }
+}
+
+class NoTyphoonsTile extends StatelessWidget {
+  const NoTyphoonsTile({
+    super.key,
+    required this.lastTick,
+  });
+
+  final DateTime lastTick;
+
+  @override
+  Widget build(BuildContext context) {
+    return ExpansionTile(
+      leading: const CircleAvatar(
+        child: Icon(Icons.done),
+      ),
+      title: const Text("No active typhoon warnings"),
+      subtitle: buildLastTick(lastTick),
+      children: const [
+        ListTile(
+          title: Text(
+              "Tropical cyclone track information data provided by Hong Kong Observatory and "
+              "is expected to be updated when a tropical cyclone forms within or enters the area bounded by 7-36N and 100-140E"),
+          subtitle: Text(""),
         ),
       ],
     );

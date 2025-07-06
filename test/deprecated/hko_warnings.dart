@@ -101,7 +101,7 @@ class _HKOWarningsState extends State<HKOWarnings> {
                   } else {
                     var warnings = snapshot.data ?? [];
                     return warnings.isNotEmpty
-                        ? HKOWarningsList(warnings: warnings)
+                        ? HKOWarningsListView(warnings: warnings)
                         : ListView(
                             children: [
                               ListTile(

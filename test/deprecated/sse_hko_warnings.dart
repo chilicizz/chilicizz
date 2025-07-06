@@ -47,7 +47,7 @@ class _SSEHKOWarningsState extends State<SSEHKOWarnings> {
   Widget build(BuildContext context) {
     if (displayDummy) {
       return Scaffold(
-        body: Center(child: HKOWarningsList(warnings: dummyWarnings())),
+        body: Center(child: HKOWarningsListView(warnings: dummyWarnings())),
       );
     }
 
@@ -91,7 +91,7 @@ class _SSEHKOWarningsState extends State<SSEHKOWarnings> {
               debugPrint("Updated HKO Warnings: $lastTick");
               weatherWarnings = extractWarnings(hkoFeed);
               return weatherWarnings!.isNotEmpty
-                  ? HKOWarningsList(warnings: weatherWarnings!)
+                  ? HKOWarningsListView(warnings: weatherWarnings!)
                   : NoWarningsList(lastTick: lastTick);
             } else {
               return const LoadingListView();

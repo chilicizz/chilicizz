@@ -22,7 +22,7 @@ class _LiveHKOWarningsState extends State<LiveHKOWarnings> {
     if (_displayDummy) {
       return Scaffold(
         body: Center(
-          child: HKOWarningsList(warnings: dummyWarnings()),
+          child: HKOWarningsListView(warnings: dummyWarnings()),
         ),
         floatingActionButton: FloatingActionButton(
           onPressed: () {
@@ -65,7 +65,7 @@ class _LiveHKOWarningsState extends State<LiveHKOWarnings> {
               } else if (warnings.isEmpty) {
                 return NoWarningsList(lastTick: provider.lastTick);
               } else {
-                return HKOWarningsList(warnings: warnings);
+                return HKOWarningsListView(warnings: warnings);
               }
             },
           ),

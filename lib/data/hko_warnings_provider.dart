@@ -90,6 +90,7 @@ class HKOWarningsProvider {
 
   void triggerRefresh() {
     _channel?.sink.add("Refresh");
+    refreshTyphoons();
   }
 
   void refreshTyphoonTrack(String typhoonId) {
