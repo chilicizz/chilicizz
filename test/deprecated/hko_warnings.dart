@@ -254,7 +254,7 @@ class TyphoonTile extends StatelessWidget {
                         alignment: WrapAlignment.spaceEvenly,
                         runSpacing: 1,
                         crossAxisAlignment: WrapCrossAlignment.start,
-                        children: typhoonClasses.map((typhoonClass) {
+                        children: TyphoonClass.typhoonClasses.map((typhoonClass) {
                           return Chip(
                             label: Tooltip(
                               message:
