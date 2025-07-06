@@ -38,7 +38,10 @@ class WarningExpansionTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return ExpansionTile(
       leading: warning.getCircleAvatar(),
-      title: Text(warning.getDescription(), style: Theme.of(context).textTheme.headlineSmall),
+      title: Text(
+        warning.getDescription(),
+        // style: Theme.of(context).textTheme.headlineSmall,
+      ),
       subtitle: buildIssued(warning.updateTime),
       initiallyExpanded: initiallyExpanded,
       children: [
