@@ -18,16 +18,19 @@ class Typhoon {
   Typhoon(
       {required this.id, required this.chineseName, required this.englishName, required this.url});
 
+  @Deprecated("to remove")
   Uri getTrackUrl() {
     Uri uri = Uri.parse(dotenv.env["corsProxy"]! + url);
     return uri;
   }
 
+  @Deprecated("to remove")
   Uri getTrackUrlId() {
     Uri uri = Uri.parse(dotenv.env["hkoTyphoonTrack"]! + id.toString());
     return uri;
   }
 
+  @Deprecated("to remove")
   Future<TyphoonTrack?> getTyphoonTrack() async {
     return TyphoonHttpClient.fetchTyphoonTrack(this);
   }
@@ -80,20 +83,25 @@ class TyphoonTrack {
 
     if (json['track'] is List) {
       for (dynamic entry in json['track']) {
-        TyphoonPosition position = TyphoonPosition.fromJson(entry);
-        switch (position.timePeriod) {
-          case TimePeriod.past:
-            past.add(position);
-            break;
-          case TimePeriod.current:
-            current = position;
-            break;
-          case TimePeriod.forecast:
-            forecast.add(position);
-            break;
-          default:
-            debugPrint(
-                "Unknown time period for position: ${position.index}, ${position.latitude}, ${position.longitude}");
+        try {
+          TyphoonPosition position = TyphoonPosition.fromJson(entry);
+          switch (position.timePeriod) {
+            case TimePeriod.past:
+              past.add(position);
+              break;
+            case TimePeriod.current:
+              current = position;
+              break;
+            case TimePeriod.forecast:
+              forecast.add(position);
+              break;
+            default:
+              debugPrint(
+                  "Unknown time period for position: ${position.index}, ${position.latitude}, ${position.longitude}");
+          }
+        } catch (e) {
+          debugPrint("Failed to parse position entry: $entry, error: $e");
+          continue; // skip invalid entries
         }
       }
     } else {
@@ -133,7 +141,7 @@ enum TimePeriod {
 
   static TimePeriod? fromString(String? value) {
     if (value == null) return null;
-    switch (value.toLowerCase()) {
+    switch (value.toLowerCase().trim()) {
       case 'past':
         return TimePeriod.past;
       case 'current':
@@ -174,7 +182,6 @@ class TyphoonPosition {
     DateTime? time; // if no time then interpolated position
     double latitude = double.nan; // N
     double longitude = double.nan; // E
-    TyphoonClass typhoonClass = unknownClass;
     for (var child in element.childElements) {
       try {
         if (child.name.local == 'Intensity') {
@@ -194,12 +201,7 @@ class TyphoonPosition {
         debugPrint("Error parsing $child");
       }
     }
-    for (var referenceClass in typhoonClasses) {
-      double speed = maximumWind ?? -1;
-      if (referenceClass.within(speed)) {
-        typhoonClass = referenceClass;
-      }
-    }
+    TyphoonClass typhoonClass = TyphoonClass.fromMaximumWind(maximumWind);
     if (latitude.isNaN || longitude.isNaN) {
       throw Exception("Failed to parse position $element");
     }
@@ -208,26 +210,23 @@ class TyphoonPosition {
   }
 
   factory TyphoonPosition.fromJson(dynamic json) {
-    double latitude = double.tryParse(removeNonNumeric(json['latitude'] ?? '')) ?? double.nan; // N
-    double longitude =
-        double.tryParse(removeNonNumeric(json['longitude'] ?? '')) ?? double.nan; // E
-    double? maximumWind =
-        double.tryParse(removeNonNumeric(json["maximumWind"] ?? '')) ?? double.nan; // km/h
-    TyphoonClass typhoonClass = unknownClass;
-    int index = json['index'] is int ? json["index"] : int.tryParse(json['index']) ?? 0;
-    if (latitude.isNaN || longitude.isNaN) {
-      throw Exception("Failed to parse position $json");
-    }
     if (json is Map<String, dynamic>) {
-      for (var referenceClass in typhoonClasses) {
-        double speed = maximumWind ?? -1;
-        if (referenceClass.within(speed)) {
-          typhoonClass = referenceClass;
-        }
+      double latitude =
+          double.tryParse(removeNonNumeric(json['latitude'] ?? '')) ?? double.nan; // N
+      double longitude =
+          double.tryParse(removeNonNumeric(json['longitude'] ?? '')) ?? double.nan; // E
+      double? maximumWind =
+          double.tryParse(removeNonNumeric(json["maximumWind"] ?? '')) ?? double.nan; // km/h
+      int index = json['index'] is int ? json["index"] : int.tryParse(json['index']) ?? 0;
+      if (latitude.isNaN || longitude.isNaN) {
+        throw Exception("Failed to parse position $json");
       }
+      TyphoonClass typhoonClass = TyphoonClass.fromMaximumWind(maximumWind);
       TimePeriod? timePeriod = TimePeriod.fromString(json["timePeriod"]);
-      return TyphoonPosition(index, json['intensity'], maximumWind,
-          DateTime.tryParse(json['time'] ?? ''), latitude, longitude, typhoonClass, timePeriod);
+      DateTime? time = json['time'] != null ? DateTime.tryParse(json['time']) : null;
+      String? intensity = json['intensity'] is String ? json['intensity'] : null;
+      return TyphoonPosition(
+          index, intensity, maximumWind, time, latitude, longitude, typhoonClass, timePeriod);
     }
     throw Exception("Failed to parse position $json");
   }
@@ -253,19 +252,29 @@ class TyphoonClass {
   bool within(double speed) {
     return speed >= minWind && speed < maxWind;
   }
+
+  static TyphoonClass unknownClass = TyphoonClass("unknown", -1, -1, Colors.grey);
+
+  static List<TyphoonClass> typhoonClasses = [
+    TyphoonClass("Extratropical Low", 0, 41, Colors.blue),
+    TyphoonClass("Tropical Depression", 41, 62, Colors.lightGreen),
+    TyphoonClass("Tropical Storm", 62, 87, Colors.amber),
+    TyphoonClass("Severe Tropical Storm", 87, 117, Colors.orange),
+    TyphoonClass("Typhoon", 117, 149, Colors.red),
+    TyphoonClass("Severe Typhoon", 149, 184, Colors.deepPurple),
+    TyphoonClass("Super Typhoon", 184, double.maxFinite, Colors.black),
+  ];
+
+  static TyphoonClass fromMaximumWind(double? maximumWind) {
+    for (var referenceClass in TyphoonClass.typhoonClasses) {
+      double speed = maximumWind ?? -1;
+      if (referenceClass.within(speed)) {
+        return referenceClass;
+      }
+    }
+    return unknownClass;
+  }
 }
-
-TyphoonClass unknownClass = TyphoonClass("unknown", -1, -1, Colors.grey);
-
-List<TyphoonClass> typhoonClasses = [
-  TyphoonClass("Extratropical Low", 0, 41, Colors.blue),
-  TyphoonClass("Tropical Depression", 41, 62, Colors.lightGreen),
-  TyphoonClass("Tropical Storm", 62, 87, Colors.amber),
-  TyphoonClass("Severe Tropical Storm", 87, 117, Colors.orange),
-  TyphoonClass("Typhoon", 117, 149, Colors.red),
-  TyphoonClass("Severe Typhoon", 149, 184, Colors.deepPurple),
-  TyphoonClass("Super Typhoon", 184, double.maxFinite, Colors.black),
-];
 
 class TyphoonBulletin {
   final String name;
@@ -455,9 +464,9 @@ class TyphoonHttpClientJson {
     }
   }
 
-  Future<TyphoonTrack?> fetchTyphoonTrack(Typhoon typhoon) async {
+  Future<TyphoonTrack?> fetchTyphoonTrack(String typhoonId) async {
     try {
-      Uri uri = Uri.parse("$baseUrl$typhoonTrackPath${typhoon.id}");
+      Uri uri = Uri.parse("$baseUrl$typhoonTrackPath$typhoonId");
       var response = await http.get(uri, headers: {
         HttpHeaders.contentTypeHeader: 'application/json',
         HttpHeaders.accessControlAllowOriginHeader: '*',

@@ -1,7 +1,6 @@
 import 'package:chilicizz/HKO/typhoon_model.dart';
 import 'package:chilicizz/data/hko_warnings_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 
@@ -19,11 +18,12 @@ class TyphoonListTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var provider = context.watch<HKOWarningsProvider>();
-    TyphoonTrack? typhoonTrack = provider.typhoonTracks.getTyphoonTrack(typhoon.id.toString());
     return ListenableBuilder(
       listenable: provider.typhoonTracks,
       builder: (context, child) {
+        TyphoonTrack? typhoonTrack = provider.typhoonTracks.getTyphoonTrack("${typhoon.id}");
         if (typhoonTrack == null) {
+          // provider.refreshTyphoonTrack("${typhoon.id}");
           return ListTile(
             leading: const CircularProgressIndicator(),
             title: FittedBox(
@@ -44,6 +44,10 @@ class TyphoonListTile extends StatelessWidget {
           final String maxWindSpeed = !track.current.maximumWind!.isNaN
               ? '| max winds up to ${track.current.maximumWind} km/h'
               : "";
+          final String typhoonTitle =
+              "${track.current.intensity} ${typhoon.englishName} (${typhoon.chineseName})";
+          final String subtitle =
+              "${shortDateFormat(track.bulletin.time)} $currentDistance $maxWindSpeed";
           return ExpansionTile(
             leading: CircleAvatar(
               backgroundColor: Theme.of(context).focusColor,
@@ -56,51 +60,60 @@ class TyphoonListTile extends StatelessWidget {
               alignment: Alignment.centerLeft,
               fit: BoxFit.scaleDown,
               child: Text(
-                "${track.current.intensity} ${typhoon.englishName} (${typhoon.chineseName})",
+                typhoonTitle,
                 style: Theme.of(context).textTheme.headlineLarge,
               ),
             ),
-            subtitle:
-                Text("${shortDateFormat(track.bulletin.time)} $currentDistance $maxWindSpeed"),
+            subtitle: Text(subtitle),
             initiallyExpanded: initiallyExpanded,
             children: [
               SizedBox(
                 height: 500,
-                child: HKOTyphoonTrackWidget(track, dotenv.env['mapTileUrl']),
+                child: HKOTyphoonTrackWidget(track, provider.mapTileUrl),
               ),
               ListTile(
+                title: TyphoonClassLegendWrap(),
                 subtitle: Center(
                   child: Text(
                     "${track.bulletin.provider} - ${track.bulletin.name}",
                   ),
-                ),
-                title: Wrap(
-                  alignment: WrapAlignment.spaceEvenly,
-                  runSpacing: 1,
-                  crossAxisAlignment: WrapCrossAlignment.start,
-                  children: typhoonClasses.map((typhoonClass) {
-                    return Chip(
-                      label: Tooltip(
-                        message:
-                            "Maximum winds ${typhoonClass.minWind}${typhoonClass.maxWind != double.maxFinite ? "-${typhoonClass.maxWind}" : "+"} km/h",
-                        child: !isSmallScreen(context)
-                            ? Text(
-                                "${typhoonClass.name} ${typhoonClass.minWind}${typhoonClass.maxWind != double.maxFinite ? "-${typhoonClass.maxWind}" : "+"} km/h",
-                              )
-                            : Text(typhoonClass.name),
-                      ),
-                      avatar: CircleAvatar(
-                        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-                        child: Icon(Icons.storm, color: typhoonClass.color),
-                      ),
-                    );
-                  }).toList(),
                 ),
               ),
             ],
           );
         }
       },
+    );
+  }
+}
+
+class TyphoonClassLegendWrap extends StatelessWidget {
+  const TyphoonClassLegendWrap({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      alignment: WrapAlignment.spaceEvenly,
+      runSpacing: 1,
+      crossAxisAlignment: WrapCrossAlignment.start,
+      children: TyphoonClass.typhoonClasses.map((typhoonClass) {
+        final String windRange =
+            "${typhoonClass.minWind}${typhoonClass.maxWind != double.maxFinite ? "-${typhoonClass.maxWind}" : "+"} km/h";
+        final tooltip = "Maximum winds $windRange";
+        final String label = "${typhoonClass.name} $windRange";
+        return Chip(
+          label: Tooltip(
+            message: tooltip,
+            child: !isSmallScreen(context) ? Text(label) : Text(typhoonClass.name),
+          ),
+          avatar: CircleAvatar(
+            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+            child: Icon(Icons.storm, color: typhoonClass.color),
+          ),
+        );
+      }).toList(),
     );
   }
 }

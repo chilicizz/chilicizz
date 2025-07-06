@@ -79,7 +79,7 @@ class HKOTyphoonTrackWidget extends StatelessWidget {
       currentSection.add(position.getLatLng());
       // when it changes typhoon class
       TyphoonClass currentIteration = position.typhoonClass;
-      if (currentIteration != lastClass && currentIteration != unknownClass) {
+      if (currentIteration != lastClass && currentIteration != TyphoonClass.unknownClass) {
         trackLines.add(
           Polyline(
             points: currentSection,

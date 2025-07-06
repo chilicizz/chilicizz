@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:chilicizz/HKO/warnings_model.dart';
 import 'package:chilicizz/HKO/typhoon_model.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 class TyphoonTrackNotifier extends ChangeNotifier {
@@ -24,6 +25,7 @@ class HKOWarningsProvider {
   final ValueNotifier<List<Typhoon>?> hkoTyphoons = ValueNotifier(null);
   final TyphoonTrackNotifier typhoonTracks = TyphoonTrackNotifier();
   final TyphoonHttpClientJson typhoonHttpClient;
+  final String? mapTileUrl = dotenv.env['mapTileUrl'];
 
   // Last time the WebSocket received a message
   DateTime lastTick = DateTime.now();
@@ -90,14 +92,28 @@ class HKOWarningsProvider {
     _channel?.sink.add("Refresh");
   }
 
+  void refreshTyphoonTrack(String typhoonId) {
+    // Fetch the typhoon track for a specific typhoon ID
+    typhoonHttpClient.fetchTyphoonTrack(typhoonId).then((track) {
+      if (track != null) {
+        typhoonTracks.addTyphoonTrack(typhoonId.toString(), track);
+      } else {
+        debugPrint('HkoWarningsProvider No track data for typhoon $typhoonId');
+      }
+    });
+  }
+
   void refreshTyphoons() {
     // Fetch typhoon data
     typhoonHttpClient.fetchTyphoonFeed().then((typhoons) {
       hkoTyphoons.value = typhoons;
       for (var typhoon in typhoons) {
-        typhoonHttpClient.fetchTyphoonTrack(typhoon).then((track) {
+        debugPrint('HkoWarningsProvider Fetching track for typhoon ${typhoon.id}');
+        typhoonHttpClient.fetchTyphoonTrack("${typhoon.id}").then((track) {
           if (track != null) {
             typhoonTracks.addTyphoonTrack(typhoon.id.toString(), track);
+          } else {
+            debugPrint('HkoWarningsProvider No track data for typhoon ${typhoon.id}');
           }
         });
       }

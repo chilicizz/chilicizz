@@ -9,7 +9,7 @@ void main() {
       List<Typhoon> typhoons = await hkoTyphoonClient.fetchTyphoonFeed();
       expect(typhoons.isNotEmpty, true, reason: "Should load one typhoon");
 
-      var typhoonTrack = await hkoTyphoonClient.fetchTyphoonTrack(typhoons[0]);
+      var typhoonTrack = await hkoTyphoonClient.fetchTyphoonTrack("${typhoons[0].id}");
       expect(typhoonTrack, isNotNull, reason: "Should load one typhoon");
     });
   }, skip: true);
