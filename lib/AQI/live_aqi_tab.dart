@@ -21,59 +21,42 @@ class _AQITabLoaderState extends State<AQITabLoader> {
     return ListenableBuilder(
       listenable: aqiProvider.aqiLocations,
       builder: (context, child) {
-        var aqiLocations = aqiProvider.aqiLocations.locations.toSet();
-        debugPrint("loading AQITab with $aqiLocations locations");
+        var locationSet = aqiProvider.aqiLocations.locations.toSet();
+        debugPrint("loading AQITab with $locationSet locations");
+        bool showAutoComplete = _displayInput || locationSet.isEmpty;
         return Scaffold(
-          floatingActionButton: FloatingActionButton(
-            onPressed: () {
-              setState(() {
-                _displayInput = true;
-              });
-            },
-            child: const Icon(Icons.add),
-          ),
-          body: (_displayInput || aqiLocations.isEmpty)
-              ? ListTile(
-                  title: AQILocationAutocomplete(
-                    autofocus: true,
-                    selectionCallback: (location) {
-                      setState(() {
-                        _displayInput = false;
-                        aqiProvider.addLocation(location);
-                        final snackBar = SnackBar(content: Text('Added new location: $location'));
-                        ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                      });
-                    },
-                  ),
-                  trailing: Row(mainAxisSize: MainAxisSize.min, children: [
-                    Tooltip(
-                      message: "Find your current location",
-                      child: IconButton(
-                        onPressed: () {
-                          determinePosition().then((position) {
-                            aqiProvider
-                                .queryLocationLatLng(position.latitude, position.longitude)
-                                .then((location) {
-                              setState(() {
-                                _displayInput = false;
-                                aqiProvider.addLocation(location.url);
-                                final snackBar =
-                                    SnackBar(content: Text('Added new location: ${location.url}'));
-                                ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                              });
-                            });
-                          }).onError((error, stackTrace) {
-                            if (context.mounted) {
-                              final snackBar = SnackBar(
-                                  content: Text('Error fetching location: ${error.toString()}'));
-                              ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                            }
-                          });
-                        },
-                        icon: Icon(Icons.my_location_outlined),
-                      ),
+          floatingActionButton: !showAutoComplete
+              ? FloatingActionButton(
+                  onPressed: () {
+                    setState(() {
+                      _displayInput = true;
+                    });
+                  },
+                  child: const Icon(Icons.add),
+                )
+              : FloatingActionButton(
+                  onPressed: () {
+                    setState(() {
+                      _displayInput = false;
+                    });
+                  },
+                  child: const Icon(Icons.cancel_outlined),
+                ),
+          body: (showAutoComplete)
+              ? ListView(children: [
+                  ListTile(
+                    title: AQILocationAutocomplete(
+                      autofocus: true,
+                      selectionCallback: (location) {
+                        setState(() {
+                          _displayInput = false;
+                          aqiProvider.addLocation(location);
+                          final snackBar = SnackBar(content: Text('Added new location: $location'));
+                          ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                        });
+                      },
                     ),
-                    IconButton(
+                    trailing: IconButton(
                       icon: const Icon(Icons.cancel_outlined),
                       onPressed: () {
                         setState(() {
@@ -81,10 +64,37 @@ class _AQITabLoaderState extends State<AQITabLoader> {
                         });
                       },
                     ),
-                  ]),
-                )
+                  ),
+                  ListTile(
+                    title: Text("Find your current location (requires location permission)"),
+                    leading: IconButton(
+                      onPressed: () {
+                        determinePosition().then((position) {
+                          aqiProvider
+                              .queryLocationLatLng(position.latitude, position.longitude)
+                              .then((location) {
+                            setState(() {
+                              _displayInput = false;
+                              aqiProvider.addLocation(location.url);
+                              final snackBar =
+                                  SnackBar(content: Text('Added new location: ${location.url}'));
+                              ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                            });
+                          });
+                        }).onError((error, stackTrace) {
+                          if (context.mounted) {
+                            final snackBar = SnackBar(
+                                content: Text('Error fetching location: ${error.toString()}'));
+                            ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                          }
+                        });
+                      },
+                      icon: Icon(Icons.my_location_outlined),
+                    ),
+                  )
+                ])
               : AQIListView(
-                  locations: aqiProvider.aqiLocations.locations.toSet(),
+                  locations: locationSet,
                   removeLocationCallback: (location) {
                     setState(() {
                       _displayInput = false;

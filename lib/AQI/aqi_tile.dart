@@ -120,8 +120,8 @@ class AQIStatelessListTile extends StatelessWidget {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text("Confirm"),
-          content: const Text("Are you sure you wish to delete this item?"),
+          title: const Text("Confirm deletion?"),
+          content: Text("Are you sure you wish to remove $location?"),
           actions: <Widget>[
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
