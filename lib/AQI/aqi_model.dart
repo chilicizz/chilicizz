@@ -233,6 +233,11 @@ List<AQILocation> parseLocationSearchResponse(dynamic json) {
   return [];
 }
 
+AQILocation parseLocationSearchLatLngResponse(dynamic json) {
+  var response = jsonDecode(json);
+  return AQILocation(response["name"], response["location"]);
+}
+
 class AQIChip extends StatelessWidget {
   const AQIChip({
     super.key,

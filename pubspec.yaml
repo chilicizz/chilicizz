@@ -38,6 +38,7 @@ dependencies:
   fl_chart: ^1.0.0
   sse: ^4.1.6
   flutter_map_cancellable_tile_provider: ^3.1.0
+  geolocator: ^14.0.2
 
 dev_dependencies:
   flutter_test:

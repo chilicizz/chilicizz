@@ -1,3 +1,4 @@
+import 'package:chilicizz/AQI/geolocator.dart';
 import 'package:chilicizz/data/aqi_provider.dart';
 import 'package:flutter/material.dart';
 import 'aqi_auto_complete.dart';
@@ -20,7 +21,8 @@ class _AQITabLoaderState extends State<AQITabLoader> {
     return ListenableBuilder(
       listenable: aqiProvider.aqiLocations,
       builder: (context, child) {
-        debugPrint("loading LiveAQITab with ${aqiProvider.aqiLocations.locations} locations");
+        var aqiLocations = aqiProvider.aqiLocations.locations.toSet();
+        debugPrint("loading AQITab with $aqiLocations locations");
         return Scaffold(
           floatingActionButton: FloatingActionButton(
             onPressed: () {
@@ -30,7 +32,7 @@ class _AQITabLoaderState extends State<AQITabLoader> {
             },
             child: const Icon(Icons.add),
           ),
-          body: _displayInput
+          body: (_displayInput || aqiLocations.isEmpty)
               ? ListTile(
                   title: AQILocationAutocomplete(
                     autofocus: true,
@@ -44,8 +46,35 @@ class _AQITabLoaderState extends State<AQITabLoader> {
                     },
                   ),
                   trailing: Row(mainAxisSize: MainAxisSize.min, children: [
-                    OutlinedButton(
-                      child: const Icon(Icons.cancel_outlined),
+                    Tooltip(
+                      message: "Find your current location",
+                      child: IconButton(
+                        onPressed: () {
+                          determinePosition().then((position) {
+                            aqiProvider
+                                .queryLocationLatLng(position.latitude, position.longitude)
+                                .then((location) {
+                              setState(() {
+                                _displayInput = false;
+                                aqiProvider.addLocation(location.url);
+                                final snackBar =
+                                    SnackBar(content: Text('Added new location: ${location.url}'));
+                                ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                              });
+                            });
+                          }).onError((error, stackTrace) {
+                            if (context.mounted) {
+                              final snackBar = SnackBar(
+                                  content: Text('Error fetching location: ${error.toString()}'));
+                              ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                            }
+                          });
+                        },
+                        icon: Icon(Icons.my_location_outlined),
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.cancel_outlined),
                       onPressed: () {
                         setState(() {
                           _displayInput = false;
@@ -54,7 +83,7 @@ class _AQITabLoaderState extends State<AQITabLoader> {
                     ),
                   ]),
                 )
-              : AQITab(
+              : AQIListView(
                   locations: aqiProvider.aqiLocations.locations.toSet(),
                   removeLocationCallback: (location) {
                     setState(() {
@@ -88,13 +117,13 @@ class _AQITabLoaderState extends State<AQITabLoader> {
   }
 }
 
-class AQITab extends StatelessWidget {
+class AQIListView extends StatelessWidget {
   final Set<String> locations;
   final Function(String) removeLocationCallback;
   final Function(String, String) updateLocationCallback;
   final Function(String) addLocationCallback;
 
-  const AQITab(
+  const AQIListView(
       {super.key,
       required this.locations,
       required this.removeLocationCallback,
@@ -104,38 +133,23 @@ class AQITab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final aqiProvider = Provider.of<AQIProvider>(context, listen: true);
-    return locations.isEmpty
-        ? ListTile(
-            title: AQILocationAutocomplete(
-              autofocus: true,
-              selectionCallback: addLocationCallback,
-            ),
-            trailing: Row(mainAxisSize: MainAxisSize.min, children: [
-              OutlinedButton(
-                child: const Icon(Icons.cancel_outlined),
-                onPressed: () {
-                  addLocationCallback("");
-                },
-              ),
-            ]),
-          )
-        : ListenableBuilder(
-            listenable: aqiProvider.aqiDataModel,
-            builder: (context, child) => ListView.builder(
-              scrollDirection: Axis.vertical,
-              itemCount: locations.length,
-              itemBuilder: (context, index) {
-                // Get the location and data for the current index
-                var locationData = locations.elementAt(index);
-                var entry = aqiProvider.aqiDataModel.getAQIData(locationData);
-                return AQIStatelessListTile(
-                  location: locationData,
-                  data: entry,
-                  removeLocationCallback: removeLocationCallback,
-                  updateLocationCallback: updateLocationCallback,
-                );
-              },
-            ),
+    return ListenableBuilder(
+      listenable: aqiProvider.aqiDataModel,
+      builder: (context, child) => ListView.builder(
+        scrollDirection: Axis.vertical,
+        itemCount: locations.length,
+        itemBuilder: (context, index) {
+          // Get the location and data for the current index
+          var locationData = locations.elementAt(index);
+          var entry = aqiProvider.aqiDataModel.getAQIData(locationData);
+          return AQIStatelessListTile(
+            location: locationData,
+            data: entry,
+            removeLocationCallback: removeLocationCallback,
+            updateLocationCallback: updateLocationCallback,
           );
+        },
+      ),
+    );
   }
 }

@@ -196,6 +196,31 @@ class AQIProvider {
     return completer.future;
   }
 
+  Future<AQILocation> queryLocationLatLng(double lat, double lng) async {
+    String searchString = "$lat;$lng";
+    debugPrint("Sending search request for $searchString");
+    dynamic payload = await _sendQueryRequestLatLng(searchString, lat, lng);
+    AQILocation location = parseLocationSearchLatLngResponse(payload);
+    return location;
+  }
+
+  Future<dynamic> _sendQueryRequestLatLng(String searchString, double lat, double lng) {
+    if (_disposed || _channel == null) {
+      debugPrint('AQIProvider cannot send message, WebSocket is not connected');
+      return Future.error('WebSocket is not connected');
+    }
+    Completer<dynamic> completer = Completer();
+    _waitingResponse[searchString] = completer;
+
+    var queryRequest = {
+      "id": searchString,
+      "type": "AQI_SEARCH_POSITION_REQUEST",
+      "payload": json.encode({"lat": lat, "lng": lng})
+    };
+    _channel!.sink.add(jsonEncode(queryRequest));
+    return completer.future;
+  }
+
   void requestAQIDataforLocation(String location) {
     if (_disposed || _channel == null) {
       debugPrint('AQIProvider cannot send message, WebSocket is not connected');
@@ -221,6 +246,10 @@ class AQIProvider {
       aqiDataModel.addAQIData(location, data);
     } else if (type == "AQI_SEARCH_RESPONSE") {
       debugPrint("Received search response for: $location");
+      var completer = _waitingResponse.remove(location);
+      completer?.complete(payload);
+    } else if (type == "AQI_SEARCH_POSITION_RESPONSE") {
+      debugPrint("Received search response for: $location, $payload");
       var completer = _waitingResponse.remove(location);
       completer?.complete(payload);
     } else {
