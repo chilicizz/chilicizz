@@ -2,7 +2,6 @@ import 'package:chilicizz/HKO/typhoon_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:flutter_map_cancellable_tile_provider/flutter_map_cancellable_tile_provider.dart';
 
 import '../../common.dart';
 
@@ -148,7 +147,7 @@ class HKOTyphoonTrackWidget extends StatelessWidget {
             urlTemplate: mapTileUrl,
             // subdomains: dotenv.env['mapTileSubDomains']!.split(","),
             userAgentPackageName: mapUserAgent,
-            tileProvider: CancellableNetworkTileProvider(),
+            tileProvider: NetworkTileProvider(),
           ),
           PolylineLayer(
             polylines: trackLines,
