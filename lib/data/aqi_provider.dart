@@ -6,6 +6,13 @@ import 'package:flutter/widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
+const aqiSearchRequest = "AQI_SEARCH_REQUEST";
+const aqiSearchResponse = "AQI_SEARCH_RESPONSE";
+const aqiSearchPositionRequest = 'AQI_SEARCH_POSITION_REQUEST';
+const aqiSearchPositionResponse = "AQI_SEARCH_POSITION_RESPONSE";
+const aqiFeedRequest = "AQI_FEED_REQUEST";
+const aqiFeedResponse = "AQI_FEED_RESPONSE";
+
 /// Storage model for AQI data.
 /// This model holds the AQI data for different locations and provides methods to access and manage it
 class AqiDataModel extends ChangeNotifier {
@@ -33,7 +40,7 @@ class UserAQILocations extends ChangeNotifier {
 
   List<String> get locations => _locations;
 
-  get length => null;
+  int get length => _locations.length;
 
   set value(List<String> locations) {
     _locations.clear();
@@ -191,7 +198,7 @@ class AQIProvider {
     Completer<dynamic> completer = Completer();
     _waitingResponse[searchString] = completer;
     searchString = searchString.toLowerCase().replaceAll('/', '');
-    var queryRequest = {"id": searchString, "type": "AQI_SEARCH_REQUEST", "payload": searchString};
+    var queryRequest = {"id": searchString, "type": aqiSearchRequest, "payload": searchString};
     _channel!.sink.add(jsonEncode(queryRequest));
     return completer.future;
   }
@@ -214,7 +221,7 @@ class AQIProvider {
 
     var queryRequest = {
       "id": searchString,
-      "type": "AQI_SEARCH_POSITION_REQUEST",
+      "type": aqiSearchPositionRequest,
       "payload": json.encode({"lat": lat, "lng": lng})
     };
     _channel!.sink.add(jsonEncode(queryRequest));
@@ -228,7 +235,7 @@ class AQIProvider {
     }
     try {
       debugPrint("Requesting AQI location $location");
-      var request = {"id": location, "type": "AQI_FEED_REQUEST", "payload": location};
+      var request = {"id": location, "type": aqiFeedRequest, "payload": location};
       _channel!.sink.add(jsonEncode(request));
     } catch (error) {
       debugPrint('AQIProvider Error sending request: $error');
@@ -240,15 +247,15 @@ class AQIProvider {
     var type = message["type"];
     var payload = message["payload"];
     var location = message["id"];
-    if (type == "AQI_FEED_RESPONSE") {
+    if (type == aqiFeedResponse) {
       debugPrint("Received AQIData for location: $location");
       AQIData data = AQIData.fromJSON(jsonDecode(payload)["data"]);
       aqiDataModel.addAQIData(location, data);
-    } else if (type == "AQI_SEARCH_RESPONSE") {
+    } else if (type == aqiSearchResponse) {
       debugPrint("Received search response for: $location");
       var completer = _waitingResponse.remove(location);
       completer?.complete(payload);
-    } else if (type == "AQI_SEARCH_POSITION_RESPONSE") {
+    } else if (type == aqiSearchPositionResponse) {
       debugPrint("Received search response for: $location, $payload");
       var completer = _waitingResponse.remove(location);
       completer?.complete(payload);

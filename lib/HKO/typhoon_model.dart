@@ -231,7 +231,7 @@ class TyphoonPosition {
     throw Exception("Failed to parse position $json");
   }
 
-  LatLng getLatLng({latitudeOffset = 0, longitudeOffset = 0}) {
+  LatLng getLatLng({double latitudeOffset = 0, double longitudeOffset = 0}) {
     return LatLng(latitude + latitudeOffset, longitude + longitudeOffset);
   }
 }
