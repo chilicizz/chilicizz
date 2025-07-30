@@ -30105,7 +30105,7 @@ $S:2}
 A.aCr.prototype={
 $1(a){var s=A.eR().b
 s=s==null?null:s.canvasKitBaseUrl
-return(s==null?"https://www.gstatic.com/flutter-canvaskit/39d6d6e699e51b2874210e14cddf1a22fb9524b2/":s)+a},
+return(s==null?"https://www.gstatic.com/flutter-canvaskit/ef0cd000916d64fa0c5d09cc809fa7ad244a5767/":s)+a},
 $S:51}
 A.a5N.prototype={
 dV(a,b){var s,r=this.a
@@ -44460,7 +44460,7 @@ case 1:return A.L(q,r)}})
 return A.M($async$xv,r)}}
 A.LV.prototype={}
 A.U0.prototype={
-gD(a){return null},
+gD(a){return this.a.length},
 u(a,b){return B.b.u(this.a,b)}}
 A.u_.prototype={
 a7j(a){A.b4().$1("AQIProvider initialized with URL: "+this.a.k(0))
