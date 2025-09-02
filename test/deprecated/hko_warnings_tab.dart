@@ -2,11 +2,12 @@ import 'package:chilicizz/data/hko_warnings_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../common.dart';
-import '../warnings_model.dart';
-import './hko_warnings_list.dart';
+import 'package:chilicizz/common.dart';
+import 'package:chilicizz/HKO/warnings_model.dart';
+import 'package:chilicizz/HKO/warnings/hko_warnings_list.dart';
 
 // This page displays live HKO warnings
+@Deprecated("No longer used")
 class LiveHKOWarnings extends StatefulWidget {
   const LiveHKOWarnings({super.key});
 

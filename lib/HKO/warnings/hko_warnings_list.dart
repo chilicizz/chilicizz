@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../common.dart';
 import '../warnings_model.dart';
 
+/// A widget that displays a list of weather warnings.
 class HKOWarningsListView extends StatelessWidget {
   const HKOWarningsListView({
     super.key,

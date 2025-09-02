@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:chilicizz/HKO/typhoon/hko_typhoon_tab.dart';
+import 'hko_typhoon_tab.dart';
 import 'package:chilicizz/HKO/typhoon/hko_typhoon_track.dart';
 import 'package:chilicizz/HKO/typhoon_model.dart';
 import 'package:chilicizz/HKO/warnings/hko_warnings_list.dart';

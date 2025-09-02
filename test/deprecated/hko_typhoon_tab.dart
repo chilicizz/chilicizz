@@ -6,9 +6,10 @@ import 'package:chilicizz/data/hko_warnings_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../common.dart';
-import 'hko_typhoon_tile.dart';
+import '../../lib/common.dart';
+import '../../lib/HKO/typhoon/hko_typhoon_tile.dart';
 
+@Deprecated("Using the unified hko_tab instead")
 class TyphoonTab extends StatelessWidget {
   const TyphoonTab({super.key});
 
@@ -98,34 +99,6 @@ class NoTyphoonsListView extends StatelessWidget {
       physics: const AlwaysScrollableScrollPhysics(),
       children: [
         NoTyphoonsTile(lastTick: lastTick),
-      ],
-    );
-  }
-}
-
-class NoTyphoonsTile extends StatelessWidget {
-  const NoTyphoonsTile({
-    super.key,
-    required this.lastTick,
-  });
-
-  final DateTime lastTick;
-
-  @override
-  Widget build(BuildContext context) {
-    return ExpansionTile(
-      leading: const CircleAvatar(
-        child: Icon(Icons.done),
-      ),
-      title: const Text("No active typhoon warnings"),
-      subtitle: buildLastTick(lastTick),
-      children: const [
-        ListTile(
-          title: Text(
-              "Tropical cyclone track information data provided by Hong Kong Observatory and "
-              "is expected to be updated when a tropical cyclone forms within or enters the area bounded by 7-36N and 100-140E"),
-          subtitle: Text(""),
-        ),
       ],
     );
   }

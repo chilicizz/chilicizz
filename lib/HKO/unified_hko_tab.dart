@@ -1,4 +1,3 @@
-import 'package:chilicizz/HKO/typhoon/hko_typhoon_tab.dart';
 import 'package:chilicizz/HKO/typhoon/hko_typhoon_tile.dart';
 import 'package:chilicizz/HKO/typhoon_model.dart';
 import 'package:chilicizz/HKO/warnings/hko_warnings_list.dart';
