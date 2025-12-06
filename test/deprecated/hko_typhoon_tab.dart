@@ -6,8 +6,8 @@ import 'package:chilicizz/data/hko_warnings_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../lib/common.dart';
-import '../../lib/HKO/typhoon/hko_typhoon_tile.dart';
+import 'package:chilicizz/common.dart';
+import 'package:chilicizz/HKO/typhoon/hko_typhoon_tile.dart';
 
 @Deprecated("Using the unified hko_tab instead")
 class TyphoonTab extends StatelessWidget {
