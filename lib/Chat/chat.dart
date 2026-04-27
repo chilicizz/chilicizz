@@ -79,7 +79,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   });
                 }
 
-                var provider = Provider.of<ChatProvider>(context, listen: true);
+                var provider = context.read<ChatProvider>();
                 return Scaffold(
                   drawer: NavDrawer(routes: routes),
                   appBar: AppBar(
