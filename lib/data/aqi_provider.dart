@@ -170,23 +170,43 @@ class AQIProvider {
   }
 
   Future<List<AQILocation>> queryLocation(String searchString) async {
-    searchString = searchString.toLowerCase().replaceAll('/', '');
-    String additionalQueryString = searchString.contains(" ")
-        ? searchString.substring(searchString.indexOf(" ") + 1, searchString.length)
-        : "";
-    if (_searchCache.containsKey(searchString)) {
-      return _searchCache[searchString]!;
+    try {
+      searchString = searchString.toLowerCase().replaceAll('/', '');
+      String additionalQueryString = searchString.contains(" ")
+          ? searchString.substring(searchString.indexOf(" ") + 1, searchString.length)
+          : "";
+      if (_searchCache.containsKey(searchString)) {
+        debugPrint("Returning cached results for $searchString");
+        return _searchCache[searchString]!;
+      }
+      if (_disposed || _channel == null) {
+        debugPrint('AQIProvider WebSocket not connected for query: $searchString');
+        return [];
+      }
+      debugPrint("Sending search request for $searchString");
+      dynamic payload = await _sendQueryRequest(searchString).timeout(
+        const Duration(seconds: 10),
+        onTimeout: () {
+          debugPrint("AQIProvider Query timeout for $searchString");
+          return null;
+        },
+      );
+      if (payload == null) {
+        return [];
+      }
+      List<AQILocation> list = parseLocationSearchResponse(payload);
+      if (additionalQueryString.isNotEmpty) {
+        list = list
+            .where((element) => element.name.toLowerCase().contains(additionalQueryString))
+            .toList();
+      }
+      _searchCache[searchString] = list;
+      debugPrint("Query returned ${list.length} results for $searchString");
+      return list;
+    } catch (e) {
+      debugPrint("AQIProvider Error querying location for '$searchString': $e");
+      return [];
     }
-    debugPrint("Sending search request for $searchString");
-    dynamic payload = await _sendQueryRequest(searchString);
-    List<AQILocation> list = parseLocationSearchResponse(payload);
-    if (additionalQueryString.isNotEmpty) {
-      list = list
-          .where((element) => element.name.toLowerCase().contains(additionalQueryString))
-          .toList();
-    }
-    _searchCache[searchString] = list;
-    return list;
   }
 
   Future<dynamic> _sendQueryRequest(String searchString) {
@@ -194,10 +214,14 @@ class AQIProvider {
       debugPrint('AQIProvider cannot send message, WebSocket is not connected');
       return Future.error('WebSocket is not connected');
     }
+    final normalizedSearchString = searchString.toLowerCase().replaceAll('/', '');
     Completer<dynamic> completer = Completer();
-    _waitingResponse[searchString] = completer;
-    searchString = searchString.toLowerCase().replaceAll('/', '');
-    var queryRequest = {"id": searchString, "type": aqiSearchRequest, "payload": searchString};
+    _waitingResponse[normalizedSearchString] = completer;
+    var queryRequest = {
+      "id": normalizedSearchString,
+      "type": aqiSearchRequest,
+      "payload": normalizedSearchString
+    };
     _channel!.sink.add(jsonEncode(queryRequest));
     return completer.future;
   }
@@ -242,24 +266,34 @@ class AQIProvider {
   }
 
   void _handleSocketMessages(dynamic event) {
-    var message = jsonDecode(event);
-    var type = message["type"];
-    var payload = message["payload"];
-    var location = message["id"];
-    if (type == aqiFeedResponse) {
-      debugPrint("Received AQIData for location: $location");
-      AQIData data = AQIData.fromJSON(jsonDecode(payload)["data"]);
-      aqiDataModel.addAQIData(location, data);
-    } else if (type == aqiSearchResponse) {
-      debugPrint("Received search response for: $location");
-      var completer = _waitingResponse.remove(location);
-      completer?.complete(payload);
-    } else if (type == aqiSearchPositionResponse) {
-      debugPrint("Received search response for: $location, $payload");
-      var completer = _waitingResponse.remove(location);
-      completer?.complete(payload);
-    } else {
-      debugPrint("Received unknown message: $message");
+    try {
+      var message = jsonDecode(event);
+      var type = message["type"];
+      var payload = message["payload"];
+      var location = message["id"];
+      if (type == aqiFeedResponse) {
+        debugPrint("Received AQIData for location: $location");
+        try {
+          final decodedPayload = jsonDecode(payload);
+          final data = AQIData.fromJSON(decodedPayload["data"]);
+          aqiDataModel.addAQIData(location, data);
+          debugPrint("Successfully added AQI data for location: $location");
+        } catch (e) {
+          debugPrint("AQIProvider Error parsing AQI data for location $location: $e");
+        }
+      } else if (type == aqiSearchResponse) {
+        debugPrint("Received search response for: $location");
+        var completer = _waitingResponse.remove(location);
+        completer?.complete(payload);
+      } else if (type == aqiSearchPositionResponse) {
+        debugPrint("Received search response for: $location, $payload");
+        var completer = _waitingResponse.remove(location);
+        completer?.complete(payload);
+      } else {
+        debugPrint("Received unknown message type: $type");
+      }
+    } catch (e) {
+      debugPrint("AQIProvider Error handling socket message: $e");
     }
   }
 
