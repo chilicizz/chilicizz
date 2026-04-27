@@ -17,7 +17,7 @@ class _AQITabLoaderState extends State<AQITabLoader> {
   bool _displayInput = false;
   @override
   Widget build(BuildContext context) {
-    final aqiProvider = Provider.of<AQIProvider>(context, listen: true);
+    final aqiProvider = context.read<AQIProvider>();
     return ListenableBuilder(
       listenable: aqiProvider.aqiLocations,
       builder: (context, child) {
@@ -142,7 +142,7 @@ class AQIListView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final aqiProvider = Provider.of<AQIProvider>(context, listen: true);
+    final aqiProvider = context.read<AQIProvider>();
     return ListenableBuilder(
       listenable: aqiProvider.aqiDataModel,
       builder: (context, child) => ListView.builder(

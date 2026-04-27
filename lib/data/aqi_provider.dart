@@ -88,6 +88,11 @@ class AQIProvider {
 
   AQIProvider(this._chatUrl) {
     debugPrint('AQIProvider initialized with URL: $_chatUrl');
+    // Add listener before loading state to ensure initial value is saved
+    aqiLocations.addListener(() {
+      debugPrint('Saving AQI locations: ${aqiLocations.locations}');
+      _saveAQILocations(aqiLocations.locations);
+    });
     _loadStateFromPersistence().then((_) {
       _connect();
     }).catchError((error) {
@@ -96,15 +101,9 @@ class AQIProvider {
   }
 
   Future<void> _loadStateFromPersistence() async {
-    final loadedValues = await Future.wait([
-      _getAQILocations().then((value) => aqiLocations.value = value),
-    ]);
-    aqiLocations.addListener(() {
-      // Save the locations whenever they change
-      debugPrint('Saving AQI locations: ${aqiLocations.locations}');
-      _saveAQILocations(aqiLocations.locations);
-    });
-    debugPrint('Loaded state from persistence: $loadedValues');
+    final locations = await _getAQILocations();
+    aqiLocations.value = locations;
+    debugPrint('Loaded AQI locations from persistence: $locations');
   }
 
   Future<List<String>> _getAQILocations() async {
