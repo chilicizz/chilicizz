@@ -9,8 +9,27 @@ import 'package:provider/provider.dart';
 
 // Display HKO warnings in a unified tab
 // This tab combines both live warnings and typhoon warnings into a single view
-class UnifiedHkoTab extends StatelessWidget {
+class UnifiedHkoTab extends StatefulWidget {
   const UnifiedHkoTab({super.key});
+
+  @override
+  State<UnifiedHkoTab> createState() => _UnifiedHkoTabState();
+}
+
+class _UnifiedHkoTabState extends State<UnifiedHkoTab> {
+  bool _hasTriggeredInitialRefresh = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_hasTriggeredInitialRefresh) {
+      var provider = context.read<HKOWarningsProvider>();
+      if (provider.hkoWeatherWarnings.value == null || provider.hkoTyphoons.value == null) {
+        provider.triggerRefresh();
+        _hasTriggeredInitialRefresh = true;
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,9 +55,8 @@ class UnifiedHkoTab extends StatelessWidget {
             builder: (context, child) {
               List<WarningInformation>? warnings = provider.hkoWeatherWarnings.value;
               List<Typhoon>? typhoons = provider.hkoTyphoons.value;
-              // If either warnings or typhoons is null, trigger a refresh
+              // Display loading or data based on current state
               if (warnings == null || typhoons == null) {
-                provider.triggerRefresh();
                 return LoadingListView();
               } else if (typhoons.isEmpty && warnings.isEmpty) {
                 return ListView(
