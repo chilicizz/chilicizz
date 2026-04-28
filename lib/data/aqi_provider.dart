@@ -149,42 +149,36 @@ class AQIProvider {
     try {
       _channel = WebSocketChannel.connect(_chatUrl);
 
-      // Add a timeout to the connection attempt
-      Future.delayed(const Duration(seconds: 8), () {
-        if (_disposed) return;
-        if (_channel == null || !isConnected.value) {
-          debugPrint('AQIProvider WebSocket connection timeout');
-          connectionError.value = 'WebSocket connection timed out';
-          _channel?.sink.close();
-          _channel = null;
-          _reconnect();
-        }
-      });
+      // Mark as connecting (ready to send messages even if first message hasn't arrived yet)
+      isConnected.value = true;
+      connectionError.value = null;
+      debugPrint('AQIProvider WebSocket connected, listening for messages...');
 
       _channel!.stream.listen(
         (message) {
-          isConnected.value = true;
-          connectionError.value = null;
           _handleSocketMessages(message);
         },
         onError: (error) {
-          debugPrint('AQIProvider Error receiving message: $error');
+          debugPrint('AQIProvider Error on WebSocket stream: $error');
           connectionError.value = 'Connection error: $error';
           isConnected.value = false;
+          _channel = null;
           _reconnect();
         },
         onDone: () {
-          debugPrint('AQIProvider WebSocket connection closed');
-          isConnected.value = false;
-          connectionError.value = 'Connection closed';
+          debugPrint('AQIProvider WebSocket connection closed by server');
+          if (isConnected.value) {
+            isConnected.value = false;
+            connectionError.value = 'Connection closed';
+          }
+          _channel = null;
           _reconnect();
         },
-        cancelOnError: true,
       );
 
       _reconnectAttempts = 0;
-      debugPrint('AQIProvider WebSocket connection attempt in progress');
 
+      // Request data for saved locations
       for (var location in aqiLocations._locations) {
         requestAQIDataforLocation(location);
       }
@@ -192,6 +186,7 @@ class AQIProvider {
       debugPrint('AQIProvider Error connecting to WebSocket: $error');
       connectionError.value = 'Connection error: $error';
       isConnected.value = false;
+      _channel = null;
       _reconnect();
     }
   }

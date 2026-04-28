@@ -40,11 +40,12 @@ class _AQILocationAutocompleteState extends State<AQILocationAutocomplete> {
           FocusNode focusNode, VoidCallback onFieldSubmitted) {
         if (widget._initialValue != null && textEditingController.text.isEmpty) {
           textEditingController.text = widget._initialValue!;
+          // Only select all text on initial value set
+          textEditingController.selection = TextSelection(
+            baseOffset: 0,
+            extentOffset: textEditingController.text.length,
+          );
         }
-        textEditingController.selection = TextSelection(
-          baseOffset: 0,
-          extentOffset: textEditingController.text.length,
-        );
         return TextField(
           autofocus: widget._autofocus,
           focusNode: focusNode,
@@ -83,7 +84,18 @@ class _AQILocationAutocompleteState extends State<AQILocationAutocomplete> {
         if (textEditingValue.text.isEmpty || textEditingValue.text.length <= 3) {
           return const Iterable<AQILocation>.empty();
         }
+        debugPrint('AQILocationAutocomplete: Searching for "${textEditingValue.text}"');
+        debugPrint(
+            'AQILocationAutocomplete: WebSocket connected: ${aqiProvider.isConnected.value}');
+
+        if (!aqiProvider.isConnected.value) {
+          debugPrint(
+              'AQILocationAutocomplete: WebSocket not connected! Error: ${aqiProvider.connectionError.value}');
+        }
+
         return aqiProvider.queryLocation(textEditingValue.text.trim()).then((results) {
+          debugPrint(
+              'AQILocationAutocomplete: Got ${results.length} results for "${textEditingValue.text}"');
           if (mounted) {
             setState(() {
               _isLoading = false;
