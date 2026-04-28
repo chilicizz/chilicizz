@@ -26,6 +26,8 @@ class HKOWarningsProvider {
   final TyphoonTrackNotifier typhoonTracks = TyphoonTrackNotifier();
   final TyphoonHttpClientJson typhoonHttpClient;
   final String? mapTileUrl = dotenv.env['mapTileUrl'];
+  final ValueNotifier<bool> isConnected = ValueNotifier(false);
+  final ValueNotifier<String?> connectionError = ValueNotifier(null);
 
   // Last time the WebSocket received a message
   DateTime lastTick = DateTime.now();
@@ -46,11 +48,27 @@ class HKOWarningsProvider {
 
   void _connect() {
     if (_disposed) return;
-    debugPrint('HkoWarningsProvider connecting to WebSocket...');
+    debugPrint('HkoWarningsProvider connecting to WebSocket to $hkoWarningsURL...');
+
     try {
       _channel = WebSocketChannel.connect(hkoWarningsURL);
+
+      // Add a timeout to the connection attempt
+      Future.delayed(const Duration(seconds: 8), () {
+        if (_disposed) return;
+        if (_channel == null || !isConnected.value) {
+          debugPrint('HkoWarningsProvider WebSocket connection timeout');
+          connectionError.value = 'WebSocket connection timed out';
+          _channel?.sink.close();
+          _channel = null;
+          _reconnect();
+        }
+      });
+
       _channel!.stream.listen(
         (message) {
+          isConnected.value = true;
+          connectionError.value = null;
           debugPrint('HkoWarningsProvider Received message: $message');
           lastTick = DateTime.now();
           // Parse the JSON message and extract warnings
@@ -60,18 +78,24 @@ class HKOWarningsProvider {
         },
         onError: (error) {
           debugPrint('HkoWarningsProvider Error receiving message: $error');
+          connectionError.value = 'Connection error: $error';
+          isConnected.value = false;
           _reconnect();
         },
         onDone: () {
           debugPrint('HkoWarningsProvider WebSocket connection closed');
+          isConnected.value = false;
+          connectionError.value = 'Connection closed';
           _reconnect();
         },
         cancelOnError: true,
       );
       _reconnectAttempts = 0;
-      debugPrint('HkoWarningsProvider WebSocket connection established');
+      debugPrint('HkoWarningsProvider WebSocket connection attempt in progress');
     } catch (error) {
       debugPrint('HkoWarningsProvider Error connecting to WebSocket: $error');
+      connectionError.value = 'Connection error: $error';
+      isConnected.value = false;
       _reconnect();
     }
   }
@@ -79,8 +103,14 @@ class HKOWarningsProvider {
   void _reconnect() {
     if (_disposed) return;
     _reconnectAttempts++;
-    final delay = Duration(seconds: 2 * _reconnectAttempts);
-    debugPrint('HkoWarningsProvider attempting to reconnect in ${delay.inSeconds} seconds...');
+    // Cap the delay to max 30 seconds
+    final maxDelay = Duration(seconds: 30);
+    var calculatedDelay = Duration(seconds: 2 * _reconnectAttempts);
+    final delay = calculatedDelay > maxDelay ? maxDelay : calculatedDelay;
+
+    debugPrint(
+        'HkoWarningsProvider reconnect attempt $_reconnectAttempts, retrying in ${delay.inSeconds} seconds...');
+
     Future.delayed(delay, () {
       if (!_disposed) {
         _connect();
@@ -126,6 +156,7 @@ class HKOWarningsProvider {
   void dispose() {
     _disposed = true;
     _channel?.sink.close();
+    isConnected.value = false;
     hkoWeatherWarnings.dispose();
   }
 }
