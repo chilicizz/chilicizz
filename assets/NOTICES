@@ -1322,7 +1322,6 @@ THE SOFTWARE.
 --------------------------------------------------------------------------------
 build
 build_runner
-code_builder
 web_socket_channel
 
 Copyright 2016, the Dart project authors. 
