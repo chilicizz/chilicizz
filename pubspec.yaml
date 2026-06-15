@@ -37,7 +37,7 @@ dependencies:
   qr_flutter: ^4.0.0
   fl_chart: ^1.2.0
   sse: ^4.2.0
-  geolocator: ^14.0.2
+  geolocator: ^14.0.3
 
 dev_dependencies:
   flutter_test:
