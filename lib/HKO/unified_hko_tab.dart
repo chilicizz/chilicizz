@@ -4,7 +4,7 @@ import 'package:chilicizz/HKO/warnings/hko_warnings_list.dart';
 import 'package:chilicizz/HKO/warnings_model.dart';
 import 'package:chilicizz/common.dart';
 import 'package:chilicizz/data/hko_warnings_provider.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
 
 // Display HKO warnings in a unified tab

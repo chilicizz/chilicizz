@@ -1,6 +1,6 @@
 import 'package:chilicizz/AQI/geolocator.dart';
 import 'package:chilicizz/data/aqi_provider.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'aqi_auto_complete.dart';
 import 'package:provider/provider.dart';
 import './aqi_tile.dart';

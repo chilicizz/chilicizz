@@ -5,7 +5,7 @@ import 'package:chilicizz/data/chat_provider.dart';
 import 'package:chilicizz/data/hko_warnings_provider.dart';
 import 'package:chilicizz/config/config_controller.dart';
 import 'package:chilicizz/rss_reader.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
