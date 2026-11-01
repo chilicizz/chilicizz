@@ -1,5 +1,5 @@
 import 'package:date_format/date_format.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 class NavRoute {
   String path;

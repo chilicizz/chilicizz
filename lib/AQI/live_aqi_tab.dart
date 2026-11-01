@@ -1,6 +1,6 @@
 import 'package:chilicizz/AQI/geolocator.dart';
 import 'package:chilicizz/data/aqi_provider.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'aqi_auto_complete.dart';
 import 'package:provider/provider.dart';
 import './aqi_tile.dart';
@@ -19,11 +19,35 @@ class _AQITabLoaderState extends State<AQITabLoader> {
   Widget build(BuildContext context) {
     final aqiProvider = context.read<AQIProvider>();
     return ListenableBuilder(
-      listenable: aqiProvider.aqiLocations,
+      listenable: Listenable.merge(
+          [aqiProvider.aqiLocations, aqiProvider.connectionError, aqiProvider.isConnected]),
       builder: (context, child) {
         var locationSet = aqiProvider.aqiLocations.locations.toSet();
         debugPrint("loading AQITab with $locationSet locations");
         bool showAutoComplete = _displayInput || locationSet.isEmpty;
+
+        // Show warning if WebSocket is not connected
+        if (!aqiProvider.isConnected.value &&
+            aqiProvider.connectionError.value != null &&
+            locationSet.isNotEmpty) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('AQI Connection: ${aqiProvider.connectionError.value}'),
+                action: SnackBarAction(
+                  label: 'Retry',
+                  onPressed: () {
+                    // Trigger reconnect by requesting a location
+                    if (locationSet.isNotEmpty) {
+                      aqiProvider.requestAQIDataforLocation(locationSet.first);
+                    }
+                  },
+                ),
+              ),
+            );
+          });
+        }
+
         return Scaffold(
           floatingActionButton: !showAutoComplete
               ? FloatingActionButton(

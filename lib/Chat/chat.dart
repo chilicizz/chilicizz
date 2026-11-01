@@ -1,7 +1,7 @@
 import 'package:chilicizz/Chat/chat_model.dart';
 import 'package:chilicizz/config/config_controller.dart';
 import 'package:chilicizz/data/chat_provider.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
 
 import '../common.dart';

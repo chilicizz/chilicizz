@@ -4,7 +4,7 @@ import 'package:chilicizz/HKO/warnings/hko_warnings_list.dart';
 import 'package:chilicizz/HKO/warnings_model.dart';
 import 'package:chilicizz/common.dart';
 import 'package:chilicizz/data/hko_warnings_provider.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
 
 // Display HKO warnings in a unified tab
@@ -51,10 +51,49 @@ class _UnifiedHkoTabState extends State<UnifiedHkoTab> {
         },
         child: Center(
           child: ListenableBuilder(
-            listenable: Listenable.merge([provider.hkoWeatherWarnings, provider.hkoTyphoons]),
+            listenable: Listenable.merge([
+              provider.hkoWeatherWarnings,
+              provider.hkoTyphoons,
+              provider.connectionError,
+              provider.isConnected
+            ]),
             builder: (context, child) {
               List<WarningInformation>? warnings = provider.hkoWeatherWarnings.value;
               List<Typhoon>? typhoons = provider.hkoTyphoons.value;
+              String? error = provider.connectionError.value;
+
+              // Show error UI if connection failed
+              if (error != null &&
+                  !provider.isConnected.value &&
+                  warnings == null &&
+                  typhoons == null) {
+                return ListView(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        children: [
+                          const Icon(Icons.cloud_off, size: 48, color: Colors.grey),
+                          const SizedBox(height: 16),
+                          Text(
+                            'Connection Error',
+                            style: Theme.of(context).textTheme.headlineSmall,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(error),
+                          const SizedBox(height: 16),
+                          ElevatedButton(
+                            onPressed: () {
+                              provider.triggerRefresh();
+                            },
+                            child: const Text('Retry'),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                );
+              }
               // Display loading or data based on current state
               if (warnings == null || typhoons == null) {
                 return LoadingListView();

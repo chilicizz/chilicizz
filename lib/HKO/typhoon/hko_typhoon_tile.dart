@@ -1,6 +1,6 @@
 import 'package:chilicizz/HKO/typhoon_model.dart';
 import 'package:chilicizz/data/hko_warnings_provider.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 

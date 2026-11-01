@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:sse/client/sse_client.dart';
 
 import 'package:chilicizz/common.dart';

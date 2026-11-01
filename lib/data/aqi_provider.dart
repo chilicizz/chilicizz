@@ -82,6 +82,8 @@ class AQIProvider {
   final AqiDataModel aqiDataModel = AqiDataModel();
   final Map<String, List<AQILocation>> _searchCache = {};
   final Map<String, Completer> _waitingResponse = {};
+  final ValueNotifier<bool> isConnected = ValueNotifier(false);
+  final ValueNotifier<String?> connectionError = ValueNotifier(null);
   WebSocketChannel? _channel;
   int _reconnectAttempts = 0;
   bool _disposed = false;
@@ -97,6 +99,7 @@ class AQIProvider {
       _connect();
     }).catchError((error) {
       debugPrint('AQIProvider Error loading state from persistence: $error');
+      connectionError.value = 'Failed to load saved locations';
     });
   }
 
@@ -141,30 +144,49 @@ class AQIProvider {
 
   void _connect() {
     if (_disposed) return;
-    debugPrint('AQIProvider connecting to WebSocket...');
+    debugPrint('AQIProvider connecting to WebSocket to $_chatUrl...');
+
     try {
       _channel = WebSocketChannel.connect(_chatUrl);
+
+      // Mark as connecting (ready to send messages even if first message hasn't arrived yet)
+      isConnected.value = true;
+      connectionError.value = null;
+      debugPrint('AQIProvider WebSocket connected, listening for messages...');
+
       _channel!.stream.listen(
         (message) {
           _handleSocketMessages(message);
         },
         onError: (error) {
-          debugPrint('AQIProvider Error receiving message: $error');
+          debugPrint('AQIProvider Error on WebSocket stream: $error');
+          connectionError.value = 'Connection error: $error';
+          isConnected.value = false;
+          _channel = null;
           _reconnect();
         },
         onDone: () {
-          debugPrint('AQIProvider WebSocket connection closed');
+          debugPrint('AQIProvider WebSocket connection closed by server');
+          if (isConnected.value) {
+            isConnected.value = false;
+            connectionError.value = 'Connection closed';
+          }
+          _channel = null;
           _reconnect();
         },
-        cancelOnError: true,
       );
+
       _reconnectAttempts = 0;
-      debugPrint('AQIProvider WebSocket connection established');
+
+      // Request data for saved locations
       for (var location in aqiLocations._locations) {
         requestAQIDataforLocation(location);
       }
     } catch (error) {
       debugPrint('AQIProvider Error connecting to WebSocket: $error');
+      connectionError.value = 'Connection error: $error';
+      isConnected.value = false;
+      _channel = null;
       _reconnect();
     }
   }
@@ -300,8 +322,14 @@ class AQIProvider {
   void _reconnect() {
     if (_disposed) return;
     _reconnectAttempts++;
-    final delay = Duration(seconds: 2 * _reconnectAttempts);
-    debugPrint('AQIProvider attempting to reconnect in ${delay.inSeconds} seconds...');
+    // Cap the delay to max 30 seconds, and cap attempts to 10
+    final maxDelay = Duration(seconds: 30);
+    var calculatedDelay = Duration(seconds: 2 * _reconnectAttempts);
+    final delay = calculatedDelay > maxDelay ? maxDelay : calculatedDelay;
+
+    debugPrint(
+        'AQIProvider reconnect attempt $_reconnectAttempts, retrying in ${delay.inSeconds} seconds...');
+
     Future.delayed(delay, () {
       if (!_disposed) {
         _connect();
@@ -312,5 +340,6 @@ class AQIProvider {
   void dispose() {
     _disposed = true;
     _channel?.sink.close();
+    isConnected.value = false;
   }
 }
