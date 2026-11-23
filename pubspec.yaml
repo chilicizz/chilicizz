@@ -39,7 +39,7 @@ dependencies:
   sse: ^4.2.0
   geolocator: ^14.1.2
 
-  material_ui: ^1.10.0
+  material_ui: ^1.11.1
 dev_dependencies:
   flutter_test:
     sdk: flutter
